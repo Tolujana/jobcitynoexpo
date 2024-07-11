@@ -1,0 +1,9 @@
+{
+  "name": "jobcity",
+  "displayName": "jobcity",
+
+  "react-native-google-mobile-ads": {
+    "android_app_id": "ca-app-pub-7993847549836206~8906793243",
+    "ios_app_id": "ca-app-pub-xxxxxxxx~xxxxxxxx"
+  }
+}

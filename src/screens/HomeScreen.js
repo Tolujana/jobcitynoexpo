@@ -8,6 +8,7 @@ import { useQuery, useInfiniteQuery } from "@tanstack/react-query";
 import { IOScrollView, InView } from "react-native-intersection-observer";
 import useCustomFetch from "../util/Api copy";
 import RenderItem from "../components/RenderItem";
+import ApiUrlManager from "../components/ApiUrlManager";
 
 export default function Home() {
   const [jobs, setJobs] = useState([]);
@@ -15,7 +16,7 @@ export default function Home() {
 
   const [page, setPage] = useState(1);
   const url = "http://public-api.wordpress.com/rest/v1.2/sites/en.blog.wordpress.com/posts/ ";
-  const params = { search: "word", page: page, number: 7 };
+  const params = { search: "word", page: page, number: 6 };
   const { data, loading, error } = useCustomFetch(url, { params });
 
   useEffect(() => {
@@ -34,7 +35,7 @@ export default function Home() {
   return (
     <SafeAreaView>
       <Text>Home</Text>
-
+      <ApiUrlManager/>
       {loading && page === 1 ? (
         <ActivityIndicator size="large" />
       ) : error ? (

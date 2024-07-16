@@ -9,6 +9,9 @@ import {NavigationContainer} from '@react-navigation/native';
 
 import type {PropsWithChildren} from 'react';
 import {
+  NativeModules,
+  PermissionsAndroid,
+  Platform,
   SafeAreaView,
   ScrollView,
   StatusBar,
@@ -27,6 +30,8 @@ import {
 } from 'react-native/Libraries/NewAppScreen';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import AppNavigation from './src/navigation';
+import BackgroundFetchTask from './src/components/BackgroundFetchTask';
+import BackgroundFetch from 'react-native-background-fetch';
 
 type SectionProps = PropsWithChildren<{
   title: string;
@@ -58,6 +63,27 @@ function Section({children, title}: SectionProps): React.JSX.Element {
   );
 }
 
+
+
+
+const requestNotificationPermission = async () => {
+  if (Platform.OS === 'android' && Platform.Version >= 33) {
+      const granted = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
+          {
+              title: 'Notification Permission',
+              message: 'This app needs access to send you notifications.',
+              buttonNeutral: 'Ask Me Later',
+              buttonNegative: 'Cancel',
+              buttonPositive: 'OK',
+          },
+      );
+      if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
+          console.log('Notification permission denied');
+      }
+  }
+};
+
 const queryClient = new QueryClient();
 
 function App(): React.JSX.Element {
@@ -66,6 +92,37 @@ function App(): React.JSX.Element {
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
+  
+  
+  React.useEffect(() => {
+    
+    requestNotificationPermission()
+    BackgroundFetch.configure(
+        {
+            minimumFetchInterval: 15, // Fetch interval in minutes
+            stopOnTerminate: false,
+            startOnBoot: true,
+            requiredNetworkType: BackgroundFetch.NETWORK_TYPE_ANY,
+        requiresCharging: false,
+        requiresDeviceIdle: false,
+        requiresBatteryNotLow: false,
+        requiresStorageNotLow: false,
+        forceAlarmManager: true, // Use A
+        enableHeadless: true
+        },
+        BackgroundFetchTask,
+        (error) => {
+            console.log('[BackgroundFetch] failed to start', error);
+        }
+    );
+   //BackgroundFetch.registerHeadlessTask(BackgroundFetchTask);
+    // Manually trigger background fetch for testing
+    // BackgroundFetch.scheduleTask({
+    //     taskId: 'com.jobcity.backgroundFetch',
+    //     delay: 5000,  // milliseconds
+    //     periodic: false
+    // });
+}, []);
 
   return (
     <QueryClientProvider client={queryClient}>

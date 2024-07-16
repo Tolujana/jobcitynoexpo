@@ -12,7 +12,7 @@ import {
 } from 'react-native-google-mobile-ads';
 import NativeAdComponent from './NativeAdComponent';
 
-const bannerAdUnitId = __DEV__ ? TestIds.BANNER : 'your-banner-ad-unit-id';
+const bannerAdUnitId = __DEV__ ? TestIds.BANNER : 'ca-app-pub-7993847549836206/9500075214';
 // const adUnitId = __DEV__ ? TestIds.NATIVE_AD_VIDEO : 'your-ad-unit-id';
 //
 // const nativeAdManager = new AdMobNativeAdsManager("ca-app-pub-3940256099942544/2247696110"); // Test ID
@@ -40,7 +40,7 @@ const RenderItem = ({item, index, savedArticles}) => {
       />
       <Text> advert</Text>
       <View>
-        <BannerAd
+        {/* <BannerAd
           unitId={bannerAdUnitId}
           size={BannerAdSize.INLINE_ADAPTIVE_BANNER}
           requestOptions={{
@@ -54,8 +54,8 @@ const RenderItem = ({item, index, savedArticles}) => {
           onAdFailedToLoad={error =>
             console.error('Failed to load banner ad:', error)
           }
-        />
-        <NativeAdComponent />
+        /> */}
+        
       </View>
     </View>
   );

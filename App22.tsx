@@ -6,7 +6,10 @@
  */
 import * as React from 'react';
 import {NavigationContainer} from '@react-navigation/native';
-
+import notifee, {
+  AndroidImportance,
+  AndroidVisibility,
+} from '@notifee/react-native';
 import type {PropsWithChildren} from 'react';
 import {
   NativeModules,
@@ -63,24 +66,28 @@ function Section({children, title}: SectionProps): React.JSX.Element {
   );
 }
 
-
-
-
 const requestNotificationPermission = async () => {
   if (Platform.OS === 'android' && Platform.Version >= 33) {
-      const granted = await PermissionsAndroid.request(
-          PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
-          {
-              title: 'Notification Permission',
-              message: 'This app needs access to send you notifications.',
-              buttonNeutral: 'Ask Me Later',
-              buttonNegative: 'Cancel',
-              buttonPositive: 'OK',
-          },
-      );
-      if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
-          console.log('Notification permission denied');
-      }
+    const granted = await PermissionsAndroid.request(
+      PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
+      {
+        title: 'Notification Permission',
+        message: 'This app needs access to send you notifications.',
+        buttonNeutral: 'Ask Me Later',
+        buttonNegative: 'Cancel',
+        buttonPositive: 'OK',
+      },
+    );
+    if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+      await notifee.createChannel({
+        id: 'reminder',
+        name: 'job',
+        visibility: AndroidVisibility.PUBLIC,
+        importance: AndroidImportance.HIGH,
+        vibration: true,
+        description: 'Reminder Notifications',
+      });
+    }
   }
 };
 
@@ -92,37 +99,35 @@ function App(): React.JSX.Element {
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
-  
-  
+
   React.useEffect(() => {
-    
-    requestNotificationPermission()
+    requestNotificationPermission();
     BackgroundFetch.configure(
-        {
-            minimumFetchInterval: 15, // Fetch interval in minutes
-            stopOnTerminate: false,
-            startOnBoot: true,
-            requiredNetworkType: BackgroundFetch.NETWORK_TYPE_ANY,
+      {
+        minimumFetchInterval: 15, // Fetch interval in minutes
+        stopOnTerminate: false,
+        startOnBoot: true,
+        requiredNetworkType: BackgroundFetch.NETWORK_TYPE_ANY,
         requiresCharging: false,
         requiresDeviceIdle: false,
         requiresBatteryNotLow: false,
         requiresStorageNotLow: false,
         forceAlarmManager: true, // Use A
-        enableHeadless: true
-        },
-        BackgroundFetchTask,
-        (error) => {
-            console.log('[BackgroundFetch] failed to start', error);
-        }
+        enableHeadless: true,
+      },
+      BackgroundFetchTask,
+      error => {
+        console.log('[BackgroundFetch] failed to start', error);
+      },
     );
-   //BackgroundFetch.registerHeadlessTask(BackgroundFetchTask);
+    //BackgroundFetch.registerHeadlessTask(BackgroundFetchTask);
     // Manually trigger background fetch for testing
-    // BackgroundFetch.scheduleTask({
-    //     taskId: 'com.jobcity.backgroundFetch',
-    //     delay: 5000,  // milliseconds
-    //     periodic: false
-    // });
-}, []);
+    BackgroundFetch.scheduleTask({
+      taskId: 'com.jobcity.backgroundFetch',
+      delay: 5000, // milliseconds
+      periodic: false,
+    });
+  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>

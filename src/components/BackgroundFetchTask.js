@@ -24,12 +24,9 @@ const fetchArticles = async task => {
 
       console.log('im wroking ', apiName);
       // await CheckPermissionAndSend(apiName, apiUrl);
-      sendNotification(apiName, apiUrl);
+      await sendNotification(apiName, apiUrl);
     }
   } catch (error) {
-    if (task.cancelled) {
-      console.log('it is cancelled o');
-    }
     console.error(error);
   }
 };
@@ -72,9 +69,8 @@ const sendNotification = async (name, url) => {
 
   console.log('Notification permission granted');
   await notifee.createChannel({
-    id: 'default',
+    id: 'job',
     name: 'Default Channel',
-    importance: AndroidImportance.HIGH,
   });
 
   // Display a notification

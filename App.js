@@ -25,6 +25,8 @@ import notifee, {
   AndroidImportance,
   AndroidVisibility,
 } from '@notifee/react-native';
+import BackgroundFetch from 'react-native-background-fetch';
+import BackgroundFetchTask from './src/components/BackgroundFetchTask';
 
 const requestNotificationPermission = async () => {
   if (Platform.OS === 'android' && Platform.Version >= 33) {
@@ -90,8 +92,34 @@ const App = () => {
         );
       }
     };
+    const permissionGranted = requestNotificationPermissions();
+    if (permissionGranted) {
+      BackgroundFetch.configure(
+        {
+          minimumFetchInterval: 15, // Fetch interval in minutes
+          stopOnTerminate: false,
+          startOnBoot: true,
+          requiredNetworkType: BackgroundFetch.NETWORK_TYPE_ANY,
+          requiresCharging: false,
+          requiresDeviceIdle: false,
+          requiresBatteryNotLow: false,
+          requiresStorageNotLow: false,
+          forceAlarmManager: true, // Use A
+          enableHeadless: true,
+        },
+        BackgroundFetchTask,
+        error => {
+          console.log('[BackgroundFetch] failed to start', error);
+        },
+      );
+    }
 
-    setupBackgroundFetch();
+    // BackgroundFetch.scheduleTask({
+    //   taskId: 'com.jobcity.backgroundFetch',
+    //   delay: 30000, // milliseconds
+    //   periodic: false,
+    // });
+    // setupBackgroundFetch();
   }, []);
 
   return (

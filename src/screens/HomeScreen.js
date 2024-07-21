@@ -18,6 +18,7 @@ import useCustomFetch from '../util/Api copy';
 import RenderItem from '../components/RenderItem';
 import ApiUrlManager from '../components/ApiUrlManager';
 import {sendNotification, sendNotifications} from '../util/BackGroundAction';
+import {sendNotification2} from '../components/BackgroundFetchTask';
 
 export default function Home() {
   const [jobs, setJobs] = useState([]);
@@ -50,7 +51,7 @@ export default function Home() {
       <ApiUrlManager />
       <Button
         title="Press Me"
-        onPress={() => sendNotification('tolu', 'rock')}
+        onPress={() => sendNotification2('tolu', 'eerock')}
       />
       {loading && page === 1 ? (
         <ActivityIndicator size="large" />

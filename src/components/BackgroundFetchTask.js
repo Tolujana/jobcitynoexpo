@@ -22,9 +22,9 @@ const fetchArticles = async task => {
       //     sendNotification(apiName, apiUrl,latestDate);
       // }
 
-      console.log('im wroking ', apiName);
+      console.log('backgroundfetch', apiName);
       // await CheckPermissionAndSend(apiName, apiUrl);
-      await sendNotification(apiName, apiUrl);
+      await sendNotification2(apiName, apiUrl);
     }
   } catch (error) {
     console.error(error);
@@ -61,14 +61,14 @@ const backgroundFetchTask = async () => {
   BackgroundFetch.finish(BackgroundFetch.FETCH_RESULT_NEW_DATA);
 };
 
-const sendNotification = async (name, url) => {
+export const sendNotification2 = async (name, url) => {
   // Create a channel (required for Android)
   //   const authorizationStatus = await notifee.requestPermission({
   //     provisional: true, // Optional for Android 13
   //   });
 
   console.log('Notification permission granted');
-  await notifee.createChannel({
+  const channel = await notifee.createChannel({
     id: 'job',
     name: 'Default Channel',
   });
@@ -78,7 +78,7 @@ const sendNotification = async (name, url) => {
     title: `New Article from ${name}`,
     body: ` ${url}`,
     android: {
-      channelId: 'default',
+      channelId: channel,
       // smallIcon:'ic_launcher'
     },
   });

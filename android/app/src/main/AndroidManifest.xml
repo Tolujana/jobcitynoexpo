@@ -71,10 +71,11 @@
                 <action android:name="app.notifee.core.NotificationReceiver"/>
             </intent-filter>
         </receiver>
- <service android:name="com.asterinet.react.bgactions.RNBackgroundActionsTask"
+ <service 
  android:enabled="true"
-    android:exported="false"
-     android:foregroundServiceType="shortService"/>
+    android:exported="true" 
+ android:name="com.asterinet.react.bgactions.RNBackgroundActionsTask"
+  android:foregroundServiceType="shortService"/>
    
     </application>
 </manifest>

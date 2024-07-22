@@ -6,7 +6,7 @@ import notifee, {
   AuthorizationStatus,
 } from '@notifee/react-native';
 
-const fetchArticles = async task => {
+export const fetchArticles = async task => {
   try {
     const apiListJson = await AsyncStorage.getItem('apiList');
     const apiList = JSON.parse(apiListJson) || {};
@@ -64,14 +64,14 @@ const backgroundFetchTask = async () => {
   BackgroundFetch.finish(BackgroundFetch.FETCH_RESULT_NEW_DATA);
 };
 
-const sendNotification = async (name, url) => {
+export const sendNotification = async (name, url) => {
   // Create a channel (required for Android)
   //   const authorizationStatus = await notifee.requestPermission({
   //     provisional: true, // Optional for Android 13
   //   });
 
   console.log('Notification permission granted');
-  await notifee.createChannel({
+  const channel = await notifee.createChannel({
     id: 'default',
     name: 'Default Channel',
     importance: AndroidImportance.HIGH,
@@ -82,7 +82,7 @@ const sendNotification = async (name, url) => {
     title: `New Article from ${name}`,
     body: ` ${url}`,
     android: {
-      channelId: 'default',
+      channelId: channel,
       // smallIcon:'ic_launcher'
     },
   });
@@ -129,4 +129,5 @@ const requestNotificationPermission = async () => {
     console.log('Notification permissions have been denied');
   }
 };
+
 export default backgroundFetchTask;

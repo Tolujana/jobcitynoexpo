@@ -4,11 +4,10 @@
  *
  * @format
  */
-import * as React from 'react';
+import React, {useEffect, useState} from 'react';
 import {NavigationContainer} from '@react-navigation/native';
 import Event from './src/Event';
-import type {PropsWithChildren} from 'react';
-//import IntentLauncher, {IntentConstant} from 'react-native-intent-launcher'
+// import type {PropsWithChildren} from 'react';
 import {
   NativeModules,
   PermissionsAndroid,
@@ -39,36 +38,6 @@ import BackgroundFetchTask, {
 } from './src/components/BackgroundFetchTask';
 import BackgroundFetch from 'react-native-background-fetch';
 
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
-
-function Section({children, title}: SectionProps): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
-}
-
 const requestNotificationPermission = async () => {
   if (Platform.OS === 'android' && Platform.Version >= 33) {
     const granted = await PermissionsAndroid.request(
@@ -89,11 +58,12 @@ const requestNotificationPermission = async () => {
 
 const queryClient = new QueryClient();
 
-function App(): React.JSX.Element {
+function App() {
   const isDarkMode = useColorScheme() === 'dark';
-  const [enabled, setEnabled] = React.useState(false);
-  const [status, setStatus] = React.useState(-1);
-  const [events, setEvents] = React.useState<Event[]>([]);
+  const [enabled, setEnabled] = useState(false);
+  const [status, setStatus] = useState(-1);
+  const [events, setEvents] = useState([]);
+  const [isBatteryOptimized, setIsBatteryOptimized] = useState(true);
 
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
@@ -148,14 +118,17 @@ function App(): React.JSX.Element {
   }, []);
 
   const checkBatteryOptimization = async () => {
-    try {
-      const isIgnoringBatteryOptimizations =
-        await IntentLauncher.isIgnoringBatteryOptimizations();
+    if (Platform.OS !== 'android') return;
 
-      if (!isIgnoringBatteryOptimizations) {
+    try {
+      const packageName = 'com.jobcity'; // Replace with your app's package name
+      const intent = await Linking.canOpenURL(`package:${packageName}`);
+
+      if (!intent) {
+        setIsBatteryOptimized(false);
         Alert.alert(
           'Battery Optimization',
-          'Please disable battery optimization for better app nofications.',
+          'Please disable battery optimization for better app NOtifications.',
           [
             {
               text: 'Cancel',
@@ -163,19 +136,27 @@ function App(): React.JSX.Element {
             },
             {
               text: 'Open Settings',
-              onPress: () => openBatteryOptimizationSettings(),
+              onPress: () => openBatteryOptimizationSettings(packageName),
             },
           ],
           {cancelable: false},
         );
+      } else {
+        setIsBatteryOptimized(true);
       }
     } catch (error) {
       console.error('Battery optimization check failed', error);
     }
   };
 
+  const openBatteryOptimizationSettings = packageName => {
+    if (Platform.OS === 'android') {
+      Linking.openURL(`package:${packageName}`);
+    }
+  };
+
   const initBackgroundFetch = async () => {
-    const status: number = await BackgroundFetch.configure(
+    const status = await BackgroundFetch.configure(
       {
         minimumFetchInterval: 15, // <-- minutes (15 is minimum allowed)
         stopOnTerminate: false,
@@ -189,7 +170,7 @@ function App(): React.JSX.Element {
         requiresBatteryNotLow: false, // Default
         requiresStorageNotLow: false, // Default
       },
-      async (taskId: string) => {
+      async taskId => {
         console.log('[BackgroundFetch] started taskId', taskId);
         // Create an Event record.
         const event = await Event.create(taskId, false);
@@ -199,7 +180,7 @@ function App(): React.JSX.Element {
         // Finish.
         BackgroundFetch.finish(taskId);
       },
-      (taskId: string) => {
+      taskId => {
         // Oh No!  Our task took too long to complete and the OS has signalled
         // that this task must be finished immediately.
         console.log('[Fetch] TIMEOUT taskId:', taskId);
@@ -224,33 +205,9 @@ function App(): React.JSX.Element {
 
   /// Toggle BackgroundFetch ON/OFF
   ///
-  const openBatteryOptimizationSettings = () => {
-    if (Platform.OS === 'android') {
-      IntentLauncher.startActivity({
-        action: IntentConstant.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS,
-      });
-    }
-  };
 
   /// [Status] button handler.
   ///
-  const onClickStatus = () => {
-    BackgroundFetch.status().then((status: number) => {
-      let statusConst = '';
-      switch (status) {
-        case BackgroundFetch.STATUS_AVAILABLE:
-          statusConst = 'STATUS_AVAILABLE';
-          break;
-        case BackgroundFetch.STATUS_DENIED:
-          statusConst = 'STATUS_DENIED';
-          break;
-        case BackgroundFetch.STATUS_RESTRICTED:
-          statusConst = 'STATUS_RESTRICTED';
-          break;
-      }
-      Alert.alert('BackgroundFetch.status()', `${statusConst} (${status})`);
-    });
-  };
 
   /// [scheduleTask] button handler.
   /// Schedules a custom-task to fire in 5000ms
@@ -274,6 +231,17 @@ function App(): React.JSX.Element {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <Text style={styles.message}>
+        {isBatteryOptimized
+          ? 'Battery optimization is enabled.'
+          : 'Battery optimization is disabled for this app.'}
+      </Text>
+      {!isBatteryOptimized && (
+        <Button
+          title="Disable Battery Optimization"
+          onPress={openBatteryOptimizationSettings}
+        />
+      )}
       <AppNavigation />
     </QueryClientProvider>
   );

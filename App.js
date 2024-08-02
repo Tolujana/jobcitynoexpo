@@ -22,6 +22,7 @@ import {
   Switch,
   Button,
   Alert,
+  Linking,
 } from 'react-native';
 
 import {

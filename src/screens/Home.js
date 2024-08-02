@@ -20,6 +20,7 @@ import Listing from './Listing';
 import {AppContext} from '../context/AppContext';
 import NewListing from './NewListing';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import ApiUrlManager from '../components/ApiUrlManager';
 
 export default function Home() {
   const navigation = useNavigation();
@@ -46,6 +47,7 @@ export default function Home() {
         <Text className="text-3xl font-bold text-blue-600 dark:text-white">
           Jobcity
         </Text>
+        <ApiUrlManager />
         <Text className="text-base text-gray-700 dark:text-neutral-300">
           Jobs from multiple sources
         </Text>

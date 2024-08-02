@@ -16,8 +16,9 @@ import {useQuery, useInfiniteQuery} from '@tanstack/react-query';
 import {IOScrollView, InView} from 'react-native-intersection-observer';
 import useCustomFetch from '../util/Api copy';
 import RenderItem from '../components/RenderItem';
-import ApiUrlManager from '../components/ApiUrlManager';
+// import ApiUrlManager from '../components/ApiUrlManager';
 import {sendNotification} from '../components/BackgroundFetchTask';
+import ApiUrlManager from '../components/ApiUrlManager';
 
 export default function Home() {
   const [jobs, setJobs] = useState([]);

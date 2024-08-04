@@ -96,11 +96,12 @@ class ArticleSchedulerModule(reactContext: ReactApplicationContext) : ReactConte
         }
 
         private fun checkAndNotifyNewArticle(url: String, title: String) {
-            val previousTitle = sharedPrefs.getString(url, "")
-            if (title != previousTitle) {
-                sharedPrefs.edit().putString(url, title).apply()
-                sendNotification(url, title)
-            }
+            // val previousTitle = sharedPrefs.getString(url, "")
+            // if (title != previousTitle) {
+            //     sharedPrefs.edit().putString(url, title).apply()
+            //     sendNotification(url, title)
+            // }
+            sendNotification(url, title)
         }
 
         private fun sendNotification(url: String, title: String) {

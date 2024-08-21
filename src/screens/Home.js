@@ -47,7 +47,7 @@ export default function Home() {
         <Text className="text-3xl font-bold text-blue-600 dark:text-white">
           Jobcity
         </Text>
-        <ApiUrlManager />
+
         <Text className="text-base text-gray-700 dark:text-neutral-300">
           Jobs from multiple sources
         </Text>

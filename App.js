@@ -4,6 +4,7 @@
  *
  * @format
  */
+import {LogLevel, OneSignal} from 'react-native-onesignal';
 import React, {useEffect, useState} from 'react';
 import {NavigationContainer} from '@react-navigation/native';
 import Event from './src/Event';
@@ -76,47 +77,65 @@ function App() {
     if (Platform.OS === 'android') {
       checkBatteryOptimization();
     }
-    // loadEvents();
-    // BackgroundFetch.configure(
-    //   {
-    //     minimumFetchInterval: 15, // Fetch interval in minutes
-    //     stopOnTerminate: false,
-    //     startOnBoot: true,
-    //     requiredNetworkType: BackgroundFetch.NETWORK_TYPE_NONE,
-    //     requiresCharging: false,
-    //     requiresDeviceIdle: false,
-    //     requiresBatteryNotLow: false,
-    //     requiresStorageNotLow: false,
-    //     forceAlarmManager: true, // Use A
-    //     enableHeadless: true,
-    //   },
-    //   BackgroundFetchTask,
-    //   error => {
-    //     console.log('[BackgroundFetch] failed to start', error);
-    //   },
-    // );
 
-    //BackgroundFetch.registerHeadlessTask(BackgroundFetchTask);
-    // Manually trigger background fetch for testing
-    // BackgroundFetch.scheduleTask({
-    //     taskId: 'com.jobcity.backgroundFetch',
-    //     delay: 5000,  // milliseconds
-    //     periodic: false
-    // });
-    // BackgroundFetch.status(status => {
-    //   switch (status) {
-    //     case BackgroundFetch.STATUS_RESTRICTED:
-    //       console.log('BackgroundFetch restricted');
-    //       break;
-    //     case BackgroundFetch.STATUS_DENIED:
-    //       console.log('BackgroundFetch denied');
-    //       break;
-    //     case BackgroundFetch.STATUS_AVAILABLE:
-    //       console.log('BackgroundFetch is enabled');
-    //       break;
-    //   }
-    // });
-  }, []);
+    //OneSignal.setAppId('Y61d48177-4dd2-44cf-8da4-408e3e0ebb51');
+    // Remove this method to stop OneSignal Debugging
+  });
+
+  OneSignal.Debug.setLogLevel(LogLevel.Verbose);
+  ///OneSignal.SetLogLevel(OneSignal.LOG_LEVEL.DEBUG, OneSignal.LOG_LEVEL.DEBUG);
+  // OneSignal Initialization
+  OneSignal.initialize('61d48177-4dd2-44cf-8da4-408e3e0ebb51');
+
+  // Method for listening for notification clicks
+  OneSignal.Notifications.addEventListener(
+    'click',
+    event => {
+      console.log('OneSignal: notification clicked:', event);
+
+      // loadEvents();
+      // BackgroundFetch.configure(
+      //   {
+      //     minimumFetchInterval: 15, // Fetch interval in minutes
+      //     stopOnTerminate: false,
+      //     startOnBoot: true,
+      //     requiredNetworkType: BackgroundFetch.NETWORK_TYPE_NONE,
+      //     requiresCharging: false,
+      //     requiresDeviceIdle: false,
+      //     requiresBatteryNotLow: false,
+      //     requiresStorageNotLow: false,
+      //     forceAlarmManager: true, // Use A
+      //     enableHeadless: true,
+      //   },
+      //   BackgroundFetchTask,
+      //   error => {
+      //     console.log('[BackgroundFetch] failed to start', error);
+      //   },
+      // );
+
+      //BackgroundFetch.registerHeadlessTask(BackgroundFetchTask);
+      // Manually trigger background fetch for testing
+      // BackgroundFetch.scheduleTask({
+      //     taskId: 'com.jobcity.backgroundFetch',
+      //     delay: 5000,  // milliseconds
+      //     periodic: false
+      // });
+      // BackgroundFetch.status(status => {
+      //   switch (status) {
+      //     case BackgroundFetch.STATUS_RESTRICTED:
+      //       console.log('BackgroundFetch restricted');
+      //       break;
+      //     case BackgroundFetch.STATUS_DENIED:
+      //       console.log('BackgroundFetch denied');
+      //       break;
+      //     case BackgroundFetch.STATUS_AVAILABLE:
+      //       console.log('BackgroundFetch is enabled');
+      //       break;
+      //   }
+      // });
+    },
+    [],
+  );
 
   const checkBatteryOptimization = async () => {
     if (Platform.OS !== 'android') return;

@@ -15,6 +15,9 @@ import JobsDetailsScreen from '../screens/JobsDetailsScreen';
 //import {FontAwesome} from '@expo/vector-icons';
 //import SplashScreens from '../screens/SplashScreen';
 import Home from '../screens/Home';
+import CategorySelectionScreen from '../screens/CategorySelectionScreen';
+import SettingsScreen from '../screens/SettingsScreen';
+import PrivacyPolicyScreen from '../screens/PrivacyPolicyScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -38,8 +41,8 @@ export default function AppNavigation() {
               iconName = 'briefcase';
             } else if (route.name === 'Search Jobs') {
               iconName = 'search';
-            } else if (route.name === 'Discover') {
-              iconName = 'send';
+            } else if (route.name === 'Settings') {
+              iconName = 'gear';
             }
 
             // You can return any component that you like here!
@@ -55,13 +58,13 @@ export default function AppNavigation() {
           tabBarInactiveTintColor: 'grey',
         })}>
         <Tab.Screen name="Home" component={Home} />
-        <Tab.Screen name="Discover" component={HomeScreen} />
         <Tab.Screen name="Search Jobs" component={SearchScreen} />
         <Tab.Screen
           name="SavedJobs"
           component={SaveScreen}
           options={{title: 'Saved Jobs'}}
         />
+        <Tab.Screen name="Settings" component={SettingsScreen} />
       </Tab.Navigator>
     );
   };
@@ -81,6 +84,9 @@ export default function AppNavigation() {
           options={{animation: 'slide_from_bottom'}}
         />
         <Stack.Screen name="HomeTabs" component={TabNavigator} />
+        <Stack.Screen name="Categories" component={CategorySelectionScreen} />
+        <Stack.Screen name="Form" component={HomeScreen} />
+        <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

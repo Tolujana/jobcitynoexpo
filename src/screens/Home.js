@@ -14,7 +14,7 @@ import {useColorScheme} from 'nativewind';
 import {useNavigation} from '@react-navigation/native';
 import CategoriesCard from '../components/CategoriesCard';
 import {specilization} from '../constants/categories';
-import useCustomFetch from '../util/Api copy';
+import useCustomFetch from '../util/Functions';
 import JobListing from './JobListing';
 import Listing from './Listing';
 import {AppContext} from '../context/AppContext';
@@ -24,7 +24,7 @@ import ApiUrlManager from '../components/ApiUrlManager';
 
 export default function Home() {
   const navigation = useNavigation();
-  // const { data, loading, error, fetchData } = useContext(AppContext);
+
   const [activeCategory, setActiveCategory] = useState(0);
   const [jobEntries, setJobEntries] = useState([]);
   const {colorScheme, toggleColorScheme} = useColorScheme();
@@ -38,6 +38,8 @@ export default function Home() {
     // fetchData(url, params);
     // console.log(specilization[id].title, "home things");
   };
+
+  useEffect(() => {}, []);
 
   return (
     <SafeAreaView className="pt-8 flex-1 bg-white dark:bg-neutral-900">

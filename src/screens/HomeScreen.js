@@ -14,11 +14,12 @@ import NewsSection from '../components/NewsSection';
 import {useQuery, useInfiniteQuery} from '@tanstack/react-query';
 
 import {IOScrollView, InView} from 'react-native-intersection-observer';
-import useCustomFetch from '../util/Api copy';
+import useCustomFetch from '../util/Functions';
 import RenderItem from '../components/RenderItem';
 // import ApiUrlManager from '../components/ApiUrlManager';
 import {sendNotification} from '../components/BackgroundFetchTask';
 import ApiUrlManager from '../components/ApiUrlManager';
+import OnesignalSelection from '../components/OnesignalSelection';
 
 export default function Home() {
   const [jobs, setJobs] = useState([]);
@@ -26,7 +27,7 @@ export default function Home() {
 
   const [page, setPage] = useState(1);
   const url =
-    'http://public-api.wordpress.com/rest/v1.2/sites/en.blog.wordpress.com/posts/ ';
+    'https://public-api.wordpress.com/rest/v1.2/sites/screammie.info/posts/ ';
   const params = {search: 'word', page: page, number: 6};
   const {data, loading, error} = useCustomFetch(url, {params});
 
@@ -49,6 +50,7 @@ export default function Home() {
     <SafeAreaView>
       <Text>Home</Text>
       <ApiUrlManager />
+      <OnesignalSelection />
       <Button
         title="Click Me"
         onPress={() => sendNotification('imaworking', 'cool')}

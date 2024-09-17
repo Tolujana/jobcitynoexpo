@@ -1,5 +1,5 @@
 import {View, Text, TouchableOpacity, Image} from 'react-native';
-import React, {useState} from 'react';
+import React, {memo, useState} from 'react';
 import {styles} from '../../assets/Styles';
 import {heightPercentageToDP} from 'react-native-responsive-screen';
 import {useFocusEffect, useNavigation} from '@react-navigation/native';
@@ -7,13 +7,15 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 //import FontAwesome from '@expo/vector-icons/FontAwesome';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export default function NewSingleJobEntryNew({item, index, savedArticles}) {
+function NewSingleJobEntry({item, index, savedArticles}) {
   const navigation = useNavigation();
   const openItem = () =>
     navigation.navigate('JobsDetails', {
       item: item,
     });
-  const specs = Object.keys(item?.tags).join(',');
+  const fullSpeciliazation = Object.keys(item?.tags);
+  const [jobs, ...specialization] = fullSpeciliazation;
+  const specs = specialization.join(', ');
   const [savedArticleStatus, setSavedArticleStatus] = useState([]);
   const [idList, setIDlist] = useState([]);
 
@@ -157,3 +159,5 @@ export default function NewSingleJobEntryNew({item, index, savedArticles}) {
     </TouchableOpacity>
   );
 }
+
+export const NewSingleJobEntryNew = memo(NewSingleJobEntry);

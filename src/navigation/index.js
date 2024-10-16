@@ -15,7 +15,7 @@ import JobsDetailsScreen from '../screens/JobsDetailsScreen';
 //import {FontAwesome} from '@expo/vector-icons';
 //import SplashScreens from '../screens/SplashScreen';
 import Home from '../screens/Home';
-import CategorySelectionScreen from '../screens/CategorySelectionScreen';
+import CategorySelectionScreen2 from '../screens/CategorySelectionScreen2';
 import SettingsScreen from '../screens/SettingsScreen';
 import PrivacyPolicyScreen from '../screens/PrivacyPolicyScreen';
 
@@ -84,7 +84,7 @@ export default function AppNavigation() {
           options={{animation: 'slide_from_bottom'}}
         />
         <Stack.Screen name="HomeTabs" component={TabNavigator} />
-        <Stack.Screen name="Categories" component={CategorySelectionScreen} />
+        <Stack.Screen name="Categories" component={CategorySelectionScreen2} />
         <Stack.Screen name="Form" component={HomeScreen} />
         <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} />
       </Stack.Navigator>

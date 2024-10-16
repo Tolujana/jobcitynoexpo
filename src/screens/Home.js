@@ -13,7 +13,7 @@ import {useColorScheme} from 'nativewind';
 //import {FontAwesome} from '@expo/vector-icons';
 import {useNavigation} from '@react-navigation/native';
 import CategoriesCard from '../components/CategoriesCard';
-import {specilization} from '../constants/categories';
+import {SpecializationList} from '../constants/categories';
 import useCustomFetch from '../util/Functions';
 import JobListing from './JobListing';
 import Listing from './Listing';
@@ -76,7 +76,7 @@ export default function Home() {
           showsHorizontalScrollIndicator={false}
           className="space-x-4"
           contentContainerStyle={{paddingRight: 20}}>
-          {specilization.map((category, index) => {
+          {SpecializationList.map((category, index) => {
             return (
               <CategoriesCard
                 category={category}
@@ -91,7 +91,7 @@ export default function Home() {
       </View>
       {/* jobLists */}
       <View>
-        <NewListing category={specilization[activeCategory]} />
+        <NewListing category={SpecializationList[activeCategory]} />
       </View>
     </SafeAreaView>
   );

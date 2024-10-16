@@ -22,7 +22,7 @@ export const specilization = [
 ];
 
 export const SpecializationList = [
-  'Accountancy / accounting',
+  'Accountancy or accounting',
   'Actuarial Science',
   'Architecture',
   'Banking and Finance',

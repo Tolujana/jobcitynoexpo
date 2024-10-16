@@ -7,7 +7,11 @@
 import {LogLevel, OneSignal} from 'react-native-onesignal';
 import React, {useEffect, useState} from 'react';
 import {NavigationContainer} from '@react-navigation/native';
+import messaging from '@react-native-firebase/messaging';
 import Event from './src/Event';
+import {firebase} from '@react-native-firebase/app';
+import {firebaseConfig} from './src/constants/Channels';
+
 // import type {PropsWithChildren} from 'react';
 import {
   NativeModules,
@@ -136,6 +140,37 @@ function App() {
     },
     [],
   );
+
+  useEffect(() => {
+    // Request permissions for push notifications
+    const requestUserPermission = async () => {
+      const authStatus = await messaging().requestPermission();
+      const enabled =
+        authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+        authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+
+      if (enabled) {
+        console.log('Authorization status:', authStatus);
+      }
+    };
+
+    requestUserPermission();
+
+    messaging()
+      .getToken()
+      .then(token => {
+        console.log('FCM Token:', token);
+        // You can store this token to send targeted notifications later
+      });
+
+    // Handle foreground messages
+    const unsubscribe = messaging().onMessage(async remoteMessage => {
+      Alert.alert('A new FCM message arrived!', JSON.stringify(remoteMessage));
+    });
+
+    // Cleanup on unmount
+    return unsubscribe;
+  }, []);
 
   const checkBatteryOptimization = async () => {
     if (Platform.OS !== 'android') return;

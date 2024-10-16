@@ -25,7 +25,6 @@ const fetchData = async ({pageParam = 1, queryKey}) => {
     page: pageParam,
     ...queryParam, // Include additional query parameters here
   };
-  //const url = "http://public-api.wordpress.com/rest/v1.2/sites/en.blog.wordpress.com/posts/?";
 
   const url =
     'https://public-api.wordpress.com/rest/v1.2/sites/screammie.info/posts/?';
@@ -42,12 +41,16 @@ const fetchData = async ({pageParam = 1, queryKey}) => {
   return response.data.posts;
 };
 
+function convertToSlug(str) {
+  return str.replace(/[^a-zA-Z]/g, '-');
+}
+
 const NewListing = ({category, search}) => {
   const [page, setPage] = useState(1);
   const queryParam = search
     ? {search: search, page: page, number: 7}
     : category
-    ? {category: category.title, number: 10}
+    ? {category: convertToSlug(category), number: 10}
     : {number: 7};
   const [savedArticles, setSavedArticles] = useState({});
   const {
@@ -59,7 +62,7 @@ const NewListing = ({category, search}) => {
     isFetchingNextPage,
     status,
   } = useInfiniteQuery({
-    queryKey: [category.title, queryParam],
+    queryKey: [category, queryParam],
     queryFn: fetchData,
     initialPageParam: 1,
     getNextPageParam: (lastPage, pages) => {
@@ -116,7 +119,7 @@ const NewListing = ({category, search}) => {
 
   return (
     <View>
-      <Text className="mb-3 text-xl">{category ? category.title : search}</Text>
+      <Text className="mb-3 text-xl">{category ? category : search}</Text>
       {!data && <ActivityIndicator size="large" />}
       {status === 'error' && <Text>Error: {error.message}</Text>}
       {status === 'success' && (

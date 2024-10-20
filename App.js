@@ -164,12 +164,12 @@ function App() {
       });
 
     // Handle foreground messages
-    const unsubscribe = messaging().onMessage(async remoteMessage => {
-      Alert.alert('A new FCM message arrived!', JSON.stringify(remoteMessage));
-    });
+    // const unsubscribe = messaging().onMessage(async remoteMessage => {
+    //   Alert.alert('A new FCM message arrived!', JSON.stringify(remoteMessage));
+    // });
 
     // Cleanup on unmount
-    return unsubscribe;
+    // return unsubscribe;
   }, []);
 
   const checkBatteryOptimization = async () => {

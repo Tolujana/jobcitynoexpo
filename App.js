@@ -142,7 +142,7 @@ function App() {
   );
 
   useEffect(() => {
-    // Request permissions for push notifications
+    // Request permissions for push notifications via fcm
     const requestUserPermission = async () => {
       const authStatus = await messaging().requestPermission();
       const enabled =

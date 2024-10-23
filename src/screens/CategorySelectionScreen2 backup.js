@@ -9,7 +9,6 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import messaging from '@react-native-firebase/messaging';
 import {SpecializationList} from '../constants/categories';
-import CheckBox from '@react-native-community/checkbox';
 
 const topics = SpecializationList;
 const CategorySelectionScreen2 = () => {
@@ -66,17 +65,11 @@ const CategorySelectionScreen2 = () => {
       {topics.map((topic, index) => (
         <View key={index} style={styles.topicContainer}>
           <TouchableOpacity onPress={() => handleTopicToggle(topic)}>
-            {/* <View style={styles.checkbox}>
+            <View style={styles.checkbox}>
               {selectedTopics.includes(topic) && (
                 <View style={styles.checked} />
               )}
-            </View> */}
-
-            <CheckBox
-              tintColors={{true: '#2563eb'}}
-              value={selectedTopics.includes(topic) || false}
-              onValueChange={() => handleTopicToggle(topic)}
-            />
+            </View>
           </TouchableOpacity>
           <Text style={styles.topicText}>{topic}</Text>
         </View>

@@ -11,20 +11,15 @@ import messaging from '@react-native-firebase/messaging';
 import Event from './src/Event';
 import {firebase} from '@react-native-firebase/app';
 import {firebaseConfig} from './src/constants/Channels';
-
+import configureBackgroundFetch from './src/util/BackgroundTask';
+import PushNotification from 'react-native-push-notification';
 // import type {PropsWithChildren} from 'react';
 import {
-  NativeModules,
   PermissionsAndroid,
   Platform,
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
   StyleSheet,
   Text,
   useColorScheme,
-  View,
-  Switch,
   Button,
   Alert,
   Linking,
@@ -86,60 +81,20 @@ function App() {
     // Remove this method to stop OneSignal Debugging
   });
 
-  OneSignal.Debug.setLogLevel(LogLevel.Verbose);
-  ///OneSignal.SetLogLevel(OneSignal.LOG_LEVEL.DEBUG, OneSignal.LOG_LEVEL.DEBUG);
-  // OneSignal Initialization
-  OneSignal.initialize('61d48177-4dd2-44cf-8da4-408e3e0ebb51');
+  useEffect(() => {
+    configureBackgroundFetch();
 
-  // Method for listening for notification clicks
-  OneSignal.Notifications.addEventListener(
-    'click',
-    event => {
-      console.log('OneSignal: notification clicked:', event);
-
-      // loadEvents();
-      // BackgroundFetch.configure(
-      //   {
-      //     minimumFetchInterval: 15, // Fetch interval in minutes
-      //     stopOnTerminate: false,
-      //     startOnBoot: true,
-      //     requiredNetworkType: BackgroundFetch.NETWORK_TYPE_NONE,
-      //     requiresCharging: false,
-      //     requiresDeviceIdle: false,
-      //     requiresBatteryNotLow: false,
-      //     requiresStorageNotLow: false,
-      //     forceAlarmManager: true, // Use A
-      //     enableHeadless: true,
-      //   },
-      //   BackgroundFetchTask,
-      //   error => {
-      //     console.log('[BackgroundFetch] failed to start', error);
-      //   },
-      // );
-
-      //BackgroundFetch.registerHeadlessTask(BackgroundFetchTask);
-      // Manually trigger background fetch for testing
-      // BackgroundFetch.scheduleTask({
-      //     taskId: 'com.jobcity.backgroundFetch',
-      //     delay: 5000,  // milliseconds
-      //     periodic: false
-      // });
-      // BackgroundFetch.status(status => {
-      //   switch (status) {
-      //     case BackgroundFetch.STATUS_RESTRICTED:
-      //       console.log('BackgroundFetch restricted');
-      //       break;
-      //     case BackgroundFetch.STATUS_DENIED:
-      //       console.log('BackgroundFetch denied');
-      //       break;
-      //     case BackgroundFetch.STATUS_AVAILABLE:
-      //       console.log('BackgroundFetch is enabled');
-      //       break;
-      //   }
-      // });
-    },
-    [],
-  );
+    PushNotification.createChannel(
+      {
+        channelId: 'updates-channel',
+        channelName: 'Updates Channel',
+        channelDescription: 'A channel for updates',
+        importance: 4,
+        vibrate: true,
+      },
+      created => console.log(`CreateChannel returned '${created}'`),
+    );
+  }, []);
 
   useEffect(() => {
     // Request permissions for push notifications via fcm

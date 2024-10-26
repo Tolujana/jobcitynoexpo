@@ -20,6 +20,8 @@ import RenderItem from '../components/RenderItem';
 import {sendNotification} from '../components/BackgroundFetchTask';
 import ApiUrlManager from '../components/ApiUrlManager';
 import OnesignalSelection from '../components/OnesignalSelection';
+import FormScreen from '../components/FormScreen';
+import ApiUrlManager2 from '../components/ApiUrlManager2';
 
 export default function Home() {
   const [jobs, setJobs] = useState([]);
@@ -50,7 +52,8 @@ export default function Home() {
     <SafeAreaView>
       <Text>Home</Text>
       <ApiUrlManager />
-      <OnesignalSelection />
+      {/* <ApiUrlManager2 /> */}
+      {/* <FormScreen /> */}
       <Button
         title="Click Me"
         onPress={() => sendNotification('imaworking', 'cool')}

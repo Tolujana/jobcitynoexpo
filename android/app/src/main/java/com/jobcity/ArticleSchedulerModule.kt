@@ -1,4 +1,6 @@
 package com.jobcity
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -70,24 +72,28 @@ class ArticleSchedulerModule(reactContext: ReactApplicationContext) : ReactConte
 
         private fun queryApis() {
             val client = OkHttpClient()
-            val urls = getApiUrls()
-            for (url in urls) {
-                // val request = Request.Builder().url(url).build()
-                // client.newCall(request).execute().use { response ->
-                //     if (response.isSuccessful) {
-                //         val responseBody = response.body?.string()
-                //         if (responseBody != null) {
-                //             val json = JSONObject(responseBody)
-                //             val title = json.optString("title")
-                //             if (title.isNotEmpty()) {
-                //                 checkAndNotifyNewArticle(url, title)
-                //             }
-                //         }
-                //     }
-                // }
-                checkAndNotifyNewArticle(url, url)
+            val searchTerms = getApiUrls()
+            for (searchTerm in searchTerms) {
+                val encodedSearchTerm = URLEncoder.encode(searchTerm, StandardCharsets.UTF_8.toString())
+                val  concatenateUrl = "https://public-api.wordpress.com/rest/v1.2/sites/screammie.info/posts/?search=${encodedSearchTerm}&number=1"
+                val request = Request.Builder().url(concatenateUrl).build()
+                client.newCall(request).execute().use { response ->
+                    if (response.isSuccessful) {
+                        val responseBody = response.body?.string()
+                        if (responseBody != null) {
+                            val json = JSONObject(responseBody)     
+                            val posts = json.optJSONArray("posts")
+                                if (posts != null && posts.length() > 0) {
+                                    val firstPost = posts.getJSONObject(0)
+                                    val title = firstPost.optString("title")
+                                       checkAndNotifyNewArticle(searchTerm, title)
+                    }
+                    }
+                }
+                
             }
         }
+    }
 
         private fun getApiUrls(): List<String> {
             // Fetch API URLs from SharedPreferences or any other persistent storage
@@ -96,12 +102,12 @@ class ArticleSchedulerModule(reactContext: ReactApplicationContext) : ReactConte
         }
 
         private fun checkAndNotifyNewArticle(url: String, title: String) {
-            // val previousTitle = sharedPrefs.getString(url, "")
-            // if (title != previousTitle) {
-            //     sharedPrefs.edit().putString(url, title).apply()
-            //     sendNotification(url, title)
-            // }
-            sendNotification(url, title)
+            val previousTitle = sharedPrefs.getString(url, "")
+            if (title != previousTitle) {
+                sharedPrefs.edit().putString(url, title).apply()
+                sendNotification(url, title)
+            }
+            //sendNotification(url, title)
         }
 
         private fun sendNotification(url: String, title: String) {

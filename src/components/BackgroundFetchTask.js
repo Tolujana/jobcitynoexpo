@@ -9,22 +9,25 @@ import notifee, {
 export const fetchArticles = async task => {
   try {
     const apiListJson = await AsyncStorage.getItem('apiList');
-    const apiList = JSON.parse(apiListJson) || {};
+    const apiList = JSON.parse(apiListJson) || [];
 
-    for (const [apiName, apiUrl] of Object.entries(apiList)) {
-      // const response = await fetch(apiUrl);
-      // const data = await response.json();
-      // const latestDate = parseDate(data);
-      // const lastDate = await getLastDate(apiUrl);
+    for (const keyWord of apiList) {
+      //const encodeKeyword = encodeURIComponent(str);
+      const concatenateUrl = `https://public-api.wordpress.com/rest/v1.2/sites/screammie.info/posts/?search=${keyWord}&number=1`;
 
-      // if (latestDate !== lastDate) {
-      //     await saveLastDate(apiUrl, latestDate);
-      //     sendNotification(apiName, apiUrl,latestDate);
-      // }
+      const response = await fetch(concatenateUrl);
+      const data = await response.json();
+      const latestDate = parseDate(data);
+      const lastDate = await getLastDate(keyWord);
 
-      console.log('im wroking ', apiName);
-      // await CheckPermissionAndSend(apiName, apiUrl);
-      sendNotification(apiName, apiUrl);
+      if (latestDate !== lastDate) {
+        await saveLastDate(keyWord, latestDate);
+        sendNotification(keyWord, latestDate);
+      }
+
+      // console.log('im wroking ', apiName);
+      //  await CheckPermissionAndSend(apiName, apiUrl);
+      // sendNotification(apiName, apiUrl);
     }
   } catch (error) {
     if (task.cancelled) {
@@ -36,7 +39,7 @@ export const fetchArticles = async task => {
 
 const parseDate = data => {
   // Implement your date parsing logic
-  return data.article.title;
+  return data.posts[0].title;
 };
 
 const getLastDate = async apiUrl => {
@@ -79,7 +82,7 @@ export const sendNotification = async (name, url) => {
 
   // Display a notification
   await notifee.displayNotification({
-    title: `New Article from ${name}`,
+    title: `New Vacancy on ${name}`,
     body: ` ${url}`,
     android: {
       channelId: channel,
@@ -103,7 +106,7 @@ const CheckPermissionAndSend = async (name, url) => {
 
     // Display a notification
     await notifee.displayNotification({
-      title: `New Article from ${name}`,
+      title: `New Article fromss ${name}`,
       body: ` ${url}`,
       android: {
         channelId: 'default',

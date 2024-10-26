@@ -36,6 +36,7 @@ const ApiUrlManager = () => {
     try {
       if (apiUrl && !apiUrls.includes(apiUrl)) {
         const newUrls = [...apiUrls, apiUrl];
+
         setApiUrls(newUrls);
         await AsyncStorage.setItem(API_URLS_KEY, JSON.stringify(newUrls));
         setApiUrl('');
@@ -57,7 +58,7 @@ const ApiUrlManager = () => {
       <Text style={styles.title}>API URL Manager</Text>
       <TextInput
         style={styles.input}
-        placeholder="Enter API URL"
+        placeholder="Enter KeyWord"
         value={apiUrl}
         onChangeText={setApiUrl}
       />

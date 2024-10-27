@@ -18,12 +18,23 @@ import Home from '../screens/Home';
 import CategorySelectionScreen2 from '../screens/CategorySelectionScreen2';
 import SettingsScreen from '../screens/SettingsScreen';
 import PrivacyPolicyScreen from '../screens/PrivacyPolicyScreen';
+import NewListing from '../screens/NewListing';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
-export default function AppNavigation() {
+export default function AppNavigation({navigationRef}) {
   //const {colorScheme, toggleColorScheme} = useColorScheme();
+
+  const linking = {
+    prefixes: ['https://screammie.info'], // Replace with your actual website URL
+    config: {
+      screens: {
+        Home: 'home', // Maps 'https://yourwebsite.com/home' to HomeScreen
+        Post: 'post/:postId', // Maps 'https://yourwebsite.com/post/:postId' to PostScreen
+      },
+    },
+  };
   const TabNavigator = () => {
     return (
       <Tab.Navigator
@@ -69,7 +80,7 @@ export default function AppNavigation() {
     );
   };
   return (
-    <NavigationContainer>
+    <NavigationContainer ref={navigationRef}>
       <Stack.Navigator
         initialRouteName="HomeTabs"
         screenOptions={{
@@ -86,6 +97,7 @@ export default function AppNavigation() {
         <Stack.Screen name="HomeTabs" component={TabNavigator} />
         <Stack.Screen name="Categories" component={CategorySelectionScreen2} />
         <Stack.Screen name="Form" component={HomeScreen} />
+        <Stack.Screen name="Listing" component={NewListing} />
         <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} />
       </Stack.Navigator>
     </NavigationContainer>

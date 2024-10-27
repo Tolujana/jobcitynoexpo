@@ -4,15 +4,14 @@
  *
  * @format
  */
-import {LogLevel, OneSignal} from 'react-native-onesignal';
-import React, {useEffect, useState} from 'react';
-import {NavigationContainer} from '@react-navigation/native';
+import {createNavigationContainerRef} from '@react-navigation/native';
+
+import React, {useEffect, useState, useRef} from 'react';
 import messaging from '@react-native-firebase/messaging';
 import Event from './src/Event';
 import {firebase} from '@react-native-firebase/app';
 import {firebaseConfig} from './src/constants/Channels';
-import configureBackgroundFetch from './src/util/BackgroundTask';
-import PushNotification from 'react-native-push-notification';
+import {navigationRef} from './src/navigation/NotificationNavigate';
 // import type {PropsWithChildren} from 'react';
 import {
   PermissionsAndroid,
@@ -60,6 +59,7 @@ const requestNotificationPermission = async () => {
 const queryClient = new QueryClient();
 
 function App() {
+  //const navigationRef = useRef();
   const isDarkMode = useColorScheme() === 'dark';
   const [enabled, setEnabled] = useState(false);
   const [status, setStatus] = useState(-1);
@@ -70,62 +70,95 @@ function App() {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
 
+  useEffect(() => {
+    // Handle background and quit state notifications
+    messaging().onNotificationOpenedApp(remoteMessage => {
+      const postId = remoteMessage.data?.post_id;
+      if (postId) {
+        navigationRef.current?.navigate('Post', {postId});
+      }
+    });
+
+    // Handle initial notification if app is opened by clicking a notification
+    messaging()
+      .getInitialNotification()
+      .then(remoteMessage => {
+        if (remoteMessage) {
+          const category = remoteMessage.data?.post_category;
+          if (category) {
+            console.log('this is category', category);
+            navigationRef.current?.navigate('Listing', {category});
+          }
+        }
+      });
+    //handle background and quit state
+    const unsubscribeNotificationOpenedApp =
+      messaging().onNotificationOpenedApp(remoteMessage => {
+        console.log(
+          'Notification caused app to open from background state:',
+          remoteMessage,
+        );
+
+        // Navigate based on notification data
+        const category = remoteMessage.data?.post_category;
+        if (category) {
+          navigationRef.current?.navigate('Listing', {category});
+        }
+      });
+
+    // Handle notifications in foreground
+    const unsubscribe = messaging().onMessage(async remoteMessage => {
+      const category = remoteMessage.data?.post_category;
+      if (category) {
+        navigationRef.current?.navigate('Listing', {category});
+      }
+    });
+
+    return () => {
+      unsubscribe();
+      unsubscribeNotificationOpenedApp();
+    };
+  }, []);
+
+  // useEFfect for requestnotification
   React.useEffect(() => {
     requestNotificationPermission();
     initBackgroundFetch();
     if (Platform.OS === 'android') {
       checkBatteryOptimization();
     }
-
-    //OneSignal.setAppId('Y61d48177-4dd2-44cf-8da4-408e3e0ebb51');
-    // Remove this method to stop OneSignal Debugging
   });
 
-  useEffect(() => {
-    configureBackgroundFetch();
+  // useEffect(() => {
+  //   // Request permissions for push notifications via fcm
+  //   const requestUserPermission = async () => {
+  //     const authStatus = await messaging().requestPermission();
+  //     const enabled =
+  //       authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+  //       authStatus === messaging.AuthorizationStatus.PROVISIONAL;
 
-    PushNotification.createChannel(
-      {
-        channelId: 'updates-channel',
-        channelName: 'Updates Channel',
-        channelDescription: 'A channel for updates',
-        importance: 4,
-        vibrate: true,
-      },
-      created => console.log(`CreateChannel returned '${created}'`),
-    );
-  }, []);
+  //     if (enabled) {
+  //       console.log('Authorization status:', authStatus);
+  //     }
+  //   };
 
-  useEffect(() => {
-    // Request permissions for push notifications via fcm
-    const requestUserPermission = async () => {
-      const authStatus = await messaging().requestPermission();
-      const enabled =
-        authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
-        authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+  //   requestUserPermission();
 
-      if (enabled) {
-        console.log('Authorization status:', authStatus);
-      }
-    };
+  //   messaging()
+  //     .getToken()
+  //     .then(token => {
+  //       console.log('FCM Token:', token);
+  //       // You can store this token to send targeted notifications later
+  //     });
 
-    requestUserPermission();
+  //   // Handle foreground messages
+  //   // const unsubscribe = messaging().onMessage(async remoteMessage => {
+  //   //   Alert.alert('A new FCM message arrived!', JSON.stringify(remoteMessage));
+  //   // });
 
-    messaging()
-      .getToken()
-      .then(token => {
-        console.log('FCM Token:', token);
-        // You can store this token to send targeted notifications later
-      });
-
-    // Handle foreground messages
-    // const unsubscribe = messaging().onMessage(async remoteMessage => {
-    //   Alert.alert('A new FCM message arrived!', JSON.stringify(remoteMessage));
-    // });
-
-    // Cleanup on unmount
-    // return unsubscribe;
-  }, []);
+  //   // Cleanup on unmount
+  //   // return unsubscribe;
+  // }, []);
 
   const checkBatteryOptimization = async () => {
     if (Platform.OS !== 'android') return;
@@ -174,7 +207,7 @@ function App() {
         startOnBoot: true,
         // Android options
         forceAlarmManager: true, // <-- Set true to bypass JobScheduler.
-        requiredNetworkType: BackgroundFetch.NETWORK_TYPE_NONE, // Default
+        requiredNetworkType: BackgroundFetch.NETWORK_TYPE_ANY, // Default
         requiresCharging: false, // Default
         requiresDeviceIdle: false, // Default
         requiresBatteryNotLow: false, // Default
@@ -201,41 +234,6 @@ function App() {
     setEnabled(true);
   };
 
-  /// Load persisted events from AsyncStorage.
-  ///
-  // const loadEvents = () => {
-  //   Event.all()
-  //     .then(data => {
-  //       setEvents(data);
-  //     })
-  //     .catch(error => {
-  //       Alert.alert('Error', 'Failed to load data from AsyncStorage: ' + error);
-  //     });
-  // };
-
-  /// Toggle BackgroundFetch ON/OFF
-  ///
-
-  /// [Status] button handler.
-  ///
-
-  /// [scheduleTask] button handler.
-  /// Schedules a custom-task to fire in 5000ms
-  ///
-  const onClickScheduleTask = () => {
-    BackgroundFetch.scheduleTask({
-      taskId: 'com.transistorsoft.customtask',
-      delay: 5000,
-      forceAlarmManager: true,
-    })
-      .then(() => {
-        Alert.alert('scheduleTask', 'Scheduled task with delay: 5000ms');
-      })
-      .catch(error => {
-        Alert.alert('scheduleTask ERROR', error);
-      });
-  };
-
   /// Clear the Events list.
   ///
 
@@ -252,7 +250,7 @@ function App() {
           onPress={openBatteryOptimizationSettings}
         />
       )}
-      <AppNavigation />
+      <AppNavigation navigationRef={navigationRef} />
     </QueryClientProvider>
   );
 }

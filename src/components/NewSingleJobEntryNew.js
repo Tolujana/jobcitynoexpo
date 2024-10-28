@@ -13,7 +13,7 @@ function NewSingleJobEntry({item, index, savedArticles}) {
     navigation.navigate('JobsDetails', {
       item: item,
     });
-  const fullSpeciliazation = Object.keys(item?.tags);
+  const fullSpeciliazation = Object.keys(item?.categories);
   const [jobs, ...specialization] = fullSpeciliazation;
   const specs = specialization.join(', ');
   const [savedArticleStatus, setSavedArticleStatus] = useState([]);

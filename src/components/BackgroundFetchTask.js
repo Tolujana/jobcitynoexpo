@@ -88,6 +88,9 @@ export const sendNotification = async (name, url) => {
       channelId: channel,
       // smallIcon:'ic_launcher'
     },
+    data: {
+      keyWord: name, // Custom data
+    },
   });
 };
 

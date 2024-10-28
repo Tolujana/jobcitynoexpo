@@ -5,6 +5,7 @@
  * @format
  */
 import {createNavigationContainerRef} from '@react-navigation/native';
+import notifee from '@notifee/react-native';
 
 import React, {useEffect, useState, useRef} from 'react';
 import messaging from '@react-native-firebase/messaging';
@@ -59,7 +60,6 @@ const requestNotificationPermission = async () => {
 const queryClient = new QueryClient();
 
 function App() {
-  //const navigationRef = useRef();
   const isDarkMode = useColorScheme() === 'dark';
   const [enabled, setEnabled] = useState(false);
   const [status, setStatus] = useState(-1);
@@ -70,12 +70,13 @@ function App() {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
 
+  //use effect for fcm push notification
   useEffect(() => {
     // Handle background and quit state notifications
     messaging().onNotificationOpenedApp(remoteMessage => {
-      const postId = remoteMessage.data?.post_id;
-      if (postId) {
-        navigationRef.current?.navigate('Post', {postId});
+      const category = remoteMessage.data?.post_category;
+      if (category) {
+        navigationRef.current?.navigate('Listing', {category});
       }
     });
 
@@ -119,6 +120,34 @@ function App() {
       unsubscribeNotificationOpenedApp();
     };
   }, []);
+
+  //useEFFect for notifee search notification
+  useEffect(() => {
+    // Handle foreground notification clicks
+    const unsubscribe = notifee.onForegroundEvent(({type, detail}) => {
+      if (type === EventType.PRESS) {
+        handleNotificationPress(detail.notification.data);
+      }
+    });
+
+    // Handle background notification clicks
+    notifee.onBackgroundEvent(async ({type, detail}) => {
+      if (type === EventType.PRESS) {
+        handleNotificationPress(detail.notification.data);
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  const handleNotificationPress = data => {
+    // Ensure data contains the screen and other params
+    if (data && data.keyWord) {
+      navigationRef.current?.navigate('Listing', {
+        search: data.keyWord,
+      });
+    }
+  };
 
   // useEFfect for requestnotification
   React.useEffect(() => {

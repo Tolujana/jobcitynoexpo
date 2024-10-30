@@ -5,7 +5,7 @@
  * @format
  */
 import {createNavigationContainerRef} from '@react-navigation/native';
-import notifee from '@notifee/react-native';
+import notifee, {EventType} from '@notifee/react-native';
 
 import React, {useEffect, useState, useRef} from 'react';
 import messaging from '@react-native-firebase/messaging';

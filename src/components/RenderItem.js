@@ -23,7 +23,7 @@ const RenderItem = ({item, index, savedArticles}) => {
   //const openItem = (item) => navigation.navigate("JobsDetails", item);
   const [loaded, setLoaded] = useState(false);
 
-  return (index + 1) % 4 !== 0 ? (
+  return (index + 1) % 5 !== 0 ? (
     <NewSingleJobEntryNew
       item={item}
       index={index}

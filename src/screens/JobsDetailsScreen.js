@@ -6,7 +6,15 @@ import {
   Dimensions,
   ScrollView,
   StyleSheet,
+  Alert,
+  BackHandler,
 } from 'react-native';
+
+import {
+  InterstitialAd,
+  AdEventType,
+  TestIds,
+} from 'react-native-google-mobile-ads';
 import React, {useEffect, useState} from 'react';
 import {useNavigation, useRoute} from '@react-navigation/native';
 import {WebView} from 'react-native-webview';
@@ -27,6 +35,10 @@ const AppContent = () => (
     {/* Add more content here if needed */}
   </View>
 );
+const interstitialAd = InterstitialAd.createForAdRequest(TestIds.INTERSTITIAL, {
+  requestNonPersonalizedAdsOnly: true,
+});
+
 export default function JobDetailsScreen({route}) {
   const {width, height} = useWindowDimensions();
   //const route = useRoute();
@@ -95,6 +107,59 @@ export default function JobDetailsScreen({route}) {
     loadSavedArticles();
   }, [item]);
 
+  useEffect(() => {
+    const loadAd = () => interstitialAd.load();
+
+    const adEventListener = interstitialAd.addAdEventListener(
+      AdEventType.LOADED,
+      () => {
+        console.log('Interstitial Ad loaded');
+      },
+    );
+
+    const adCloseListener = interstitialAd.addAdEventListener(
+      AdEventType.CLOSED,
+      () => {
+        navigation.goBack();
+        loadAd(); // Reload the ad after it's closed
+      },
+    );
+
+    // Load the ad initially
+    loadAd();
+
+    // Clean up listeners on unmount
+    return () => {
+      adEventListener(); // Remove the event listener
+      adCloseListener();
+    };
+  }, []);
+
+  // Show the interstitial ad if loaded
+  const showInterstitialAd = () => {
+    if (interstitialAd.loaded) {
+      interstitialAd.show();
+    } else {
+      navigation.goBack();
+    }
+  };
+
+  // Handle back press to show the interstitial ad
+  useEffect(() => {
+    const backAction = () => {
+      showInterstitialAd();
+
+      return true; // prevents default back action
+    };
+
+    const backHandler = BackHandler.addEventListener(
+      'hardwareBackPress',
+      backAction,
+    );
+
+    return () => backHandler.remove();
+  }, []);
+
   return (
     <>
       <ParallaxView
@@ -104,7 +169,7 @@ export default function JobDetailsScreen({route}) {
           <View>
             <View className="w-full flex-row justify-between item-center pt-2  pb-4 ">
               <View className="bg-gray-100 p-2 rounded-full item-center justify-center">
-                <TouchableOpacity onPress={() => navigation.goBack()}>
+                <TouchableOpacity onPress={() => showInterstitialAd()}>
                   <ChevronLeftIcon size={25} strokeWidth={3} color="gray" />
                 </TouchableOpacity>
               </View>

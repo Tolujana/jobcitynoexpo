@@ -8,7 +8,7 @@ import {name as appName} from './app.json';
 import PushNotification from 'react-native-push-notification';
 // import configureBackgroundFetch from './src/util/BackgroundTask';
 import BackgroundFetch from 'react-native-background-fetch';
-
+// import messaging from '@react-native-firebase/messaging';
 PushNotification.configure({
   onNotification: function (notification) {
     console.log('NOTIFICATION:', notification);
@@ -23,9 +23,9 @@ const headlessTask = async event => {
   BackgroundFetch.finish(event.taskId);
 };
 
-messaging().setBackgroundMessageHandler(async remoteMessage => {
-  console.log('Message handled in the background!', remoteMessage);
-});
+// messaging().setBackgroundMessageHandler(async remoteMessage => {
+//   console.log('Message handled in the background!', remoteMessage);
+// });
 
 BackgroundFetch.registerHeadlessTask(headlessTask);
 AppRegistry.registerComponent(appName, () => App);

@@ -8,7 +8,9 @@ import {name as appName} from './app.json';
 import PushNotification from 'react-native-push-notification';
 // import configureBackgroundFetch from './src/util/BackgroundTask';
 import BackgroundFetch from 'react-native-background-fetch';
-// import messaging from '@react-native-firebase/messaging';
+import notifee, {EventType} from '@notifee/react-native';
+import {navigationRef} from './src/navigation/NotificationNavigate';
+
 PushNotification.configure({
   onNotification: function (notification) {
     console.log('NOTIFICATION:', notification);
@@ -23,9 +25,20 @@ const headlessTask = async event => {
   BackgroundFetch.finish(event.taskId);
 };
 
-// messaging().setBackgroundMessageHandler(async remoteMessage => {
-//   console.log('Message handled in the background!', remoteMessage);
-// });
+notifee.onBackgroundEvent(async ({type, detail}) => {
+  if (type === EventType.PRESS) {
+    handleNotificationPress(detail.notification.data);
+  }
+});
+
+const handleNotificationPress = data => {
+  // Ensure data contains the screen and other params
+  if (data && data.keyWord) {
+    navigationRef.current?.navigate('Listing', {
+      search: data.keyWord,
+    });
+  }
+};
 
 BackgroundFetch.registerHeadlessTask(headlessTask);
 AppRegistry.registerComponent(appName, () => App);

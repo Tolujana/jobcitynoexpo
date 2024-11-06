@@ -1,6 +1,6 @@
-import axios from "axios";
+import axios from 'axios';
 
-import { useState, useEffect } from "react";
+import {useState, useEffect} from 'react';
 
 const useCustomFetch = (url, options = {}) => {
   const [data, setData] = useState(null);
@@ -12,7 +12,7 @@ const useCustomFetch = (url, options = {}) => {
       setLoading(true);
       try {
         const response = await axios({
-          method: options.method || "get",
+          method: options.method || 'get',
           url,
           data: options.data || null,
           params: options.params || null,
@@ -31,7 +31,7 @@ const useCustomFetch = (url, options = {}) => {
     return () => {}; // Clean-up function
   }, [url]);
 
-  return { data, loading, error };
+  return {data, loading, error};
 };
 
 export default useCustomFetch;

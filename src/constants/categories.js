@@ -52,6 +52,7 @@ export const SpecializationList = [
   'jobs',
   'Law',
   'Mass Communication',
+  'myjobmag',
   'Mechanical Engineering',
   'Medical Laboratory Science',
   'Medicine and Surgery',

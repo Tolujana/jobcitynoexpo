@@ -11,13 +11,11 @@ import {
 } from 'react-native-google-mobile-ads';
 import NativeAdComponent from './NativeAdComponent';
 import {NewSingleJobEntryNew} from './NewSingleJobEntryNew';
+import BannerAdComponent from './BannerAdComponent';
 
 const bannerAdUnitId = __DEV__
   ? TestIds.BANNER
   : 'ca-app-pub-7993847549836206/9500075214';
-// const adUnitId = __DEV__ ? TestIds.NATIVE_AD_VIDEO : 'your-ad-unit-id';
-//
-// const nativeAdManager = new AdMobNativeAdsManager("ca-app-pub-3940256099942544/2247696110"); // Test ID
 
 const RenderItem = ({item, index, savedArticles}) => {
   //const openItem = (item) => navigation.navigate("JobsDetails", item);
@@ -42,21 +40,7 @@ const RenderItem = ({item, index, savedArticles}) => {
       />
       <Text> advert</Text>
       <View>
-        <BannerAd
-          unitId={bannerAdUnitId}
-          size={BannerAdSize.INLINE_ADAPTIVE_BANNER}
-          requestOptions={{
-            requestNonPersonalizedAdsOnly: true,
-          }}
-          style={{
-            width: '100%', // Banner width takes up full width
-            marginTop: 10,
-            marginBottom: 10, // Add some margin for spacing
-          }}
-          onAdFailedToLoad={error =>
-            console.error('Failed to load banner ad:', error)
-          }
-        />
+        <BannerAdComponent />
       </View>
     </View>
   );

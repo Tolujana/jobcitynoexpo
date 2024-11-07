@@ -13,8 +13,9 @@ import NewsSection from '../components/NewsSection';
 import {useQuery, useInfiniteQuery} from '@tanstack/react-query';
 
 import {IOScrollView, InView} from 'react-native-intersection-observer';
-import useCustomFetch from '../util/Functions';
+
 import RenderItem from '../components/RenderItem';
+import useCustomFetch from '../util/CustomFetch';
 
 export default function JobListing({category, search}) {
   const [jobs, setJobs] = useState([]);

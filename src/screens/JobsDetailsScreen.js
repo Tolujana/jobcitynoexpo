@@ -35,8 +35,11 @@ const AppContent = () => (
     {/* Add more content here if needed */}
   </View>
 );
-const interstitialAd = InterstitialAd.createForAdRequest(TestIds.INTERSTITIAL, {
-  requestNonPersonalizedAdsOnly: true,
+const adUnitId = __DEV__
+  ? TestIds.INTERSTITIAL
+  : 'ca-app-pub-7993847549836206/6994945775';
+const interstitialAd = InterstitialAd.createForAdRequest(adUnitId, {
+  requestNonPersonalizedAdsOnly: false,
 });
 
 export default function JobDetailsScreen({route}) {
@@ -47,6 +50,7 @@ export default function JobDetailsScreen({route}) {
   const [visible, setVisible] = useState(false);
   const navigation = useNavigation();
   const [isBookmarked, toggleBookmark] = useState(false);
+  const [backButtonClickCount, setBackButtonClickCount] = useState(0);
 
   // console.log("item URL", item.url);
 
@@ -137,7 +141,10 @@ export default function JobDetailsScreen({route}) {
 
   // Show the interstitial ad if loaded
   const showInterstitialAd = () => {
-    if (interstitialAd.loaded) {
+    setBackButtonClickCount(backButtonClickCount + 1);
+
+    // Show ad on alternate back button clicks (e.g., 2nd, 4th, 6th, etc.)
+    if (backButtonClickCount % 2 === 0 && interstitialAd.loaded) {
       interstitialAd.show();
     } else {
       navigation.goBack();

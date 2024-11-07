@@ -1,0 +1,84 @@
+{
+  "project_info": {
+    "project_number": "427160244327",
+    "project_id": "jobcity-16c01",
+    "storage_bucket": "jobcity-16c01.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:427160244327:android:459b64f901e1a1fab044c2",
+        "android_client_info": {
+          "package_name": "com.hotnigerianjobs"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "427160244327-n5sc3au95ins07njfbsj4h3ueq0pn8ts.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.hotnigerianjobs",
+            "certificate_hash": "47d6ddef433501cc58d1af85d2bde6184075dbdf"
+          }
+        },
+        {
+          "client_id": "427160244327-s8knfm8md5aum0ksjleo5feb27nvvhvv.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.hotnigerianjobs",
+            "certificate_hash": "1e3a95031611220d040cc4a4bf4a9006f85a73e8"
+          }
+        },
+        {
+          "client_id": "427160244327-671udvpf36tequ2lc8ubik2utjt02ulg.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCUPZm2POG8teL6u16ino3fRs-A7fUMk8U"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "427160244327-671udvpf36tequ2lc8ubik2utjt02ulg.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:427160244327:android:268544b8ef84fb5bb044c2",
+        "android_client_info": {
+          "package_name": "com.jobcity"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "427160244327-671udvpf36tequ2lc8ubik2utjt02ulg.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCUPZm2POG8teL6u16ino3fRs-A7fUMk8U"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "427160244327-671udvpf36tequ2lc8ubik2utjt02ulg.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

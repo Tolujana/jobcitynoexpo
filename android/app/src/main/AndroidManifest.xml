@@ -2,6 +2,8 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
+
     <uses-permission android:name="android.permission.VIBRATE"/>
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
   <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -43,14 +45,19 @@
      android:exported="true"/>
 
 <service android:name="com.transcendensoft.backgroundfetch.HeadlessJsTaskService" />
+ <receiver android:name="com.transistorsoft.tsbackgroundfetch.FetchAlarmReceiver" android:exported="false">
+        <intent-filter>
+            <action android:name="com.transistorsoft.backgroundfetch.ACTION_ALARM" />
+        </intent-filter>
+    </receiver>
 
-
-              <receiver
+        <receiver
             android:enabled="true"
-            android:exported="true"
+            android:exported="false"
             android:permission="android.permission.RECEIVE_BOOT_COMPLETED"
             android:name="com.transistorsoft.rnbackgroundfetch.HeadlessBroadcastReceiver">
             <intent-filter>
+            <category android:name="android.intent.category.DEFAULT" />
                 <action android:name="android.intent.action.BOOT_COMPLETED"/>
                 <action android:name="android.intent.action.REBOOT"/>
                 <action android:name="com.transistorsoft.rnbackgroundfetch.ACTION_ALARM" />
@@ -62,7 +69,9 @@
             android:name="app.notifee.core.NotificationService"
             android:permission="android.permission.BIND_JOB_SERVICE"
             android:exported="true"/>
-            
+            <service
+            android:name=".ArticleJobService"
+            android:permission="android.permission.BIND_JOB_SERVICE"/>
         <receiver
             android:enabled="true"
             android:exported="true"
@@ -71,11 +80,26 @@
                 <action android:name="app.notifee.core.NotificationReceiver"/>
             </intent-filter>
         </receiver>
+<<<<<<< HEAD
  <service 
  android:enabled="true"
     android:exported="true" 
  android:name="com.asterinet.react.bgactions.RNBackgroundActionsTask"
   android:foregroundServiceType="shortService"/>
    
+=======
+       <service
+            android:name=".ArticleSchedulerModule$ArticleJobService"
+            android:permission="android.permission.BIND_JOB_SERVICE" />
+        <service android:name=".ArticleWorker" android:permission="android.permission.BIND_JOB_SERVICE" />
+        <!-- Add the BootReceiver -->
+        <receiver android:name=".BootReceiver" android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </receiver>
+        
+>>>>>>> latest
     </application>
 </manifest>

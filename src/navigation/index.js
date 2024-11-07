@@ -15,12 +15,26 @@ import JobsDetailsScreen from '../screens/JobsDetailsScreen';
 //import {FontAwesome} from '@expo/vector-icons';
 //import SplashScreens from '../screens/SplashScreen';
 import Home from '../screens/Home';
+import CategorySelectionScreen2 from '../screens/CategorySelectionScreen2';
+import SettingsScreen from '../screens/SettingsScreen';
+import PrivacyPolicyScreen from '../screens/PrivacyPolicyScreen';
+import Listing2 from '../screens/Listing2';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
-export default function AppNavigation() {
+export default function AppNavigation({navigationRef}) {
   //const {colorScheme, toggleColorScheme} = useColorScheme();
+
+  const linking = {
+    prefixes: ['https://screammie.info'], // Replace with your actual website URL
+    config: {
+      screens: {
+        Home: 'home', // Maps 'https://yourwebsite.com/home' to HomeScreen
+        Post: 'post/:postId', // Maps 'https://yourwebsite.com/post/:postId' to PostScreen
+      },
+    },
+  };
   const TabNavigator = () => {
     return (
       <Tab.Navigator
@@ -38,8 +52,8 @@ export default function AppNavigation() {
               iconName = 'briefcase';
             } else if (route.name === 'Search Jobs') {
               iconName = 'search';
-            } else if (route.name === 'Discover') {
-              iconName = 'send';
+            } else if (route.name === 'Settings') {
+              iconName = 'gear';
             }
 
             // You can return any component that you like here!
@@ -55,18 +69,18 @@ export default function AppNavigation() {
           tabBarInactiveTintColor: 'grey',
         })}>
         <Tab.Screen name="Home" component={Home} />
-        <Tab.Screen name="Discover" component={HomeScreen} />
         <Tab.Screen name="Search Jobs" component={SearchScreen} />
         <Tab.Screen
           name="SavedJobs"
           component={SaveScreen}
           options={{title: 'Saved Jobs'}}
         />
+        <Tab.Screen name="Settings" component={SettingsScreen} />
       </Tab.Navigator>
     );
   };
   return (
-    <NavigationContainer>
+    <NavigationContainer ref={navigationRef}>
       <Stack.Navigator
         initialRouteName="HomeTabs"
         screenOptions={{
@@ -81,6 +95,10 @@ export default function AppNavigation() {
           options={{animation: 'slide_from_bottom'}}
         />
         <Stack.Screen name="HomeTabs" component={TabNavigator} />
+        <Stack.Screen name="Categories" component={CategorySelectionScreen2} />
+        <Stack.Screen name="Form" component={HomeScreen} />
+        <Stack.Screen name="Listing" component={Listing2} />
+        <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

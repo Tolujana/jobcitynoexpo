@@ -2,7 +2,6 @@ import {View, Text, StyleSheet} from 'react-native';
 import React, {useState} from 'react';
 import SingleJobEntry from './SingleJobEntry';
 import SingleJobEntryNew from './SingleJobEntryv2';
-import NewSingleJobEntryNew from './NewSingleJobEntryNew';
 
 import {
   BannerAd,
@@ -11,8 +10,11 @@ import {
   TestIds,
 } from 'react-native-google-mobile-ads';
 import NativeAdComponent from './NativeAdComponent';
+import {NewSingleJobEntryNew} from './NewSingleJobEntryNew';
 
-const bannerAdUnitId = __DEV__ ? TestIds.BANNER : 'ca-app-pub-7993847549836206/9500075214';
+const bannerAdUnitId = __DEV__
+  ? TestIds.BANNER
+  : 'ca-app-pub-7993847549836206/9500075214';
 // const adUnitId = __DEV__ ? TestIds.NATIVE_AD_VIDEO : 'your-ad-unit-id';
 //
 // const nativeAdManager = new AdMobNativeAdsManager("ca-app-pub-3940256099942544/2247696110"); // Test ID
@@ -21,7 +23,7 @@ const RenderItem = ({item, index, savedArticles}) => {
   //const openItem = (item) => navigation.navigate("JobsDetails", item);
   const [loaded, setLoaded] = useState(false);
 
-  return (index + 1) % 4 !== 0 ? (
+  return (index + 1) % 5 !== 0 ? (
     <NewSingleJobEntryNew
       item={item}
       index={index}
@@ -40,7 +42,7 @@ const RenderItem = ({item, index, savedArticles}) => {
       />
       <Text> advert</Text>
       <View>
-        {/* <BannerAd
+        <BannerAd
           unitId={bannerAdUnitId}
           size={BannerAdSize.INLINE_ADAPTIVE_BANNER}
           requestOptions={{
@@ -54,8 +56,7 @@ const RenderItem = ({item, index, savedArticles}) => {
           onAdFailedToLoad={error =>
             console.error('Failed to load banner ad:', error)
           }
-        /> */}
-        
+        />
       </View>
     </View>
   );

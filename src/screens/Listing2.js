@@ -45,12 +45,16 @@ function convertToSlug(str) {
   return str.replace(/[^a-zA-Z]/g, '-');
 }
 
-const NewListing = ({category, search}) => {
+const Listing2 = ({route}) => {
+  const {category, search} = route.params;
   const [page, setPage] = useState(1);
+  const [currentCategory, setCurrentCategory] = useState(category);
+  const [currentSearch, setCurrentSearch] = useState(search);
+  console.log('this is listing category', category);
   const queryParam = search
-    ? {search: search, page: page, number: 7}
+    ? {search: currentSearch, page: page, number: 7}
     : category
-    ? {category: convertToSlug(category), number: 10}
+    ? {category: currentCategory, number: 10}
     : {number: 7};
   const [savedArticles, setSavedArticles] = useState({});
   const {
@@ -71,15 +75,20 @@ const NewListing = ({category, search}) => {
       return lastPage.length ? pages.length + 1 : undefined;
     },
   });
-  //console.log(hasNextPage, "hasnextpage");
-  // console.log(
-  //   data?.pages.flatMap((page) => page),
-  //   "flated dates"
-  // );
 
   const handleLoadMore = () => {
     fetchNextPage();
   };
+
+  useEffect(() => {
+    // Update the state whenever category or search changes
+    if (category && category !== currentCategory) {
+      setCurrentCategory(category);
+    }
+    if (search && search !== currentSearch) {
+      setCurrentSearch(search);
+    }
+  }, [category, search]);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -89,6 +98,15 @@ const NewListing = ({category, search}) => {
         // setBookmarkNumber(Object.keys(articles).length);
       };
       fetchSavedArticle();
+      //fetchData();
+      // if (category && category !== currentCategory) {
+      //   setCurrentCategory(category);
+      //   fetchData();
+      // }
+      // if (search && search !== currentSearch) {
+      //   setCurrentSearch(search);
+
+      // }
     }, []),
   );
   const getSavedArticle = async () => {
@@ -150,7 +168,7 @@ const NewListing = ({category, search}) => {
   );
 };
 
-export default NewListing;
+export default Listing2;
 const styles = StyleSheet.create({
   container: {
     paddingBottom: 100, // Example padding

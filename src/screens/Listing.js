@@ -1,25 +1,27 @@
-import React, { useState, useEffect, useCallback, useContext } from "react";
-import { View, Text, FlatList, ActivityIndicator } from "react-native";
-import axios from "axios";
-import RenderItem from "../components/RenderItem";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { useFocusEffect } from "@react-navigation/native";
-import { AppContext } from "../context/AppContext";
+import React, {useState, useEffect, useCallback, useContext} from 'react';
+import {View, Text, FlatList, ActivityIndicator} from 'react-native';
+import axios from 'axios';
+import RenderItem from '../components/RenderItem';
+import {SafeAreaView} from 'react-native-safe-area-context';
+import {useFocusEffect} from '@react-navigation/native';
+import {AppContext} from '../context/AppContext';
 
-const Listing = ({ category, search }) => {
-  const { data, loading, error, fetchData } = useContext(AppContext);
+const Listing = ({category, search}) => {
+  const {data, loading, error, fetchData} = useContext(AppContext);
   // const [data, setData] = useState([]);
   const [page, setPage] = useState(1);
   // const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [key, setKey] = useState(0);
-  const url = `http://public-api.wordpress.com/rest/v1.2/sites/en.blog.wordpress.com/posts/?post_tag=${category.title}`;
+  const url = category
+    ? `http://public-api.wordpress.com/rest/v1.2/sites/en.blog.wordpress.com/posts/?category=${category.title}`
+    : `http://public-api.wordpress.com/rest/v1.2/sites/en.blog.wordpress.com/posts/?search=${search}`;
   console.log(url);
   const params = search
-    ? { search: search, page: page, number: 7 }
+    ? {search: search, page: page, number: 7}
     : category
-    ? { page: page, number: 7 }
-    : { page: page, number: 7 };
+    ? {page: page, number: 7}
+    : {page: page, number: 7};
 
   // useEffect(() => {
   //   setKey((prevKey) => prevKey + 1);
@@ -61,7 +63,7 @@ const Listing = ({ category, search }) => {
 
   const handleEndReached = () => {
     if (!loading && hasMore) {
-      setPage((prevPage) => prevPage + 1);
+      setPage(prevPage => prevPage + 1);
     }
   };
 
@@ -75,7 +77,9 @@ const Listing = ({ category, search }) => {
     return <ActivityIndicator size="large" color="#0000ff" />;
   };
 
-  const renderfunction = ({ item, index }) => <RenderItem item={item} data={data} index={index} />;
+  const renderfunction = ({item, index}) => (
+    <RenderItem item={item} data={data} index={index} />
+  );
 
   return (
     <SafeAreaView>

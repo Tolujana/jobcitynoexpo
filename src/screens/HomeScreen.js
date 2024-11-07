@@ -14,11 +14,22 @@ import NewsSection from '../components/NewsSection';
 import {useQuery, useInfiniteQuery} from '@tanstack/react-query';
 
 import {IOScrollView, InView} from 'react-native-intersection-observer';
+<<<<<<< HEAD
 import useCustomFetch from '../util/Api copy';
 import RenderItem from '../components/RenderItem';
 import ApiUrlManager from '../components/ApiUrlManager';
 import {sendNotification, sendNotifications} from '../util/BackGroundAction';
 import {sendNotification2} from '../components/BackgroundFetchTask';
+=======
+import useCustomFetch from '../util/Functions';
+import RenderItem from '../components/RenderItem';
+// import ApiUrlManager from '../components/ApiUrlManager';
+import {sendNotification} from '../components/BackgroundFetchTask';
+import ApiUrlManager from '../components/ApiUrlManager';
+import OnesignalSelection from '../components/OnesignalSelection';
+import FormScreen from '../components/FormScreen';
+import ApiUrlManager2 from '../components/ApiUrlManager2';
+>>>>>>> latest
 
 export default function Home() {
   const [jobs, setJobs] = useState([]);
@@ -26,7 +37,11 @@ export default function Home() {
 
   const [page, setPage] = useState(1);
   const url =
+<<<<<<< HEAD
     'http://public-api.wordpress.com/rest/v1.2/sites/en.blog.wordpress.com/posts/ ';
+=======
+    'https://public-api.wordpress.com/rest/v1.2/sites/screammie.info/posts/ ';
+>>>>>>> latest
   const params = {search: 'word', page: page, number: 6};
   const {data, loading, error} = useCustomFetch(url, {params});
 
@@ -49,10 +64,20 @@ export default function Home() {
     <SafeAreaView>
       <Text>Home</Text>
       <ApiUrlManager />
+<<<<<<< HEAD
       <Button
         title="Press Me"
         onPress={() => sendNotification2('tolu', 'eerock')}
       />
+=======
+      {/* <ApiUrlManager2 /> */}
+      {/* <FormScreen /> */}
+      <Button
+        title="Click Me"
+        onPress={() => sendNotification('imaworking', 'cool')}
+      />
+
+>>>>>>> latest
       {loading && page === 1 ? (
         <ActivityIndicator size="large" />
       ) : error ? (

@@ -13,17 +13,18 @@ import {useColorScheme} from 'nativewind';
 //import {FontAwesome} from '@expo/vector-icons';
 import {useNavigation} from '@react-navigation/native';
 import CategoriesCard from '../components/CategoriesCard';
-import {specilization} from '../constants/categories';
-import useCustomFetch from '../util/Api copy';
+import {SpecializationList} from '../constants/categories';
+import useCustomFetch from '../util/Functions';
 import JobListing from './JobListing';
 import Listing from './Listing';
 import {AppContext} from '../context/AppContext';
 import NewListing from './NewListing';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import ApiUrlManager from '../components/ApiUrlManager';
 
 export default function Home() {
   const navigation = useNavigation();
-  // const { data, loading, error, fetchData } = useContext(AppContext);
+
   const [activeCategory, setActiveCategory] = useState(0);
   const [jobEntries, setJobEntries] = useState([]);
   const {colorScheme, toggleColorScheme} = useColorScheme();
@@ -38,6 +39,8 @@ export default function Home() {
     // console.log(specilization[id].title, "home things");
   };
 
+  useEffect(() => {}, []);
+
   return (
     <SafeAreaView className="pt-8 flex-1 bg-white dark:bg-neutral-900">
       <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
@@ -46,6 +49,7 @@ export default function Home() {
         <Text className="text-3xl font-bold text-blue-600 dark:text-white">
           Jobcity
         </Text>
+
         <Text className="text-base text-gray-700 dark:text-neutral-300">
           Jobs from multiple sources
         </Text>
@@ -72,7 +76,7 @@ export default function Home() {
           showsHorizontalScrollIndicator={false}
           className="space-x-4"
           contentContainerStyle={{paddingRight: 20}}>
-          {specilization.map((category, index) => {
+          {SpecializationList.map((category, index) => {
             return (
               <CategoriesCard
                 category={category}
@@ -87,7 +91,7 @@ export default function Home() {
       </View>
       {/* jobLists */}
       <View>
-        <NewListing category={specilization[activeCategory]} />
+        <NewListing category={SpecializationList[activeCategory]} />
       </View>
     </SafeAreaView>
   );

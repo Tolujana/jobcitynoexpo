@@ -9,40 +9,34 @@ import notifee, {
 export const fetchArticles = async task => {
   try {
     const apiListJson = await AsyncStorage.getItem('apiList');
-    const apiList = JSON.parse(apiListJson) || [];
+    const apiList = JSON.parse(apiListJson) || {};
+    console.log(apiList);
+    for (const [apiName, apiUrl] of Object.entries(apiList)) {
+      // const response = await fetch(apiUrl);
+      // const data = await response.json();
+      // const latestDate = parseDate(data);
+      // const lastDate = await getLastDate(apiUrl);
 
-    for (const keyWord of apiList) {
-      //const encodeKeyword = encodeURIComponent(str);
-      const concatenateUrl = `https://public-api.wordpress.com/rest/v1.2/sites/screammie.info/posts/?search=${keyWord}&number=1`;
+      // if (latestDate !== lastDate) {
+      //     await saveLastDate(apiUrl, latestDate);
+      //     sendNotification(apiName, apiUrl,latestDate);
+      // }
 
-      const response = await fetch(concatenateUrl);
-      const data = await response.json();
-      const latestDate = parseDate(data);
-      const lastDate = await getLastDate(keyWord);
-
-<<<<<<< HEAD
-      console.log('backgroundfetch', apiName);
+      console.log('im wroking ', apiName);
       // await CheckPermissionAndSend(apiName, apiUrl);
-      await sendNotification2(apiName, apiUrl);
-=======
-      if (latestDate !== lastDate) {
-        await saveLastDate(keyWord, latestDate);
-        sendNotification(keyWord, latestDate);
-      }
-
-      // console.log('im wroking ', apiName);
-      //  await CheckPermissionAndSend(apiName, apiUrl);
-      // sendNotification(apiName, apiUrl);
->>>>>>> latest
+      sendNotification(apiName, apiUrl);
     }
   } catch (error) {
+    if (task.cancelled) {
+      console.log('it is cancelled o');
+    }
     console.error(error);
   }
 };
 
 const parseDate = data => {
   // Implement your date parsing logic
-  return data.posts[0].title;
+  return data.article.title;
 };
 
 const getLastDate = async apiUrl => {
@@ -70,11 +64,7 @@ const backgroundFetchTask = async () => {
   BackgroundFetch.finish(BackgroundFetch.FETCH_RESULT_NEW_DATA);
 };
 
-<<<<<<< HEAD
-export const sendNotification2 = async (name, url) => {
-=======
 export const sendNotification = async (name, url) => {
->>>>>>> latest
   // Create a channel (required for Android)
   //   const authorizationStatus = await notifee.requestPermission({
   //     provisional: true, // Optional for Android 13
@@ -82,24 +72,18 @@ export const sendNotification = async (name, url) => {
 
   console.log('Notification permission granted');
   const channel = await notifee.createChannel({
-<<<<<<< HEAD
-    id: 'job',
-=======
     id: 'default',
->>>>>>> latest
     name: 'Default Channel',
+    importance: AndroidImportance.HIGH,
   });
 
   // Display a notification
   await notifee.displayNotification({
-    title: `New Vacancy on ${name}`,
+    title: `New Article froms ${name}`,
     body: ` ${url}`,
     android: {
       channelId: channel,
       // smallIcon:'ic_launcher'
-    },
-    data: {
-      keyWord: name, // Custom data
     },
   });
 };

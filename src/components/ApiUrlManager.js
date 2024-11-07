@@ -1,104 +1,153 @@
-import React, { useState, useEffect } from 'react';
-import { View, TextInput, Button, FlatList, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import React, {useEffect, useState} from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  FlatList,
+  StyleSheet,
+} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {NativeModules} from 'react-native';
+
+const {ArticleScheduler} = NativeModules;
+
+const API_URLS_KEY = 'apiList';
 
 const ApiUrlManager = () => {
-    const [urlName, setUrlName] = useState('');
-    const [url, setUrl] = useState('');
-    const [urls, setUrls] = useState({});
+  const [apiUrl, setApiUrl] = useState('');
+  const [apiUrls, setApiUrls] = useState([]);
 
-    useEffect(() => {
-        loadUrls();
-    }, []);
-
-    const loadUrls = async () => {
-        try {
-            const jsonValue = await AsyncStorage.getItem('apiList');
-            if (jsonValue != null) {
-                setUrls(JSON.parse(jsonValue));
-            }
-        } catch (e) {
-            console.error(e);
-        }
+  useEffect(() => {
+    const loadApiUrls = async () => {
+      try {
+        const jsonValue = await AsyncStorage.getItem(API_URLS_KEY);
+        const urls = jsonValue != null ? JSON.parse(jsonValue) : [];
+        setApiUrls(urls);
+      } catch (e) {
+        console.error('Failed to load API URLs:', e);
+      }
     };
 
-    const addUrl = async () => {
-        try {
-            const newUrls = { ...urls, [urlName]: url };
-            setUrls(newUrls);
-            const jsonValue = JSON.stringify(newUrls);
-            await AsyncStorage.setItem('apiList', jsonValue);
-            setUrlName('');
-            setUrl('');
-        } catch (e) {
-            console.error(e);
-        }
-    };
+    loadApiUrls();
+  }, []);
 
-    const removeUrl = async (key) => {
-        try {
-            const { [key]: _, ...newUrls } = urls;
-            setUrls(newUrls);
-            const jsonValue = JSON.stringify(newUrls);
-            await AsyncStorage.setItem('apiList', jsonValue);
-        } catch (e) {
-            console.error(e);
-        }
-    };
+  const addApiUrl = async () => {
+    try {
+      if (apiUrl && !apiUrls.includes(apiUrl)) {
+        const newUrls = [...apiUrls, apiUrl];
 
-    return (
-        <View style={styles.container}>
-            <TextInput
-                style={styles.input}
-                placeholder="Enter API Name"
-                value={urlName}
-                onChangeText={setUrlName}
-            />
-            <TextInput
-                style={styles.input}
-                placeholder="Enter API URL"
-                value={url}
-                onChangeText={setUrl}
-            />
-            <Button title="Add URL" onPress={addUrl} />
-            <FlatList
-                data={Object.entries(urls)}
-                keyExtractor={(item) => item[0]}
-                renderItem={({ item }) => (
-                    <View style={styles.itemContainer}>
-                        <Text>{item[0]}: {item[1]}</Text>
-                        <TouchableOpacity onPress={() => removeUrl(item[0])}>
-                            <Text style={styles.removeButton}>Remove</Text>
-                        </TouchableOpacity>
-                    </View>
-                )}
-            />
-        </View>
-    );
+        setApiUrls(newUrls);
+        await AsyncStorage.setItem(API_URLS_KEY, JSON.stringify(newUrls));
+        setApiUrl('');
+        await ArticleScheduler.rescheduleJob();
+      }
+    } catch (error) {
+      console.error('Failed to reschedule job:', error);
+    }
+  };
+
+  const removeApiUrl = async urlToRemove => {
+    const newUrls = apiUrls.filter(url => url !== urlToRemove);
+    setApiUrls(newUrls);
+    await AsyncStorage.setItem(API_URLS_KEY, JSON.stringify(newUrls));
+  };
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>API URL Manager</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="Enter KeyWord"
+        value={apiUrl}
+        onChangeText={setApiUrl}
+      />
+      <TouchableOpacity style={styles.addButton} onPress={addApiUrl}>
+        <Text style={styles.addButtonText}>Add URL</Text>
+      </TouchableOpacity>
+      <FlatList
+        data={apiUrls}
+        keyExtractor={item => item}
+        renderItem={({item}) => (
+          <View style={styles.urlContainer}>
+            <Text style={styles.urlText}>{item}</Text>
+            <TouchableOpacity
+              style={styles.removeButton}
+              onPress={() => removeApiUrl(item)}>
+              <Text style={styles.removeButtonText}>Remove</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+        contentContainerStyle={styles.listContent}
+        style={styles.list}
+      />
+    </View>
+  );
 };
 
 const styles = StyleSheet.create({
-    container: {
-        padding: 20,
-    },
-    input: {
-        height: 40,
-        borderColor: 'gray',
-        borderWidth: 1,
-        marginBottom: 10,
-        padding: 10,
-    },
-    itemContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingVertical: 10,
-        borderBottomWidth: 1,
-        borderBottomColor: '#ccc',
-    },
-    removeButton: {
-        color: 'red',
-    },
+  container: {
+    padding: 20,
+    backgroundColor: '#f5f5f5',
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  input: {
+    borderColor: '#ccc',
+    borderWidth: 2,
+    padding: 10,
+    marginBottom: 10,
+    borderRadius: 5,
+    backgroundColor: '#fff',
+    height: 50,
+  },
+  addButton: {
+    backgroundColor: '#007bff',
+    padding: 15,
+    borderRadius: 5,
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  addButtonText: {
+    color: '#fff',
+    fontSize: 16,
+  },
+  list: {
+    marginTop: 20,
+  },
+  listContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
+  },
+  urlContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 10,
+    backgroundColor: '#fff',
+    borderRadius: 5,
+    marginBottom: 10,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 3,
+  },
+  urlText: {
+    flex: 1,
+    marginRight: 10,
+  },
+  removeButton: {
+    backgroundColor: '#ff5252',
+    padding: 10,
+    borderRadius: 5,
+  },
+  removeButtonText: {
+    color: '#fff',
+  },
 });
 
 export default ApiUrlManager;

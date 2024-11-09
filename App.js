@@ -7,7 +7,7 @@
 import {createNavigationContainerRef} from '@react-navigation/native';
 import notifee, {EventType} from '@notifee/react-native';
 
-import React, {useEffect, useState, useRef} from 'react';
+import React, {useEffect, useState, useContext} from 'react';
 import messaging from '@react-native-firebase/messaging';
 import Event from './src/Event';
 import {firebase} from '@react-native-firebase/app';
@@ -95,10 +95,10 @@ function App() {
     //handle background and quit state
     const unsubscribeNotificationOpenedApp =
       messaging().onNotificationOpenedApp(remoteMessage => {
-        console.log(
-          'Notification caused app to open from background state:',
-          remoteMessage,
-        );
+        // console.log(
+        //   'Notification caused app to open from background state:',
+        //   remoteMessage,
+        // );
 
         // Navigate based on notification data
         const category = remoteMessage.data?.post_category;
@@ -109,9 +109,31 @@ function App() {
 
     // Handle notifications in foreground
     const unsubscribe = messaging().onMessage(async remoteMessage => {
-      const category = remoteMessage.data?.post_category;
-      if (category) {
-        navigationRef.current?.navigate('Listing', {category});
+      const {post_category, post_title} = remoteMessage.data;
+      if (post_title) {
+        Alert.alert(
+          `New vacancy in ${post_category}.`,
+          `${post_title}.`,
+          [
+            {
+              text: 'Cancel',
+              onPress: () => {
+                // Do nothing, leaves user on the current page
+              },
+              style: 'cancel',
+            },
+            {
+              text: 'See Article',
+              onPress: () => {
+                // Navigate to the target screen, based on the notification data
+                navigationRef.current?.navigate('Listing', {
+                  category: post_category,
+                });
+              },
+            },
+          ],
+          {cancelable: true},
+        );
       }
     });
 
@@ -157,6 +179,8 @@ function App() {
       checkBatteryOptimization();
     }
   });
+
+  useEffect(() => {}, []);
 
   // useEffect(() => {
   //   // Request permissions for push notifications via fcm

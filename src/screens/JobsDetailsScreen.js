@@ -15,6 +15,7 @@ import {
   AdEventType,
   TestIds,
 } from 'react-native-google-mobile-ads';
+
 import React, {useEffect, useState} from 'react';
 import {useNavigation, useRoute} from '@react-navigation/native';
 import {WebView} from 'react-native-webview';
@@ -26,6 +27,17 @@ import {useWindowDimensions} from 'react-native';
 import ParallaxView from '../components/ParallaxView';
 
 // const {height, width} = Dimensions.get('window');
+
+const adUnitId = __DEV__
+  ? TestIds.INTERSTITIAL
+  : 'ca-app-pub-7993847549836206/6994945775';
+const interstitialAd = InterstitialAd.createForAdRequest(adUnitId, {
+  requestNonPersonalizedAdsOnly: false,
+  videoOptions: {
+    startMuted: true, // This mutes the video ads
+  },
+});
+
 const AppContent = () => (
   <View>
     <Text style={styles.title}>Parallax Effect</Text>
@@ -35,12 +47,6 @@ const AppContent = () => (
     {/* Add more content here if needed */}
   </View>
 );
-const adUnitId = __DEV__
-  ? TestIds.INTERSTITIAL
-  : 'ca-app-pub-7993847549836206/6994945775';
-const interstitialAd = InterstitialAd.createForAdRequest(adUnitId, {
-  requestNonPersonalizedAdsOnly: false,
-});
 
 export default function JobDetailsScreen({route}) {
   const {width, height} = useWindowDimensions();
@@ -112,7 +118,9 @@ export default function JobDetailsScreen({route}) {
   }, [item]);
 
   useEffect(() => {
-    const loadAd = () => interstitialAd.load();
+    const loadAd = () => {
+      interstitialAd.load();
+    };
 
     const adEventListener = interstitialAd.addAdEventListener(
       AdEventType.LOADED,
@@ -124,6 +132,7 @@ export default function JobDetailsScreen({route}) {
     const adCloseListener = interstitialAd.addAdEventListener(
       AdEventType.CLOSED,
       () => {
+        // VolumeManager.setVolume(currentVolume);
         navigation.goBack();
         loadAd(); // Reload the ad after it's closed
       },
@@ -140,11 +149,17 @@ export default function JobDetailsScreen({route}) {
   }, []);
 
   // Show the interstitial ad if loaded
-  const showInterstitialAd = () => {
+  const showInterstitialAd = async () => {
     setBackButtonClickCount(backButtonClickCount + 1);
 
     // Show ad on alternate back button clicks (e.g., 2nd, 4th, 6th, etc.)
     if (backButtonClickCount % 2 === 0 && interstitialAd.loaded) {
+      // Store current volume
+      // const currentVolume = await VolumeManager.getVolume();
+
+      // Set volume to 0 (mute)
+      // VolumeManager.setVolume(0);
+
       interstitialAd.show();
     } else {
       navigation.goBack();

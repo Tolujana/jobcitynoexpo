@@ -7,7 +7,7 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 //import FontAwesome from '@expo/vector-icons/FontAwesome';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-function NewSingleJobEntry({item, index, savedArticles}) {
+function NewSingleJobEntry({item = {}, index = 1, savedArticles = []}) {
   const navigation = useNavigation();
   const openItem = () =>
     navigation.navigate('JobsDetails', {

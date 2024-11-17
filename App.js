@@ -38,6 +38,7 @@ import BackgroundFetchTask, {
   fetchArticles,
 } from './src/components/BackgroundFetchTask';
 import BackgroundFetch from 'react-native-background-fetch';
+import {DataProvider} from './src/util/DataContext';
 
 const requestNotificationPermission = async () => {
   if (Platform.OS === 'android' && Platform.Version >= 33) {
@@ -178,7 +179,8 @@ function App() {
     if (Platform.OS === 'android') {
       checkBatteryOptimization();
     }
-  });
+    //fetch menu data
+  }, []);
 
   useEffect(() => {}, []);
 
@@ -292,18 +294,20 @@ function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <Text style={styles.message}>
-        {isBatteryOptimized
-          ? 'Battery optimization is enabled.'
-          : 'Battery optimization is disabled for this app.'}
-      </Text>
-      {!isBatteryOptimized && (
-        <Button
-          title="Disable Battery Optimization"
-          onPress={openBatteryOptimizationSettings}
-        />
-      )}
-      <AppNavigation navigationRef={navigationRef} />
+      <DataProvider>
+        <Text style={styles.message}>
+          {isBatteryOptimized
+            ? 'Battery optimization is enabled.'
+            : 'Battery optimization is disabled for this app.'}
+        </Text>
+        {!isBatteryOptimized && (
+          <Button
+            title="Disable Battery Optimization"
+            onPress={openBatteryOptimizationSettings}
+          />
+        )}
+        <AppNavigation navigationRef={navigationRef} />
+      </DataProvider>
     </QueryClientProvider>
   );
 }

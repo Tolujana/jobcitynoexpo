@@ -7,14 +7,22 @@ export default function CategoriesCard({
   onPress,
   index,
 }) {
-  const isActive = activeCategory === index;
+  const isActive = activeCategory.name
+    ? activeCategory.name === category.name
+    : activeCategory.search === category.search;
   return (
     <TouchableOpacity
       className="p-2 m-1 px-4 rounded-full "
-      style={{backgroundColor: isActive ? 'blue' : '#EBEDEF'}}
+      style={{
+        backgroundColor: isActive
+          ? 'blue'
+          : category.name
+          ? '#EBEDEF'
+          : '#ccd1d1',
+      }}
       onPress={onPress}>
       <Text className={isActive ? 'text-white font-bold' : 'text-black'}>
-        {category}
+        {category.name || category.search}
       </Text>
     </TouchableOpacity>
   );

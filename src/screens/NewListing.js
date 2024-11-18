@@ -30,27 +30,23 @@ const fetchData = async ({pageParam = 1, queryKey}) => {
     'https://public-api.wordpress.com/rest/v1.2/sites/screammie.info/posts/?';
   const queryString = new URLSearchParams(params).toString();
   const fullUrl = `${url}${queryString}`;
-
+  //console.log('this is url', fullUrl);
   const response = await axios.get(url, {
     params: {
       page: pageParam,
       ...queryParam, // Include additional query parameters here
     },
   });
-  console.log(`Request URL: ${fullUrl}`);
+
   return response.data.posts;
 };
-
-function convertToSlug(str) {
-  return str.replace(/[^a-zA-Z]/g, '-');
-}
 
 const NewListing = ({category, search}) => {
   const [page, setPage] = useState(1);
   const queryParam = search
-    ? {search: search, page: page, number: 7}
+    ? {search: search.slug, number: 7}
     : category
-    ? {category: convertToSlug(category), number: 10}
+    ? {category: category?.slug, number: 10}
     : {number: 7};
   const [savedArticles, setSavedArticles] = useState({});
   const {
@@ -62,7 +58,7 @@ const NewListing = ({category, search}) => {
     isFetchingNextPage,
     status,
   } = useInfiniteQuery({
-    queryKey: [category, queryParam],
+    queryKey: [category?.slug, queryParam],
     queryFn: fetchData,
     initialPageParam: 1,
     getNextPageParam: (lastPage, pages) => {
@@ -71,6 +67,7 @@ const NewListing = ({category, search}) => {
       return lastPage.length ? pages.length + 1 : undefined;
     },
   });
+
   //console.log(hasNextPage, "hasnextpage");
   // console.log(
   //   data?.pages.flatMap((page) => page),
@@ -119,7 +116,9 @@ const NewListing = ({category, search}) => {
 
   return (
     <View>
-      <Text className="mb-3 text-xl">{category ? category : search}</Text>
+      <Text className="mb-3 text-xl">
+        {category ? `${category?.name} jobs` : `${search?.search} Job search`}
+      </Text>
       {!data && <ActivityIndicator size="large" />}
       {status === 'error' && <Text>Error: {error.message}</Text>}
       {status === 'success' && (

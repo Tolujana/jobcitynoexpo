@@ -24,6 +24,7 @@ const ApiUrlManager = () => {
         const jsonValue = await AsyncStorage.getItem(API_URLS_KEY);
         const urls = jsonValue != null ? JSON.parse(jsonValue) : [];
         setApiUrls(urls);
+        console.log('this is keyfrom second', urls);
       } catch (e) {
         console.error('Failed to load API URLs:', e);
       }
@@ -34,13 +35,21 @@ const ApiUrlManager = () => {
 
   const addApiUrl = async () => {
     try {
-      if (apiUrl && !apiUrls.includes(apiUrl)) {
-        const newUrls = [...apiUrls, apiUrl];
+      if (apiUrl) {
+        //const slug = encodeURIComponent(apiUrl);
+        const search = apiUrl;
+        const slug = search;
+        const newUrl = {slug, search};
+        //console.log('new', newUrl);
 
-        setApiUrls(newUrls);
-        await AsyncStorage.setItem(API_URLS_KEY, JSON.stringify(newUrls));
-        setApiUrl('');
-        await ArticleScheduler.rescheduleJob();
+        if (!apiUrls.some(url => url.slug === newUrl.slug)) {
+          const newUrls = [...apiUrls, newUrl];
+          //console.log('newurl', newUrls);
+          setApiUrls(newUrls);
+          await AsyncStorage.setItem(API_URLS_KEY, JSON.stringify(newUrls));
+          setApiUrl('');
+          await ArticleScheduler.rescheduleJob();
+        }
       }
     } catch (error) {
       console.error('Failed to reschedule job:', error);
@@ -48,7 +57,7 @@ const ApiUrlManager = () => {
   };
 
   const removeApiUrl = async urlToRemove => {
-    const newUrls = apiUrls.filter(url => url !== urlToRemove);
+    const newUrls = apiUrls.filter(url => url.slug !== urlToRemove.slug);
     setApiUrls(newUrls);
     await AsyncStorage.setItem(API_URLS_KEY, JSON.stringify(newUrls));
   };
@@ -67,10 +76,10 @@ const ApiUrlManager = () => {
       </TouchableOpacity>
       <FlatList
         data={apiUrls}
-        keyExtractor={item => item}
+        keyExtractor={item => item.slug}
         renderItem={({item}) => (
           <View style={styles.urlContainer}>
-            <Text style={styles.urlText}>{item}</Text>
+            <Text style={styles.urlText}>{item.search}</Text>
             <TouchableOpacity
               style={styles.removeButton}
               onPress={() => removeApiUrl(item)}>

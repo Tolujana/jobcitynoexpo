@@ -60,8 +60,8 @@ const CategorySelectionScreen2 = () => {
     'Uncategorized',
     'Joblist',
     'Jobberman',
-    'Hotnigerianjobs',
-    'Jobgurus',
+    // 'Hotnigerianjobs',
+    // 'Jobgurus',
     'Myjobmag',
   ];
 

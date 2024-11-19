@@ -24,7 +24,6 @@ const ApiUrlManager = () => {
         const jsonValue = await AsyncStorage.getItem(API_URLS_KEY);
         const urls = jsonValue != null ? JSON.parse(jsonValue) : [];
         setApiUrls(urls);
-        console.log('this is keyfrom second', urls);
       } catch (e) {
         console.error('Failed to load API URLs:', e);
       }
@@ -44,7 +43,7 @@ const ApiUrlManager = () => {
 
         if (!apiUrls.some(url => url.slug === newUrl.slug)) {
           const newUrls = [...apiUrls, newUrl];
-          //console.log('newurl', newUrls);
+          console.log('newurl', newUrls);
           setApiUrls(newUrls);
           await AsyncStorage.setItem(API_URLS_KEY, JSON.stringify(newUrls));
           setApiUrl('');

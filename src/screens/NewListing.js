@@ -30,7 +30,7 @@ const fetchData = async ({pageParam = 1, queryKey}) => {
     'https://public-api.wordpress.com/rest/v1.2/sites/screammie.info/posts/?';
   const queryString = new URLSearchParams(params).toString();
   const fullUrl = `${url}${queryString}`;
-  //console.log('this is url', fullUrl);
+  console.log('this is url', fullUrl);
   const response = await axios.get(url, {
     params: {
       page: pageParam,
@@ -45,9 +45,14 @@ const NewListing = ({category, search}) => {
   const [page, setPage] = useState(1);
   const queryParam = search
     ? {search: search.slug, number: 7}
-    : category
-    ? {category: category?.slug, number: 10}
-    : {number: 7};
+    : {category: category?.slug, number: 10};
+
+  //  if (category) {
+  //   handleCategory(category);
+  // } else if (search) {
+  //   handleSearch(search);
+  // }
+
   const [savedArticles, setSavedArticles] = useState({});
   const {
     data,
@@ -58,13 +63,18 @@ const NewListing = ({category, search}) => {
     isFetchingNextPage,
     status,
   } = useInfiniteQuery({
-    queryKey: [category?.slug, queryParam],
+    queryKey: [queryParam],
     queryFn: fetchData,
     initialPageParam: 1,
     getNextPageParam: (lastPage, pages) => {
       // Assuming the API returns `hasMore` to indicate more pages
       // console.log(lastPage, "lastpage", pages, "pages");
       return lastPage.length ? pages.length + 1 : undefined;
+    },
+    onFocus: () => {
+      // Refetch data when component gains focus
+      QueryClient.invalidateQueries([queryParam]);
+      QueryClient.fetchInfiniteQueries([queryParam]);
     },
   });
 
@@ -88,6 +98,18 @@ const NewListing = ({category, search}) => {
       fetchSavedArticle();
     }, []),
   );
+
+  useFocusEffect(
+    React.useCallback(() => {
+      const fetchSavedArticle = async () => {
+        const articles = await getSavedArticle();
+        setSavedArticles(articles);
+        // setBookmarkNumber(Object.keys(articles).length);
+      };
+      fetchSavedArticle();
+    }, []),
+  );
+
   const getSavedArticle = async () => {
     try {
       const savedArticleJSON = await AsyncStorage.getItem('savedArticles');

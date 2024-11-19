@@ -36,6 +36,8 @@ export default function Home() {
   const [keywords, setKeywords] = useState([]);
   const [sortedkeywords, setSortedKeywords] = useState([]);
   const [sortedSpec, setsortedSpec] = useState([]);
+  const [isLoading, setIsloading] = useState(true);
+  const [fullList, setFullList] = useState([]);
   const handleCategoryChange = category => {
     setActiveCategory(category);
   };
@@ -47,14 +49,24 @@ export default function Home() {
 
   useFocusEffect(
     React.useCallback(() => {
+      setIsloading(true);
       loadSelectedspecialization(setspecilization);
       loadSelectedspecialization(setKeywords, 'apiList');
+      setsortedSpec(
+        specialization.sort((a, b) => a.name.localeCompare(b.name)),
+      );
+      setSortedKeywords(
+        keywords.sort((a, b) => a.search.localeCompare(b.name)),
+      );
+      setFullList([...sortedSpec, ...sortedkeywords]);
+
+      setActiveCategory(sortedSpec[0] || sortedkeywords[0]);
+      setIsloading(false);
     }, []),
   );
 
   useEffect(() => {
     setsortedSpec(specialization.sort((a, b) => a.name.localeCompare(b.name)));
-    setActiveCategory(sortedSpec[0]);
   }, [specialization]);
   useEffect(() => {
     setSortedKeywords(keywords.sort((a, b) => a.search.localeCompare(b.name)));
@@ -78,7 +90,9 @@ export default function Home() {
   };
 
   const fullMenu = [...sortedSpec, ...sortedkeywords];
-  return (
+  return isLoading ? (
+    <Text>isLoading</Text>
+  ) : (
     <SafeAreaView className="pt-8 flex-1 bg-white dark:bg-neutral-900">
       <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
       {/* header */}
@@ -86,13 +100,12 @@ export default function Home() {
         <Text className="text-3xl font-bold text-blue-600 dark:text-white">
           Jobcity
         </Text>
-
         <Text className="text-base text-gray-700 dark:text-neutral-300">
           Jobs from multiple sources
         </Text>
       </View>
 
-      {/* searc */}
+      {/* search */}
 
       <View className="mx-4 mb -8 flex-row p-2 py-3 justify-start items-center  bg-neutral-100 dark:bg-neutral-800 rounded-full">
         <TouchableOpacity className="pl-2">
@@ -114,45 +127,44 @@ export default function Home() {
             <Icon name="plus" size={24} color="#fff" />
           </TouchableOpacity>
         )}
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          className="space-x-4"
-          contentContainerStyle={{paddingRight: 20}}>
-          {/* category */}
-          {fullMenu.length > 0 ? (
-            fullMenu.map((category, index) => {
+        {fullMenu.length > 0 ? (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            className="space-x-4"
+            contentContainerStyle={{paddingRight: 20}}>
+            {/* category */}
+            {fullMenu.map((category, index) => {
               return (
                 <CategoriesCard
                   category={category}
                   index={index}
                   key={index}
-                  activeCategory={activeCategory || sortedSpec[0]}
+                  activeCategory={
+                    activeCategory || sortedSpec[0] || sortedkeywords[0]
+                  }
                   onPress={() => handleCategoryChange(category)}
                 />
               );
-            })
-          ) : (
-            <TouchableOpacity style={styles.button} onPress={addMenuItems}>
-              <View className=" flex-row">
-                <Icon name="plus" size={24} color="#fff" />
-                <Text>Click here to add menu items</Text>
-              </View>
-            </TouchableOpacity>
-          )}
-        </ScrollView>
+            })}
+          </ScrollView>
+        ) : (
+          <TouchableOpacity style={styles.buttonlong} onPress={addMenuItems}>
+            <View className=" flex-row">
+              <Icon name="plus" size={24} color="#fff" />
+              <Text style={styles.text}>Click here to add menu items</Text>
+            </View>
+          </TouchableOpacity>
+        )}
       </View>
       {/* jobLists */}
       <View>
-        {!activeCategory && (
-          <NewListing
-            category={sortedSpec[0] || {name: 'All jobs', slug: ''}}
-          />
-        )}
-        {activeCategory?.name ? (
+        {!activeCategory ? (
+          <NewListing category={sortedSpec[0] || {name: 'All ', slug: ''}} />
+        ) : Boolean(activeCategory.name) ? (
           <NewListing category={activeCategory} />
         ) : (
-          <NewListing category={null} search={activeCategory} />
+          <NewListing search={activeCategory} />
         )}
       </View>
     </SafeAreaView>
@@ -172,5 +184,25 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.8,
     shadowRadius: 2,
     elevation: 5,
+  },
+  buttonlong: {
+    paddingHorizontal: 20,
+    height: 40,
+    borderRadius: 25,
+    backgroundColor: '#4CAF50',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.8,
+    shadowRadius: 2,
+    elevation: 5,
+    alignSelf: 'center',
+    marginLeft: 'auto',
+    marginRight: 'auto',
+  },
+  text: {
+    color: 'white',
+    marginHorizontal: 10,
   },
 });

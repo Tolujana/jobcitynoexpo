@@ -6,10 +6,10 @@ import {AppRegistry} from 'react-native';
 import App from './App';
 import {name as appName} from './app.json';
 import PushNotification from 'react-native-push-notification';
-// import configureBackgroundFetch from './src/util/BackgroundTask';
 import BackgroundFetch from 'react-native-background-fetch';
 import notifee, {EventType} from '@notifee/react-native';
 import {navigationRef} from './src/navigation/NotificationNavigate';
+import backgroundFetchTask from './src/components/BackgroundFetchTask';
 
 PushNotification.configure({
   onNotification: function (notification) {
@@ -21,7 +21,7 @@ PushNotification.configure({
 
 const headlessTask = async event => {
   console.log('[BackgroundFetch HeadlessTask] event: ', event.taskId);
-  await configureBackgroundFetch();
+  await backgroundFetchTask();
   BackgroundFetch.finish(event.taskId);
 };
 

@@ -7,25 +7,30 @@ import {
   LogBox,
   StyleSheet,
 } from 'react-native';
+
 import axios from 'axios';
 import RenderItem from '../components/RenderItem';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {useFocusEffect} from '@react-navigation/native';
 import {AppContext} from '../context/AppContext';
+import {Switch} from 'react-native';
 import {
   useInfiniteQuery,
   QueryClient,
   QueryClientProvider,
 } from '@tanstack/react-query';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {faPooStorm} from '@fortawesome/free-solid-svg-icons';
 
 const fetchData = async ({pageParam = 1, queryKey}) => {
-  const [, queryParam] = queryKey;
+  const [queryParam, exclude] = queryKey;
+
   const params = {
     page: pageParam,
-    ...queryParam, // Include additional query parameters here
+    ...queryParam,
+    // Include additional query parameters here
   };
-
+  console.log('params', queryKey);
   const url =
     'https://public-api.wordpress.com/rest/v1.2/sites/screammie.info/posts/?';
   const queryString = new URLSearchParams(params).toString();
@@ -38,11 +43,23 @@ const fetchData = async ({pageParam = 1, queryKey}) => {
     },
   });
 
+  if (exclude) {
+    const filteredPosts = response.data.posts.filter(
+      post => !Object.keys(post.tags).includes('duplicate'),
+    );
+    //console.log('thi is filtered', filteredPosts);
+
+    return filteredPosts;
+  }
+
   return response.data.posts;
 };
 
 const NewListing = ({category, search}) => {
   const [page, setPage] = useState(1);
+  const [hideDuplicate, setHideDuplicate] = useState(true);
+  const [savedArticles, setSavedArticles] = useState({});
+  const exclude = hideDuplicate ? 'duplicate' : null;
   const queryParam = search
     ? {search: search.slug, number: 7}
     : {category: category?.slug, number: 10};
@@ -53,7 +70,9 @@ const NewListing = ({category, search}) => {
   //   handleSearch(search);
   // }
 
-  const [savedArticles, setSavedArticles] = useState({});
+  const toggleDuplicate = () =>
+    setHideDuplicate(previousState => !previousState);
+
   const {
     data,
     error,
@@ -63,7 +82,7 @@ const NewListing = ({category, search}) => {
     isFetchingNextPage,
     status,
   } = useInfiniteQuery({
-    queryKey: [queryParam],
+    queryKey: [queryParam, exclude],
     queryFn: fetchData,
     initialPageParam: 1,
     getNextPageParam: (lastPage, pages) => {
@@ -71,11 +90,11 @@ const NewListing = ({category, search}) => {
       // console.log(lastPage, "lastpage", pages, "pages");
       return lastPage.length ? pages.length + 1 : undefined;
     },
-    onFocus: () => {
-      // Refetch data when component gains focus
-      QueryClient.invalidateQueries([queryParam]);
-      QueryClient.fetchInfiniteQueries([queryParam]);
-    },
+    // onFocus: () => {
+    //   // Refetch data when component gains focus
+    //   QueryClient.invalidateQueries([queryParam]);
+    //   QueryClient.fetchInfiniteQueries([queryParam]);
+    // },
   });
 
   //console.log(hasNextPage, "hasnextpage");
@@ -138,9 +157,22 @@ const NewListing = ({category, search}) => {
 
   return (
     <View>
-      <Text className="mb-3 text-xl">
-        {category ? `${category?.name} jobs` : `${search?.search} Job search`}
-      </Text>
+      <View className="flex-row justify-between mr-1">
+        <Text className="mb-3 text-lg">
+          {category ? `${category?.name} jobs` : `${search?.search} Job search`}
+        </Text>
+        <View style={styles.switch}>
+          <Text>Hide Duplicates</Text>
+          <Switch
+            trackColor={{true: '#78e08f', false: '#ccc'}}
+            thumbColor={hideDuplicate ? '#34C759' : '#fff'}
+            ios_backgroundColor="#ccc"
+            onValueChange={toggleDuplicate}
+            value={hideDuplicate}
+          />
+        </View>
+      </View>
+
       {!data && <ActivityIndicator size="large" />}
       {status === 'error' && <Text>Error: {error.message}</Text>}
       {status === 'success' && (
@@ -182,5 +214,9 @@ const styles = StyleSheet.create({
     padding: 10,
     borderBottomWidth: 1,
     borderBottomColor: '#ccc',
+  },
+  switch: {
+    flexDirection: 'column',
+    alignContent: 'center',
   },
 });

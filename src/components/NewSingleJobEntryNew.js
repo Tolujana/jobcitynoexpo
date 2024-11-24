@@ -14,11 +14,12 @@ function NewSingleJobEntry({item = {}, index = 1, savedArticles = []}) {
       item: item,
     });
   const fullSpeciliazation = Object.keys(item?.categories);
+  const fulltags = Object.keys(item?.tags);
   const [jobs, ...specialization] = fullSpeciliazation;
   const specs = specialization.join(', ');
   const [savedArticleStatus, setSavedArticleStatus] = useState([]);
   const [idList, setIDlist] = useState([]);
-
+  const [isduplicate, setIsDuplicate] = useState(false);
   function formatDate(isoDate) {
     const date = new Date(isoDate);
 
@@ -55,7 +56,7 @@ function NewSingleJobEntry({item = {}, index = 1, savedArticles = []}) {
 
       // Call the function where appropriate in your app
       //clearAsyncStorage();
-
+      setIsDuplicate(fulltags.includes('duplicate'));
       updateArticleId(item, index);
     }, []),
   );
@@ -103,7 +104,14 @@ function NewSingleJobEntry({item = {}, index = 1, savedArticles = []}) {
   return (
     <TouchableOpacity
       key={index}
-      style={styles.touchable}
+      style={
+        isduplicate
+          ? {
+              ...styles.touchable,
+              backgroundColor: '#FBF2EF',
+            }
+          : styles.touchable
+      }
       className="mx-2 mb-2 pb-2 space-y-1"
       onPress={() => openItem()}>
       <View className="flex-row items-center  shadow-sm justify-center">
@@ -115,16 +123,21 @@ function NewSingleJobEntry({item = {}, index = 1, savedArticles = []}) {
               : {uri: item.featured_image}
           }
           style={{
-            width: heightPercentageToDP(10),
-            height: heightPercentageToDP(9),
+            width: heightPercentageToDP(7),
+            height: heightPercentageToDP(8),
             borderRadius: 7,
           }}
         />
         <View className="w-[70%] pl-3  ">
-          {/*time */}
-          <Text className="text-xs italic text-gray-900 dark:text-white">
-            {formatDate(item.date)}
-          </Text>
+          <View className="flex-row ">
+            {/*time & duplicate indicator*/}
+            <Text className="text-xs italic text-gray-900 dark:text-white">
+              {formatDate(item.date)}
+            </Text>
+            <Text className="text-xs italic text-orange-600 dark:text-orange-300">
+              {isduplicate ? '  duplicate/similar Post' : null}
+            </Text>
+          </View>
           {/*title*/}
 
           <Text

@@ -12,17 +12,17 @@ export const fetchArticles = async task => {
     const apiList = JSON.parse(apiListJson) || [];
 
     for (const keyWord of apiList) {
-      //const encodeKeyword = encodeURIComponent(str);
-      const concatenateUrl = `https://public-api.wordpress.com/rest/v1.2/sites/screammie.info/posts/?search=${keyWord}&number=1`;
+      const encodeKeyword = encodeURIComponent(keyWord.slug);
+      const concatenateUrl = `https://public-api.wordpress.com/rest/v1.2/sites/screammie.info/posts/?search=${encodeKeyword}&number=1`;
 
       const response = await fetch(concatenateUrl);
       const data = await response.json();
       const latestDate = parseDate(data);
-      const lastDate = await getLastDate(keyWord);
+      const lastDate = await getLastDate(encodeKeyword);
 
       if (latestDate !== lastDate) {
-        await saveLastDate(keyWord, latestDate);
-        sendNotification(keyWord, latestDate);
+        await saveLastDate(keyWord.search, latestDate);
+        sendNotification(keyWord.search, latestDate);
       }
 
       // console.log('im wroking ', apiName);
@@ -60,7 +60,7 @@ const saveLastDate = async (apiUrl, date) => {
   }
 };
 
-const backgroundFetchTask = async () => {
+export const backgroundFetchTask = async () => {
   console.log('[BackgroundFetch] Task started');
   await fetchArticles();
 

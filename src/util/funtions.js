@@ -14,7 +14,7 @@ export const checkAndFetchData = async () => {
 
       if (timestamp && now - timestamp < fortyEightHours) {
         // Use cached data if within 24 hours
-        return data;
+        return data || storedData;
       }
     }
 

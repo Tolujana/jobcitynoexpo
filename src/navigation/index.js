@@ -5,7 +5,7 @@ import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 //import {useColorScheme} from 'nativewind';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import HomeScreen from '../screens/HomeScreen';
+import UrlNotificationScreen from '../screens/UrlNotificationScreen';
 import DiscoverScreen from '../screens/DiscoverScreen';
 import SaveScreen from '../screens/SaveScreen';
 import SearchScreen from '../screens/SearchScreen';
@@ -96,7 +96,7 @@ export default function AppNavigation({navigationRef}) {
         />
         <Stack.Screen name="HomeTabs" component={TabNavigator} />
         <Stack.Screen name="Categories" component={CategorySelectionScreen2} />
-        <Stack.Screen name="Form" component={HomeScreen} />
+        <Stack.Screen name="Form" component={UrlNotificationScreen} />
         <Stack.Screen name="Listing" component={Listing2} />
         <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} />
       </Stack.Navigator>

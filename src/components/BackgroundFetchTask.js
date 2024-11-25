@@ -40,6 +40,7 @@ export const fetchArticles = async task => {
 const parseDate = data => {
   // Implement your date parsing logic
   return data.posts[0].title;
+  console.log('thisis the bakcgound tast', data.posts[0].title);
 };
 
 const getLastDate = async apiUrl => {

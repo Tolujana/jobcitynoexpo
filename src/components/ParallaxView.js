@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import {
   View,
   Text,
@@ -17,7 +17,15 @@ import RenderHtml from 'react-native-render-html';
 import BannerAdComponent from './BannerAdComponent';
 const {width: screenWidth, height: screenHeight} = Dimensions.get('window');
 
-const ParallaxView = ({content, mainContent, image}) => {
+const ParallaxView = ({content, mainContent, image, tags}) => {
+  // const [isduplicate, setIsDuplicate] = useState(false);
+
+  function findItemWithNumbers(array) {
+    return array.find(item => /\d/.test(item)) || null;
+  }
+
+  const fulltag = Object.keys(tags);
+
   // Find the first <b> tag in the article text
 
   const boldTagIndex =
@@ -62,6 +70,14 @@ const ParallaxView = ({content, mainContent, image}) => {
       color: '#000', // Strong text color
     },
   };
+  useEffect(() => {
+    const post_id = findItemWithNumbers(fulltag);
+    if (post_id) {
+      const url = `https://screammie.info/wp-json/wp/v2/posts/${post_id}`;
+      const response = fetchNewDataFromAPI(url);
+      console.log('found data', response);
+    }
+  }, []);
 
   const renderersProps = {
     p: {

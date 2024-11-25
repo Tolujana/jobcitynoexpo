@@ -36,9 +36,10 @@ export const checkAndFetchData = async () => {
   }
 };
 // function used in CheckAndFetchData for specializations
-const fetchNewDataFromAPI = async () => {
-  const url =
-    'https://screammie.info/wp-json/wp/v2/categories?per_page=100&_fields=name,slug'; // Replace with your actual API URL
+const fetchNewDataFromAPI = async (
+  url = 'https://screammie.info/wp-json/wp/v2/categories?per_page=100&_fields=name,slug',
+) => {
+  // Replace with your actual API URL
   try {
     const response = await fetch(url);
     if (!response.ok) {
@@ -51,6 +52,7 @@ const fetchNewDataFromAPI = async () => {
     return null;
   }
 };
+
 //function to load user selected specialization in Category selection screen and HOme page
 export const loadSelectedspecialization = async (
   setSelectedTopics,

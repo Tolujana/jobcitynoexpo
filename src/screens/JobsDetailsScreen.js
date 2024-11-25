@@ -10,11 +10,12 @@ import {
   BackHandler,
 } from 'react-native';
 
-import {
+import MobileAds, {
   InterstitialAd,
   AdEventType,
   TestIds,
 } from 'react-native-google-mobile-ads';
+import VolumeManager from 'react-native-volume-manager';
 
 import React, {useEffect, useState} from 'react';
 import {useNavigation, useRoute} from '@react-navigation/native';
@@ -28,9 +29,10 @@ import ParallaxView from '../components/ParallaxView';
 
 // const {height, width} = Dimensions.get('window');
 
-const adUnitId = __DEV__
+const adUnitId = !__DEV__
   ? TestIds.INTERSTITIAL
   : 'ca-app-pub-7993847549836206/6994945775';
+
 const interstitialAd = InterstitialAd.createForAdRequest(adUnitId, {
   requestNonPersonalizedAdsOnly: false,
   videoOptions: {
@@ -59,6 +61,16 @@ export default function JobDetailsScreen({route}) {
   const [backButtonClickCount, setBackButtonClickCount] = useState(0);
 
   // console.log("item URL", item.url);
+
+  useEffect(() => {
+    const setAdVolume = async () => {
+      const deviceVolume = await VolumeManager.getVolume();
+      // Set the ad volume to match the device volume
+      InterstitialAd.setAppVolume(deviceVolume);
+      //RewardedAd.setAppVolume(deviceVolume);
+    };
+    setAdVolume();
+  }, []);
 
   const toggleBookmarkAndSave = async () => {
     try {
@@ -186,6 +198,7 @@ export default function JobDetailsScreen({route}) {
     <>
       <ParallaxView
         image={item.featured_image}
+        tags={item.tags}
         mainContent={item.content}
         content={
           <View>

@@ -36,7 +36,7 @@ export const checkAndFetchData = async () => {
   }
 };
 // function used in CheckAndFetchData for specializations
-const fetchNewDataFromAPI = async (
+export const fetchNewDataFromAPI = async (
   url = 'https://screammie.info/wp-json/wp/v2/categories?per_page=100&_fields=name,slug',
 ) => {
   // Replace with your actual API URL
@@ -46,10 +46,11 @@ const fetchNewDataFromAPI = async (
       throw new Error(`HTTP error! Status: ${response.status}`);
     }
     const data = await response.json(); // Assuming JSON response
+
     return data;
   } catch (error) {
     console.error('Error fetching data:', error);
-    return null;
+    return error.message;
   }
 };
 

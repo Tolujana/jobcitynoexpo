@@ -23,9 +23,11 @@ import {WebView} from 'react-native-webview';
 import {ChevronLeftIcon, ShareIcon} from 'react-native-heroicons/outline';
 import {BookmarkSquareIcon} from 'react-native-heroicons/solid';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import RingerMode from 'react-native-ringer-mode';
 
 import {useWindowDimensions} from 'react-native';
 import ParallaxView from '../components/ParallaxView';
+import {MobileAd} from 'react-native-google-mobile-ads/lib/typescript/ads/MobileAd';
 
 // const {height, width} = Dimensions.get('window');
 
@@ -59,16 +61,30 @@ export default function JobDetailsScreen({route}) {
   const navigation = useNavigation();
   const [isBookmarked, toggleBookmark] = useState(false);
   const [backButtonClickCount, setBackButtonClickCount] = useState(0);
+  const [mode, setMode] = useState(null);
 
-  // console.log("item URL", item.url);
+  console.log('this is mode', mode);
 
   useEffect(() => {
     const setAdVolume = async () => {
-      const deviceVolume = await VolumeManager.getVolume();
-      // Set the ad volume to match the device volume
-      InterstitialAd.setAppVolume(deviceVolume);
-      //RewardedAd.setAppVolume(deviceVolume);
+      const moded = await RingerMode.getRingerMode();
+      setMode(moded);
+      console.log('volume mode:', mode);
+      console.log('what happend');
+      if (moded === 'vibrate') {
+        MobileAds.setAppMuted(true);
+      } else {
+        MobileAds.setAppMuted(false);
+      }
     };
+
+    // const setAdVolume = async () => {
+    //   const deviceVolume = await VolumeManager.getVolume();
+    //   // Set the ad volume to match the device volume
+    //   //InterstitialAd.setAppVolume(deviceVolume);
+    //   //RewardedAd.setAppVolume(deviceVolume);
+    //   InterstitialAd.setAppVolume(0.0);
+    // };
     setAdVolume();
   }, []);
 
@@ -199,6 +215,7 @@ export default function JobDetailsScreen({route}) {
       <ParallaxView
         image={item.featured_image}
         tags={item.tags}
+        id={item.ID}
         mainContent={item.content}
         content={
           <View>

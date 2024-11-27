@@ -68,6 +68,7 @@ export default function JobDetailsScreen({route}) {
   useEffect(() => {
     const setAdVolume = async () => {
       const moded = await RingerMode.getRingerMode();
+
       setMode(moded);
       console.log('volume mode:', mode);
       console.log('what happend');

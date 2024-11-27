@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   View,
   Text,
@@ -6,6 +6,7 @@ import {
   Dimensions,
   Image,
   ScrollView,
+  TouchableOpacity,
 } from 'react-native';
 import Animated, {
   useSharedValue,
@@ -15,16 +16,20 @@ import Animated, {
 } from 'react-native-reanimated';
 import RenderHtml from 'react-native-render-html';
 import BannerAdComponent from './BannerAdComponent';
+import {fetchNewDataFromAPI} from '../util/funtions';
 const {width: screenWidth, height: screenHeight} = Dimensions.get('window');
 
-const ParallaxView = ({content, mainContent, image, tags}) => {
-  // const [isduplicate, setIsDuplicate] = useState(false);
-
-  function findItemWithNumbers(array) {
-    return array.find(item => /\d/.test(item)) || null;
-  }
+const ParallaxView = ({content, mainContent, image, tags, id}) => {
+  const [duplicate, setDuplicate] = useState(null);
 
   const fulltag = Object.keys(tags);
+
+  function findItemWithNumbers(fulltag, id) {
+    return (
+      fulltag.find(item => /\d/.test(item) && item !== `duplicate-${id}`) ||
+      null
+    );
+  }
 
   // Find the first <b> tag in the article text
 
@@ -71,14 +76,19 @@ const ParallaxView = ({content, mainContent, image, tags}) => {
     },
   };
   useEffect(() => {
-    const post_id = findItemWithNumbers(fulltag);
-    if (post_id) {
-      const url = `https://screammie.info/wp-json/wp/v2/posts/${post_id}`;
-      const response = fetchNewDataFromAPI(url);
-      console.log('found data', response);
+    const foundTag = findItemWithNumbers(fulltag, id);
+    const loadDuplicatePost = async () => {
+      const duplicateId = foundTag.replace('duplicate-', '');
+      // console.log('dup', duplicateId);
+      const url = `https://public-api.wordpress.com/rest/v1.2/sites/screammie.info/posts/?include=${duplicateId}`;
+      const response = await fetchNewDataFromAPI(url);
+      setDuplicate(response.posts[0]);
+    };
+    if (foundTag) {
+      loadDuplicatePost();
     }
   }, []);
-
+  //console.log('fpoid', duplicate.author);
   const renderersProps = {
     p: {
       // You can add any additional props for <p> tags here
@@ -114,6 +124,19 @@ const ParallaxView = ({content, mainContent, image, tags}) => {
           <BannerAdComponent />
 
           {/* Start of Article (Before First <b> Tag) */}
+
+          {duplicate && (
+            <View>
+              <Text>
+                Post might be a repost of the post
+                <TouchableOpacity>
+                  <Text>
+                    {duplicate?.title} by {duplicate?.author?.name}
+                  </Text>
+                </TouchableOpacity>
+              </Text>
+            </View>
+          )}
           <RenderHtml
             contentWidth={screenWidth * 0.95}
             source={{html: beforeBoldText}}

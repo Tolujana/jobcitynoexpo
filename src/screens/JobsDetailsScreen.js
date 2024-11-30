@@ -23,7 +23,7 @@ import {WebView} from 'react-native-webview';
 import {ChevronLeftIcon, ShareIcon} from 'react-native-heroicons/outline';
 import {BookmarkSquareIcon} from 'react-native-heroicons/solid';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import RingerMode from 'react-native-ringer-mode';
+import {useRingerMode, RINGER_MODE} from 'react-native-ringer-mode';
 
 import {useWindowDimensions} from 'react-native';
 import ParallaxView from '../components/ParallaxView';
@@ -54,38 +54,42 @@ const AppContent = () => (
 
 export default function JobDetailsScreen({route}) {
   const {width, height} = useWindowDimensions();
-  //const route = useRoute();
+  const {mode, error, setMode} = useRingerMode();
   const {item} = route.params;
   console.log('detials', item.URL);
   const [visible, setVisible] = useState(false);
   const navigation = useNavigation();
   const [isBookmarked, toggleBookmark] = useState(false);
   const [backButtonClickCount, setBackButtonClickCount] = useState(0);
-  const [mode, setMode] = useState(null);
-
-  console.log('this is mode', mode);
 
   useEffect(() => {
     const setAdVolume = async () => {
-      const moded = await RingerMode.getRingerMode();
+      // if (mode < 2) {
+      //   //await VolumeManager.setVolume(0);
+      //   const deviceVolume = await VolumeManager.getVolume();
+      //   console.log('iam here', deviceVolume);
+      //   console.log(
+      //     'this is mode inside ',
+      //     mode,
+      //     'silent',
+      //     RINGER_MODE.silent,
+      //     'bivesrate',
+      //     RINGER_MODE.vibrate,
+      //   );
+      // } else {
+      //   MobileAds.setAppMuted(false);
+      // }
 
-      setMode(moded);
-      console.log('volume mode:', mode);
-      console.log('what happend');
-      if (moded === 'vibrate') {
-        MobileAds.setAppMuted(true);
-      } else {
-        MobileAds.setAppMuted(false);
-      }
+      //Get the current ring volume
+      VolumeManager.getVolume(VolumeManager.TYPE_RING).then(volume => {
+        // Check if the ring volume is vibrate or silent
+        if (volume === 0) {
+          // Set the music volume to low
+          VolumeManager.setVolume(1, VolumeManager.TYPE_MUSIC);
+        }
+      });
     };
 
-    // const setAdVolume = async () => {
-    //   const deviceVolume = await VolumeManager.getVolume();
-    //   // Set the ad volume to match the device volume
-    //   //InterstitialAd.setAppVolume(deviceVolume);
-    //   //RewardedAd.setAppVolume(deviceVolume);
-    //   InterstitialAd.setAppVolume(0.0);
-    // };
     setAdVolume();
   }, []);
 

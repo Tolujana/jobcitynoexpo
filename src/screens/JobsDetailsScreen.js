@@ -83,6 +83,7 @@ export default function JobDetailsScreen({route}) {
       //Get the current ring volume
       VolumeManager.getVolume(VolumeManager.TYPE_RING).then(volume => {
         // Check if the ring volume is vibrate or silent
+        console.log('this is volume', volume);
         if (volume === 0) {
           // Set the music volume to low
           VolumeManager.setVolume(1, VolumeManager.TYPE_MUSIC);

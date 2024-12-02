@@ -1,10 +1,8 @@
-import { View, Text } from "react-native";
-import React from "react";
+import {View, Text, TextInput, TouchableOpacity} from 'react-native';
+import Icon from 'react-native-vector-icons/FontAwesome';
+import React, {useState} from 'react';
+import SearchBox from '../components/SearchBox';
 
 export default function SearchScreen() {
-  return (
-    <View>
-      <Text>SearchScreen</Text>
-    </View>
-  );
+  return <SearchBox />;
 }

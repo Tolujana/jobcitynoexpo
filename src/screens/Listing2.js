@@ -18,6 +18,7 @@ import {
   QueryClientProvider,
 } from '@tanstack/react-query';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import SearchBox from '../components/SearchBox';
 
 const fetchData = async ({pageParam = 1, queryKey}) => {
   const [, queryParam] = queryKey;
@@ -137,6 +138,7 @@ const Listing2 = ({route}) => {
 
   return (
     <View>
+      {search && <SearchBox search={search} />}
       <Text className="mb-3 text-xl">{category ? category : search}</Text>
       {!data && <ActivityIndicator size="large" />}
       {status === 'error' && <Text>Error: {error.message}</Text>}

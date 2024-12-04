@@ -14,6 +14,7 @@ import {firebase} from '@react-native-firebase/app';
 import {firebaseConfig} from './src/constants/Channels';
 import {navigationRef} from './src/navigation/NotificationNavigate';
 // import type {PropsWithChildren} from 'react';
+
 import {
   PermissionsAndroid,
   Platform,
@@ -65,7 +66,6 @@ function App() {
   const [status, setStatus] = useState(-1);
   const [events, setEvents] = useState([]);
   const [isBatteryOptimized, setIsBatteryOptimized] = useState(true);
-
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
@@ -76,7 +76,7 @@ function App() {
     messaging().onNotificationOpenedApp(remoteMessage => {
       const category = remoteMessage.data?.post_category;
       if (category) {
-        navigationRef.current?.navigate('Listing', {category});
+        navigationRef.current?.navigate('NewListing', {category});
       }
     });
 
@@ -88,7 +88,7 @@ function App() {
           const category = remoteMessage.data?.post_category;
           if (category) {
             console.log('this is category', category);
-            navigationRef.current?.navigate('Listing', {category});
+            navigationRef.current?.navigate('NewListing', {category});
           }
         }
       });
@@ -103,7 +103,7 @@ function App() {
         // Navigate based on notification data
         const category = remoteMessage.data?.post_category;
         if (category) {
-          navigationRef.current?.navigate('Listing', {category});
+          navigationRef.current?.navigate('NewListing', {category});
         }
       });
 
@@ -126,7 +126,7 @@ function App() {
               text: 'See Article',
               onPress: () => {
                 // Navigate to the target screen, based on the notification data
-                navigationRef.current?.navigate('Listing', {
+                navigationRef.current?.navigate('NewListing', {
                   category: post_category,
                 });
               },
@@ -165,7 +165,7 @@ function App() {
   const handleNotificationPress = data => {
     // Ensure data contains the screen and other params
     if (data && data.keyWord) {
-      navigationRef.current?.navigate('Listing', {
+      navigationRef.current?.navigate('NewListing', {
         search: data.keyWord,
       });
     }

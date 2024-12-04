@@ -187,7 +187,7 @@ export default function JobDetailsScreen({route}) {
     setBackButtonClickCount(backButtonClickCount + 1);
 
     // Show ad on alternate back button clicks (e.g., 2nd, 4th, 6th, etc.)
-    if (backButtonClickCount % 2 === 0 && interstitialAd.loaded) {
+    if (backButtonClickCount % 3 === 0 && interstitialAd.loaded) {
       // Store current volume
       // const currentVolume = await VolumeManager.getVolume();
 

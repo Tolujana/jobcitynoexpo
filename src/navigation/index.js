@@ -19,6 +19,7 @@ import CategorySelectionScreen2 from '../screens/CategorySelectionScreen2';
 import SettingsScreen from '../screens/SettingsScreen';
 import PrivacyPolicyScreen from '../screens/PrivacyPolicyScreen';
 import Listing2 from '../screens/Listing2';
+import NewListing from '../screens/NewListing';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -98,6 +99,7 @@ export default function AppNavigation({navigationRef}) {
         <Stack.Screen name="Categories" component={CategorySelectionScreen2} />
         <Stack.Screen name="Form" component={UrlNotificationScreen} />
         <Stack.Screen name="Listing" component={Listing2} />
+        <Stack.Screen name="NewListing" component={NewListing} />
         <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} />
       </Stack.Navigator>
     </NavigationContainer>

@@ -21,6 +21,7 @@ import {
 } from '@tanstack/react-query';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {faPooStorm} from '@fortawesome/free-solid-svg-icons';
+import SearchBox from '../components/SearchBox';
 
 const fetchData = async ({pageParam = 1, queryKey}) => {
   const [queryParam, exclude] = queryKey;
@@ -55,15 +56,21 @@ const fetchData = async ({pageParam = 1, queryKey}) => {
   return response.data.posts;
 };
 
-const NewListing = ({category, search}) => {
+const NewListing = ({category, search, route}) => {
   const [page, setPage] = useState(1);
   const [hideDuplicate, setHideDuplicate] = useState(true);
   const [savedArticles, setSavedArticles] = useState({});
   const exclude = hideDuplicate ? 'duplicate' : null;
-  const queryParam = search
+  const {category: routeCategory, search: routeSearch} = route?.params || {};
+  const propsQueryParam = search
     ? {search: search.slug, number: 7}
-    : {category: category?.slug, number: 10};
+    : category && {category: category?.slug, number: 10};
 
+  const routeQueryParam = routeSearch
+    ? {search: routeSearch, number: 7}
+    : routeCategory && {category: routeCategory, number: 10};
+
+  const queryParam = routeQueryParam || propsQueryParam;
   //  if (category) {
   //   handleCategory(category);
   // } else if (search) {
@@ -157,9 +164,12 @@ const NewListing = ({category, search}) => {
 
   return (
     <View>
+      {routeSearch && <SearchBox search={routeSearch} />}
       <View className="flex-row justify-between mr-1">
         <Text className="mb-3 text-lg">
-          {category ? `${category?.name} jobs` : `${search?.search} Job search`}
+          {category || routeCategory
+            ? `${category?.name || routeCategory} jobs`
+            : `${search?.search || routeSearch} Job search`}
         </Text>
         <View style={styles.switch}>
           <Text>Hide Duplicates</Text>

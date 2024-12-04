@@ -127,14 +127,12 @@ const ParallaxView = ({content, mainContent, image, tags, id}) => {
 
           {duplicate && (
             <View>
-              <Text>
-                Post might be a repost of the post
-                <TouchableOpacity>
-                  <Text>
-                    {duplicate?.title} by {duplicate?.author?.name}
-                  </Text>
-                </TouchableOpacity>
-              </Text>
+              <TouchableOpacity>
+                <Text>
+                  Might be similar to {duplicate?.title} by{' '}
+                  {duplicate?.author?.name}
+                </Text>
+              </TouchableOpacity>
             </View>
           )}
           <RenderHtml

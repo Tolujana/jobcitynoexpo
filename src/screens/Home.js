@@ -7,8 +7,10 @@ import {
   StatusBar,
   StyleSheet,
   Alert,
+  TouchableWithoutFeedback,
+  Keyboard,
 } from 'react-native';
-import React, {useContext, useEffect, useState} from 'react';
+import React, {useContext, useEffect, useRef, useState} from 'react';
 import {SafeAreaView} from 'react-native-safe-area-context';
 //mport { StatusBar } from "expo-status-bar";
 import {useColorScheme} from 'nativewind';
@@ -24,6 +26,8 @@ import NewListing from './NewListing';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import ApiUrlManager from '../components/ApiUrlManager';
 import {loadSelectedspecialization, loadSelectedTopics} from '../util/funtions';
+import SearchBox from '../components/SearchBox';
+import HomeSearchButton from '../components/HomeSearchButton';
 
 export default function Home() {
   const navigation = useNavigation();
@@ -52,15 +56,6 @@ export default function Home() {
       setIsloading(true);
       loadSelectedspecialization(setspecilization);
       loadSelectedspecialization(setKeywords, 'apiList');
-      setsortedSpec(
-        specialization.sort((a, b) => a.name.localeCompare(b.name)),
-      );
-      setSortedKeywords(
-        keywords.sort((a, b) => a.search.localeCompare(b.name)),
-      );
-      setFullList([...sortedSpec, ...sortedkeywords]);
-
-      setActiveCategory(sortedSpec[0] || sortedkeywords[0]);
       setIsloading(false);
     }, []),
   );
@@ -72,6 +67,14 @@ export default function Home() {
     setSortedKeywords(keywords.sort((a, b) => a.search.localeCompare(b.name)));
   }, [keywords]);
 
+  const textInputRef = useRef(null);
+
+  const dismissKeyboard = () => {
+    Keyboard.dismiss(); // Dismiss the keyboard
+    if (textInputRef.current) {
+      textInputRef.current.blur(); // Blur the TextInput in the child
+    }
+  };
   const addMenuItems = () => {
     Alert.alert('Choose Menu type', '', [
       {
@@ -93,81 +96,74 @@ export default function Home() {
   return isLoading ? (
     <Text>isLoading</Text>
   ) : (
-    <SafeAreaView className="pt-8 flex-1 bg-white dark:bg-neutral-900">
-      <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
-      {/* header */}
-      <View className="px-4 mb-6 justify-between">
-        <Text className="text-3xl font-bold text-blue-600 dark:text-white">
-          Jobcity
-        </Text>
-        <Text className="text-base text-gray-700 dark:text-neutral-300">
-          Jobs from multiple sources
-        </Text>
-      </View>
+    <TouchableWithoutFeedback onPress={() => dismissKeyboard()}>
+      <SafeAreaView className="pt-8 flex-1 bg-white dark:bg-neutral-900">
+        <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
+        {/* header */}
+        <View className="px-4 justify-between">
+          <View className="flex-row justify-between">
+            <Text className=" text-3xl font-bold text-blue-600 dark:text-white">
+              Jobcity
+            </Text>
+            <HomeSearchButton ref={textInputRef} />
+          </View>
+          <Text className="text-base text-gray-700 dark:text-neutral-300">
+            Jobs from multiple sources
+          </Text>
+        </View>
 
-      {/* search */}
+        {/* search */}
 
-      <View className="mx-4 mb -8 flex-row p-2 py-3 justify-start items-center  bg-neutral-100 dark:bg-neutral-800 rounded-full">
-        <TouchableOpacity className="pl-2">
-          <Icon name="search" size={25} color="gray" />
-        </TouchableOpacity>
-        <TextInput
-          className="pl-3 flex-1 font-medium tracking-wider"
-          placeholder="Search jobs"
-          placeholderTextColor={'gray'}
-          onPress={() => navigation.navigate('Search Jobs')}
-        />
-      </View>
-
-      {/* categories */}
-      <View className=" flex-row my-4 ml-2">
-        {/* plus button  */}
-        {fullMenu.length > 0 && (
-          <TouchableOpacity style={styles.button} onPress={addMenuItems}>
-            <Icon name="plus" size={24} color="#fff" />
-          </TouchableOpacity>
-        )}
-        {fullMenu.length > 0 ? (
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            className="space-x-4"
-            contentContainerStyle={{paddingRight: 20}}>
-            {/* category */}
-            {fullMenu.map((category, index) => {
-              return (
-                <CategoriesCard
-                  category={category}
-                  index={index}
-                  key={index}
-                  activeCategory={
-                    activeCategory || sortedSpec[0] || sortedkeywords[0]
-                  }
-                  onPress={() => handleCategoryChange(category)}
-                />
-              );
-            })}
-          </ScrollView>
-        ) : (
-          <TouchableOpacity style={styles.buttonlong} onPress={addMenuItems}>
-            <View className=" flex-row">
+        {/* categories */}
+        <View className=" flex-row my-4 ml-2">
+          {/* plus button  */}
+          {fullMenu.length > 0 && (
+            <TouchableOpacity style={styles.button} onPress={addMenuItems}>
               <Icon name="plus" size={24} color="#fff" />
-              <Text style={styles.text}>Click here to add menu items</Text>
-            </View>
-          </TouchableOpacity>
-        )}
-      </View>
-      {/* jobLists */}
-      <View>
-        {!activeCategory ? (
-          <NewListing category={sortedSpec[0] || {name: 'All ', slug: ''}} />
-        ) : Boolean(activeCategory.name) ? (
-          <NewListing category={activeCategory} />
-        ) : (
-          <NewListing search={activeCategory} />
-        )}
-      </View>
-    </SafeAreaView>
+            </TouchableOpacity>
+          )}
+          {fullMenu.length > 0 ? (
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              className="space-x-4"
+              contentContainerStyle={{paddingRight: 20}}>
+              {/* category */}
+              {fullMenu.map((category, index) => {
+                return (
+                  <CategoriesCard
+                    category={category}
+                    index={index}
+                    key={index}
+                    activeCategory={
+                      activeCategory || sortedSpec[0] || sortedkeywords[0]
+                    }
+                    onPress={() => handleCategoryChange(category)}
+                  />
+                );
+              })}
+            </ScrollView>
+          ) : (
+            <TouchableOpacity style={styles.buttonlong} onPress={addMenuItems}>
+              <View className=" flex-row">
+                <Icon name="plus" size={24} color="#fff" />
+                <Text style={styles.text}>Click here to add menu items</Text>
+              </View>
+            </TouchableOpacity>
+          )}
+        </View>
+        {/* jobLists */}
+        <View>
+          {!activeCategory ? (
+            <NewListing category={sortedSpec[0] || {name: 'All ', slug: ''}} />
+          ) : Boolean(activeCategory.name) ? (
+            <NewListing category={activeCategory} />
+          ) : (
+            <NewListing search={activeCategory} />
+          )}
+        </View>
+      </SafeAreaView>
+    </TouchableWithoutFeedback>
   );
 }
 

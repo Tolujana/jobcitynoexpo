@@ -1,4 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {navigationRef} from '../navigation/NotificationNavigate';
 // function to update specialization list in settings page
 export const checkAndFetchData = async () => {
   try {
@@ -51,6 +52,15 @@ export const fetchNewDataFromAPI = async (
   } catch (error) {
     console.error('Error fetching data:', error);
     return error.message;
+  }
+};
+
+//this is to handle search submission
+export const handleSubmit = (searchText, setSearchText) => {
+  if (searchText.trim()) {
+    navigationRef.current?.navigate('NewListing', {search: searchText});
+    //onSearch(text); // Call the onSearch callback with the entered text
+    setSearchText(''); // Clear the input field
   }
 };
 

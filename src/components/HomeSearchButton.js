@@ -11,19 +11,14 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import {navigationRef} from '../navigation/NotificationNavigate';
+import {handleSubmit} from '../util/funtions';
 
 const HomeSearchButton = forwardRef((props, ref) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [searchText, setSearchText] = useState('');
   const inputScale = useState(new Animated.Value(0.2))[0];
   // const inputRef = useRef(null);
-  const handleSubmit = () => {
-    if (searchText.trim()) {
-      navigationRef.current?.navigate('NewListing', {search: searchText});
-      //onSearch(text); // Call the onSearch callback with the entered text
-      setSearchText(''); // Clear the input field
-    }
-  };
+
   const handlePress = () => {
     setIsExpanded(true);
     Animated.timing(inputScale, {
@@ -81,7 +76,7 @@ const HomeSearchButton = forwardRef((props, ref) => {
             placeholder="Search"
             onBlur={handleBlur}
             returnKeyType="search"
-            onSubmitEditing={handleSubmit}
+            onSubmitEditing={() => handleSubmit(searchText, setSearchText)}
           />
         </Animated.View>
       ) : (

@@ -65,7 +65,7 @@ function App() {
   const [enabled, setEnabled] = useState(false);
   const [status, setStatus] = useState(-1);
   const [events, setEvents] = useState([]);
-  const [isBatteryOptimized, setIsBatteryOptimized] = useState(true);
+
   const backgroundStyle = {
     backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
   };
@@ -175,9 +175,9 @@ function App() {
   React.useEffect(() => {
     requestNotificationPermission();
     initBackgroundFetch();
-    if (Platform.OS === 'android') {
-      checkBatteryOptimization();
-    }
+    // if (Platform.OS === 'android') {
+    //   checkBatteryOptimization();
+    // }
     //fetch menu data
   }, []);
 
@@ -213,44 +213,6 @@ function App() {
   //   // Cleanup on unmount
   //   // return unsubscribe;
   // }, []);
-
-  const checkBatteryOptimization = async () => {
-    if (Platform.OS !== 'android') return;
-
-    try {
-      const packageName = 'com.jobcity'; // Replace with your app's package name
-      const intent = await Linking.canOpenURL(`package:${packageName}`);
-
-      if (!intent) {
-        setIsBatteryOptimized(false);
-        Alert.alert(
-          'Battery Optimization',
-          'Please disable battery optimization for better app NOtifications.',
-          [
-            {
-              text: 'Cancel',
-              style: 'cancel',
-            },
-            {
-              text: 'Open Settings',
-              onPress: () => openBatteryOptimizationSettings(packageName),
-            },
-          ],
-          {cancelable: false},
-        );
-      } else {
-        setIsBatteryOptimized(true);
-      }
-    } catch (error) {
-      console.error('Battery optimization check failed', error);
-    }
-  };
-
-  const openBatteryOptimizationSettings = packageName => {
-    if (Platform.OS === 'android') {
-      Linking.openURL(`package:${packageName}`);
-    }
-  };
 
   const initBackgroundFetch = async () => {
     const status = await BackgroundFetch.configure(
@@ -293,17 +255,6 @@ function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <Text style={styles.message}>
-        {isBatteryOptimized
-          ? 'Battery optimization is enabled.'
-          : 'Battery optimization is disabled for this app.'}
-      </Text>
-      {!isBatteryOptimized && (
-        <Button
-          title="Disable Battery Optimization"
-          onPress={openBatteryOptimizationSettings}
-        />
-      )}
       <AppNavigation navigationRef={navigationRef} />
     </QueryClientProvider>
   );

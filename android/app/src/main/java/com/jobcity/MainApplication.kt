@@ -11,6 +11,7 @@ import com.facebook.react.defaults.DefaultReactHost.getDefaultReactHost
 import com.facebook.react.defaults.DefaultReactNativeHost
 import com.facebook.soloader.SoLoader
 import com.jobcity.ArticleSchedulerModule;
+import com.jobcity.BatteryOptimizationPackage;
 class MainApplication : Application(), ReactApplication {
 
   override val reactNativeHost: ReactNativeHost =
@@ -20,7 +21,7 @@ class MainApplication : Application(), ReactApplication {
               // Packages that cannot be autolinked yet can be added manually here, for example:
               //add(UrlCheckerPackage() )
               add(ArticleSchedulerPackage())
-              
+              add(BatteryOptimizationPackage())
             }
 
         override fun getJSMainModuleName(): String = "index"

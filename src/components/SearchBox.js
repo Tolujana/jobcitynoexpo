@@ -1,10 +1,16 @@
 import {View, Text, TextInput, TouchableOpacity} from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import React, {useState} from 'react';
+import {handleSubmit} from '../util/funtions';
 
 export default function SearchBox({search}) {
   const [focused, setFocused] = useState(false);
-  const [searchText, setSearchText] = useState('');
+  const [searchText, setSearchText] = useState(null);
+  //const [initialSearchText, setInitialSearchText] = useState(search);
+
+  const handleTextChange = text => {
+    setSearchText(text);
+  };
   return (
     <View className="flex-row  justify-start items-center border border-gray-300 bg-neutral-100 dark:bg-neutral-800 rounded-full">
       <TouchableOpacity className="pl-2">
@@ -12,12 +18,14 @@ export default function SearchBox({search}) {
       </TouchableOpacity>
       <TextInput
         className="pl-3 flex-1 font-medium tracking-wider "
-        placeholder={focused ? '' : 'search Jobs'}
+        placeholder={'search Jobs'}
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
+        returnKeyType="search"
         placeholderTextColor={'gray'}
-        value={search || searchText}
-        onChangeText={() => setSearchText(searchText)}
+        value={searchText || search}
+        onChangeText={handleTextChange}
+        onSubmitEditing={() => handleSubmit(searchText, setSearchText)}
         //onPress={() => navigation.navigate('Search Jobs')}
       />
     </View>

@@ -10,6 +10,7 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
 } from 'react-native';
+
 import React, {useContext, useEffect, useRef, useState} from 'react';
 import {SafeAreaView} from 'react-native-safe-area-context';
 //mport { StatusBar } from "expo-status-bar";
@@ -28,10 +29,12 @@ import ApiUrlManager from '../components/ApiUrlManager';
 import {loadSelectedspecialization, loadSelectedTopics} from '../util/funtions';
 import SearchBox from '../components/SearchBox';
 import HomeSearchButton from '../components/HomeSearchButton';
+import {ThemeContext} from '../theme/themeContext';
 
 export default function Home() {
   const navigation = useNavigation();
-
+  const theme = useContext(ThemeContext);
+  const {primary, background, text, text2, secondry, tertiary} = theme.colors;
   const [activeCategory, setActiveCategory] = useState(null);
   const [jobEntries, setJobEntries] = useState([]);
   const {colorScheme, toggleColorScheme} = useColorScheme();
@@ -97,17 +100,19 @@ export default function Home() {
     <Text>isLoading</Text>
   ) : (
     <TouchableWithoutFeedback onPress={() => dismissKeyboard()}>
-      <SafeAreaView className="pt-8 flex-1 bg-white dark:bg-neutral-900">
-        <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
+      <SafeAreaView
+        style={{backgroundColor: background}}
+        className="pt-8 flex-1">
+        <StatusBar backgroundColor={primary} />
         {/* header */}
         <View className="px-4 justify-between">
           <View className="flex-row justify-between">
-            <Text className=" text-3xl font-bold text-blue-600 dark:text-white">
+            <Text style={{color: primary}} className=" text-3xl font-bold">
               Jobcity
             </Text>
             <HomeSearchButton ref={textInputRef} />
           </View>
-          <Text className="text-base text-gray-700 dark:text-neutral-300">
+          <Text style={{color: text}} className="text-base">
             Jobs from multiple sources
           </Text>
         </View>
@@ -118,8 +123,10 @@ export default function Home() {
         <View className=" flex-row my-4 ml-2">
           {/* plus button  */}
           {fullMenu.length > 0 && (
-            <TouchableOpacity style={styles.button} onPress={addMenuItems}>
-              <Icon name="plus" size={24} color="#fff" />
+            <TouchableOpacity
+              style={{...styles.button, backgroundColor: tertiary}}
+              onPress={addMenuItems}>
+              <Icon name="plus" size={24} color={text2} />
             </TouchableOpacity>
           )}
           {fullMenu.length > 0 ? (
@@ -144,10 +151,12 @@ export default function Home() {
               })}
             </ScrollView>
           ) : (
-            <TouchableOpacity style={styles.buttonlong} onPress={addMenuItems}>
+            <TouchableOpacity
+              style={{...styles.buttonlong, backgroundColor: tertiary}}
+              onPress={addMenuItems}>
               <View className=" flex-row">
-                <Icon name="plus" size={24} color="#fff" />
-                <Text style={styles.text}>Click here to add menu items</Text>
+                <Icon name="plus" size={24} color={text2} />
+                <Text style={{color: text2}}>Click here to add menu items</Text>
               </View>
             </TouchableOpacity>
           )}
@@ -185,7 +194,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     height: 40,
     borderRadius: 25,
-    backgroundColor: '#4CAF50',
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',

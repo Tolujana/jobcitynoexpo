@@ -1,5 +1,6 @@
 import {View, Text, ScrollView, TouchableOpacity} from 'react-native';
-import React from 'react';
+import React, {useContext} from 'react';
+import {ThemeContext} from '../theme/themeContext';
 
 export default function CategoriesCard({
   category,
@@ -10,15 +11,27 @@ export default function CategoriesCard({
   const isActive = activeCategory?.name
     ? activeCategory.name === category.name
     : activeCategory?.search === category?.search;
+  const theme = useContext(ThemeContext);
+  const {
+    primary,
+    lightGrey,
+    darkGrey,
+    background,
+    text,
+    text2,
+    secondary,
+    tertiary,
+  } = theme.colors;
+
   return (
     <TouchableOpacity
       className="p-2 m-1 px-4 rounded-full "
       style={{
         backgroundColor: isActive
-          ? 'blue'
+          ? primary
           : category.name
-          ? '#EBEDEF'
-          : '#ccd1d1',
+          ? lightGrey
+          : darkGrey,
       }}
       onPress={onPress}>
       <Text className={isActive ? 'text-white font-bold' : 'text-black'}>

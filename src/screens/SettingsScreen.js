@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useContext} from 'react';
 import {
   View,
   Text,
@@ -8,15 +8,20 @@ import {
 } from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Ionicons';
+import {ThemeContext} from '../theme/themeContext';
 
 export default function SettingsScreen() {
   const navigation = useNavigation();
-
+  const theme = useContext(ThemeContext);
+  const {primary, background, text, text2, secondary, tertiary} = theme.colors;
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView
+      style={[styles.container, {backgroundColor: background, color: text}]}>
       {/* Account Settings Section */}
       <View style={styles.section}>
-        <Text style={styles.sectionHeader}>Account Settings</Text>
+        <Text style={[styles.sectionHeader, {color: primary}]}>
+          Account Settings
+        </Text>
 
         <TouchableOpacity
           style={styles.item}
@@ -35,7 +40,7 @@ export default function SettingsScreen() {
 
       {/* General Settings Section */}
       <View style={styles.section}>
-        <Text style={styles.sectionHeader}>General</Text>
+        <Text style={[styles.sectionHeader, {color: primary}]}>General</Text>
 
         <TouchableOpacity
           style={styles.item}
@@ -87,11 +92,11 @@ const styles = StyleSheet.create({
     borderColor: '#eee',
   },
   icon: {
-    color: '#555',
+    //color: '#555',
     marginRight: 15,
   },
   text: {
     fontSize: 16,
-    color: '#333',
+    //color: '#333',
   },
 });

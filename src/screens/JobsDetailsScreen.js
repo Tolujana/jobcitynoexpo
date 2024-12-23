@@ -15,9 +15,8 @@ import MobileAds, {
   AdEventType,
   TestIds,
 } from 'react-native-google-mobile-ads';
-import VolumeManager from 'react-native-volume-manager';
 
-import React, {useEffect, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {useNavigation, useRoute} from '@react-navigation/native';
 import {WebView} from 'react-native-webview';
 import {ChevronLeftIcon, ShareIcon} from 'react-native-heroicons/outline';
@@ -28,10 +27,11 @@ import {useRingerMode, RINGER_MODE} from 'react-native-ringer-mode';
 import {useWindowDimensions} from 'react-native';
 import ParallaxView from '../components/ParallaxView';
 import {MobileAd} from 'react-native-google-mobile-ads/lib/typescript/ads/MobileAd';
+import {ThemeContext} from '../theme/themeContext';
 
 // const {height, width} = Dimensions.get('window');
 
-const adUnitId = !__DEV__
+const adUnitId = __DEV__
   ? TestIds.INTERSTITIAL
   : 'ca-app-pub-7993847549836206/6994945775';
 
@@ -53,6 +53,8 @@ const AppContent = () => (
 );
 
 export default function JobDetailsScreen({route}) {
+  const theme = useContext(ThemeContext);
+  const {primary, background, text, text2, secondry, tertiary} = theme.colors;
   const {width, height} = useWindowDimensions();
   const {mode, error, setMode} = useRingerMode();
   const {item} = route.params;
@@ -61,38 +63,6 @@ export default function JobDetailsScreen({route}) {
   const navigation = useNavigation();
   const [isBookmarked, toggleBookmark] = useState(false);
   const [backButtonClickCount, setBackButtonClickCount] = useState(0);
-
-  useEffect(() => {
-    const setAdVolume = async () => {
-      // if (mode < 2) {
-      //   //await VolumeManager.setVolume(0);
-      //   const deviceVolume = await VolumeManager.getVolume();
-      //   console.log('iam here', deviceVolume);
-      //   console.log(
-      //     'this is mode inside ',
-      //     mode,
-      //     'silent',
-      //     RINGER_MODE.silent,
-      //     'bivesrate',
-      //     RINGER_MODE.vibrate,
-      //   );
-      // } else {
-      //   MobileAds.setAppMuted(false);
-      // }
-
-      //Get the current ring volume
-      VolumeManager.getVolume(VolumeManager.TYPE_RING).then(volume => {
-        // Check if the ring volume is vibrate or silent
-        console.log('this is volume', volume);
-        if (volume === 0) {
-          // Set the music volume to low
-          VolumeManager.setVolume(1, VolumeManager.TYPE_MUSIC);
-        }
-      });
-    };
-
-    setAdVolume();
-  }, []);
 
   const toggleBookmarkAndSave = async () => {
     try {
@@ -226,18 +196,23 @@ export default function JobDetailsScreen({route}) {
         content={
           <View>
             <View className="w-full flex-row justify-between item-center pt-2  pb-4 ">
-              <View className="bg-gray-100 p-2 rounded-full item-center justify-center">
+              <View
+                className="p-2 rounded-full item-center justify-center"
+                style={{backgroundColor: background}}>
                 <TouchableOpacity onPress={() => showInterstitialAd()}>
                   <ChevronLeftIcon size={25} strokeWidth={3} color="gray" />
                 </TouchableOpacity>
               </View>
 
               <View className="space-x-3 rounded-full item-center justify-center flex-row">
-                <TouchableOpacity className="bg-gray-100 p-2 rounded-full">
+                <TouchableOpacity
+                  className=" p-2 rounded-full"
+                  style={{backgroundColor: background}}>
                   <ShareIcon size={25} color="gray" strokeWidth={2} />
                 </TouchableOpacity>
                 <TouchableOpacity
-                  className="bg-gray-100 p-2 rounded-full"
+                  className=" p-2 rounded-full"
+                  style={{backgroundColor: background}}
                   onPress={toggleBookmarkAndSave}>
                   <BookmarkSquareIcon
                     size={25}

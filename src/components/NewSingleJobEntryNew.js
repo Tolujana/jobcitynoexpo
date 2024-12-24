@@ -1,11 +1,12 @@
 import {View, Text, TouchableOpacity, Image} from 'react-native';
-import React, {memo, useState} from 'react';
+import React, {memo, useContext, useState} from 'react';
 import {styles} from '../../assets/Styles';
 import {heightPercentageToDP} from 'react-native-responsive-screen';
 import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 //import FontAwesome from '@expo/vector-icons/FontAwesome';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {ThemeContext} from '../theme/themeContext';
 
 function NewSingleJobEntry({item = {}, index = 1, savedArticles = []}) {
   const navigation = useNavigation();
@@ -13,6 +14,9 @@ function NewSingleJobEntry({item = {}, index = 1, savedArticles = []}) {
     navigation.navigate('JobsDetails', {
       item: item,
     });
+  const theme = useContext(ThemeContext);
+  const {primary, backgroundCard, text, text2, secondary, tertiary} =
+    theme.colors;
   const fullSpeciliazation = Object.keys(item?.categories);
   const fulltags = Object.keys(item?.tags);
   const [jobs, ...specialization] = fullSpeciliazation;
@@ -108,9 +112,13 @@ function NewSingleJobEntry({item = {}, index = 1, savedArticles = []}) {
         isduplicate
           ? {
               ...styles.touchable,
-              backgroundColor: '#FBF2EF',
+              backgroundColor: secondary,
+              color: text2,
             }
-          : styles.touchable
+          : {
+              ...styles.touchable,
+              backgroundColor: backgroundCard,
+            }
       }
       className="mx-2 mb-2 pb-2 space-y-1"
       onPress={() => openItem()}>
@@ -164,7 +172,7 @@ function NewSingleJobEntry({item = {}, index = 1, savedArticles = []}) {
             <Icon
               name="suitcase"
               size={20}
-              color={savedArticleStatus[item.ID] ? 'blue' : 'grey'}
+              color={savedArticleStatus[item.ID] ? primary : tertiary}
             />
           </TouchableOpacity>
         </View>

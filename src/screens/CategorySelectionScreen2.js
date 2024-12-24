@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {
   View,
   Text,
@@ -16,9 +16,12 @@ import {
   loadSelectedspecialization,
   loadSelectedTopics,
 } from '../util/funtions';
+import {ThemeContext} from '../theme/themeContext';
 
 const CategorySelectionScreen2 = () => {
   const [selectedTopics, setSelectedTopics] = useState([]);
+  const theme = useContext(ThemeContext);
+  const {primary, background, text, text2, secondary, tertiary} = theme.colors;
 
   const [data, setData] = useState(NewSpec);
   const [loading, setLoading] = useState(true);
@@ -82,9 +85,15 @@ const CategorySelectionScreen2 = () => {
   };
 
   return (
-    <>
-      <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.title}>Select Topics to Subscribe</Text>
+    <View style={{backgroundColor: background, flex: 1}}>
+      <ScrollView
+        contentContainerStyle={[
+          styles.container,
+          {backgroundColor: background},
+        ]}>
+        <Text style={[styles.title, {color: primary}]}>
+          Select Topics to Subscribe
+        </Text>
         {data
           .filter(topic => !excludedNames.includes(topic.name))
           .map((topic, index) => (
@@ -97,7 +106,7 @@ const CategorySelectionScreen2 = () => {
             </View> */}
 
                 <CheckBox
-                  tintColors={{true: '#2563eb'}}
+                  tintColors={{true: primary}}
                   value={
                     selectedTopics.some(t => t.slug === topic.slug) || false
                   }
@@ -109,12 +118,14 @@ const CategorySelectionScreen2 = () => {
           ))}
       </ScrollView>
       <TouchableOpacity
-        style={styles.button}
+        style={[styles.button, {backgroundColor: primary}]}
         onPress={saveSelectedTopics}
         activeOpacity={0.8}>
-        <Text style={styles.buttonText}>Save Preferences</Text>
+        <Text style={[styles.buttonText, {color: text2}]}>
+          Save Preferences
+        </Text>
       </TouchableOpacity>
-    </>
+    </View>
   );
 };
 const styles = StyleSheet.create({

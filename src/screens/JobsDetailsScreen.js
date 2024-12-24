@@ -193,6 +193,7 @@ export default function JobDetailsScreen({route}) {
         tags={item.tags}
         id={item.ID}
         mainContent={item.content}
+        excerpt={item.excerpt}
         content={
           <View>
             <View className="w-full flex-row justify-between item-center pt-2  pb-4 ">

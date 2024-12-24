@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useContext} from 'react';
 import {
   View,
   TextInput,
@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {NativeModules} from 'react-native';
+import {ThemeContext} from '../theme/themeContext';
 
 const {ArticleScheduler} = NativeModules;
 
@@ -17,6 +18,8 @@ const ApiUrlManager2 = () => {
   const [urlName, setUrlName] = useState('');
   const [url, setUrl] = useState('');
   const [urls, setUrls] = useState([]);
+  const theme = useContext(ThemeContext);
+  const {primary, background, text, text2, secondary, tertiary} = theme.colors;
 
   useEffect(() => {
     loadUrls();
@@ -58,8 +61,18 @@ const ApiUrlManager2 = () => {
     }
   };
 
+  const renderItems = ({item}) => (
+    <View style={styles.itemContainer}>
+      <Text>
+        {item[0]}: {item[1]}
+      </Text>
+      <TouchableOpacity onPress={() => removeUrl(item[0])}>
+        <Text style={styles.removeButton}>Remove</Text>
+      </TouchableOpacity>
+    </View>
+  );
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, {backgroundColor: background}]}>
       {/* <TextInput
         style={styles.input}
         placeholder="Enter API Name"
@@ -76,16 +89,8 @@ const ApiUrlManager2 = () => {
       <FlatList
         data={Object.entries(urls)}
         keyExtractor={item => item[0]}
-        renderItem={({item}) => (
-          <View style={styles.itemContainer}>
-            <Text>
-              {item[0]}: {item[1]}
-            </Text>
-            <TouchableOpacity onPress={() => removeUrl(item[0])}>
-              <Text style={styles.removeButton}>Remove</Text>
-            </TouchableOpacity>
-          </View>
-        )}
+        removeClippedSubviews={true}
+        renderItem={renderItems}
       />
     </View>
   );

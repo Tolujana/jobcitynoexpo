@@ -1,7 +1,5 @@
 import {View, Text, StyleSheet} from 'react-native';
 import React, {useState} from 'react';
-import SingleJobEntry from './SingleJobEntry';
-import SingleJobEntryNew from './SingleJobEntryv2';
 
 import {
   BannerAd,
@@ -9,7 +7,6 @@ import {
   NativeAdView,
   TestIds,
 } from 'react-native-google-mobile-ads';
-import NativeAdComponent from './NativeAdComponent';
 import {NewSingleJobEntryNew} from './NewSingleJobEntryNew';
 import BannerAdComponent from './BannerAdComponent';
 

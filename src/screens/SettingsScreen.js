@@ -20,21 +20,21 @@ export default function SettingsScreen() {
       {/* Account Settings Section */}
       <View style={styles.section}>
         <Text style={[styles.sectionHeader, {color: primary}]}>
-          Account Settings
+          Notification Settings
         </Text>
 
         <TouchableOpacity
           style={styles.item}
           onPress={() => navigation.navigate('Categories')}>
           <Icon name="briefcase-outline" size={24} style={styles.icon} />
-          <Text style={styles.text}>Select Job Categories</Text>
+          <Text style={styles.text}>Select Job Specialization</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           style={styles.item}
           onPress={() => navigation.navigate('Form')}>
           <Icon name="create-outline" size={24} style={styles.icon} />
-          <Text style={styles.text}>Fill Information</Text>
+          <Text style={styles.text}>Keyword Notification</Text>
         </TouchableOpacity>
       </View>
 

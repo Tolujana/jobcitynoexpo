@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {
   View,
   Text,
@@ -17,11 +17,23 @@ import Animated, {
 import RenderHtml from 'react-native-render-html';
 import BannerAdComponent from './BannerAdComponent';
 import {fetchNewDataFromAPI} from '../util/funtions';
+import {ThemeContext} from '../theme/themeContext';
 const {width: screenWidth, height: screenHeight} = Dimensions.get('window');
 
 const ParallaxView = ({content, mainContent, image, tags, id}) => {
+  const theme = useContext(ThemeContext);
+  const {
+    primary,
+    background,
+    text,
+    transBackground,
+    boldText,
+    text2,
+    tertiary,
+  } = theme.colors;
   const [duplicate, setDuplicate] = useState(null);
-
+  const pageStyle = {backgroundColor: background, color: text};
+  const ForeGroundStyle = {backgroundColor: transBackground, color: text};
   const fulltag = Object.keys(tags);
 
   function findItemWithNumbers(fulltag, id) {
@@ -61,30 +73,45 @@ const ParallaxView = ({content, mainContent, image, tags, id}) => {
 
   const tagsStyles = {
     body: {
-      backgroundColor: 'ffffff', // Change background color
-      color: '#000', // Change text color
+      backgroundColor: background, // Change background color
+      color: text, // Change text color
       fontFamily: 'Arial', // Change font family
       //padding: 10,
       textAlign: 'justify',
     },
     p: {
-      color: '#333', // Paragraph text color
+      color: text, // Paragraph text color
       fontSize: 16, // Paragraph text size
     },
     strong: {
-      color: '#000', // Strong text color
+      color: boldText, // Strong text color
     },
   };
+
+  const date = new Date(duplicate?.date);
+
+  const readableDate = date.toLocaleString('en-US', {
+    weekday: 'long', // e.g., "Thursday"
+    year: 'numeric', // e.g., "2024"
+    month: 'long', // e.g., "December"
+    day: 'numeric', // e.g., "26"
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: true, // For AM/PM format
+  });
   useEffect(() => {
-    const foundTag = findItemWithNumbers(fulltag, id);
-    const loadDuplicatePost = async () => {
-      const duplicateId = foundTag.replace('duplicate-', '');
-      // console.log('dup', duplicateId);
-      const url = `https://public-api.wordpress.com/rest/v1.2/sites/screammie.info/posts/?include=${duplicateId}`;
-      const response = await fetchNewDataFromAPI(url);
-      setDuplicate(response.posts[0]);
-    };
-    if (foundTag) {
+    if (fulltag.includes('duplicate')) {
+      const foundTag = findItemWithNumbers(fulltag, id);
+      const loadDuplicatePost = async () => {
+        const duplicateId = foundTag.replace('duplicate-', '');
+        // console.log('dup', duplicateId);
+
+        const url = `https://public-api.wordpress.com/rest/v1.2/sites/screammie.info/posts/?include=${duplicateId}`;
+        const response = await fetchNewDataFromAPI(url);
+        setDuplicate(response.posts[0]);
+      };
+
       loadDuplicatePost();
     }
   }, []);
@@ -106,7 +133,7 @@ const ParallaxView = ({content, mainContent, image, tags, id}) => {
   });
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, pageStyle]}>
       <Animated.Image
         source={{uri: image}}
         style={[styles.backgroundImage, backgroundAnimatedStyle]}
@@ -117,7 +144,11 @@ const ParallaxView = ({content, mainContent, image, tags, id}) => {
         scrollEventThrottle={16}
         showsVerticalScrollIndicator={false}>
         <Animated.View
-          style={[styles.foregroundContent, foregroundAnimatedStyle]}>
+          style={[
+            styles.foregroundContent,
+            ForeGroundStyle,
+            foregroundAnimatedStyle,
+          ]}>
           {content}
         </Animated.View>
         <View style={{width: screenWidth * 0.95}}>
@@ -126,11 +157,12 @@ const ParallaxView = ({content, mainContent, image, tags, id}) => {
           {/* Start of Article (Before First <b> Tag) */}
 
           {duplicate && (
-            <View>
+            <View style={{backgroundColor: primary, flex: 1}}>
               <TouchableOpacity>
-                <Text>
-                  Might be similar to {duplicate?.title} by{' '}
-                  {duplicate?.author?.name}
+                <Text style={{color: text2, margin: 10}}>
+                  "Job post Might be similar to:{'\n'}
+                  {duplicate?.title} written by {duplicate?.author?.name} on{' '}
+                  {readableDate}
                 </Text>
               </TouchableOpacity>
             </View>

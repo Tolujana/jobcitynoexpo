@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {
   View,
   Text,
@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {NativeModules} from 'react-native';
+import {ThemeContext} from '../theme/themeContext';
 
 const {ArticleScheduler} = NativeModules;
 
@@ -17,7 +18,8 @@ const API_URLS_KEY = 'apiList';
 const ApiUrlManager = () => {
   const [apiUrl, setApiUrl] = useState('');
   const [apiUrls, setApiUrls] = useState([]);
-
+  const theme = useContext(ThemeContext);
+  const {primary, background, text, text2, secondary, tertiary} = theme.colors;
   useEffect(() => {
     const loadApiUrls = async () => {
       try {
@@ -62,16 +64,19 @@ const ApiUrlManager = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>API URL Manager</Text>
+    <View style={[styles.container, {backgroundColor: background}]}>
+      <Text style={styles.title}>KeyWord Notification</Text>
       <TextInput
-        style={styles.input}
+        style={[styles.input, {backgroundColor: background}]}
         placeholder="Enter KeyWord"
+        placeholderTextColor={text}
         value={apiUrl}
         onChangeText={setApiUrl}
       />
-      <TouchableOpacity style={styles.addButton} onPress={addApiUrl}>
-        <Text style={styles.addButtonText}>Add URL</Text>
+      <TouchableOpacity
+        style={[styles.addButton, {backgroundColor: primary, color: text2}]}
+        onPress={addApiUrl}>
+        <Text style={styles.addButtonText}>Add KeyWord</Text>
       </TouchableOpacity>
       <FlatList
         data={apiUrls}

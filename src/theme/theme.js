@@ -1,18 +1,18 @@
 const lightTheme = {
   colors: {
     primary: '#272757',
-    secondary: '#f79511',
+    secondary: '#8686AC', //'#f79511',
     tertiary: '#8686AC',
-    background: '#f6f6f6',
-    background2: '#f9f9f9',
-    transBackground: 'rgba(246, 246, 246 , 0.8)',
-    //background: '#f6f6f6', // Light gray
+    background: '#e8e8fe',
+    backgroundCard: '#e2e2f1',
+    transBackground: 'rgba(232, 232, 254,0.7)', //'rgba(246, 246, 246 , 0.8)',
+    //background: '#f6f6f6', // Light gray #f2f2ff
     text: '#000000', // Black text
-    text2: '#ffffff  ',
+    text2: '#ffffff',
     //surface: '#ffffff', // White surface
     error: '#B00020', // Error red
-    lightGrey: '#EBEDEF',
-    darkGrey: '#ccd1d1',
+    darkGrey: '#bfbfbf',
+    lightGrey: '#dae0e0', //#ccd1d1',
     boldText: '#eb5615',
   },
   roundness: 8, // Adjust the corner radius for all components
@@ -22,12 +22,12 @@ const darkTheme = {
   colors: {
     primary: '#f79511', // orange
     secondary: '#272757',
-    tertiary: '#8686AC', // Teal
+    tertiary: '#fec87d', //'#8686AC', // Teal
     background: '#0f0f2d', // black
-    background2: '#0f0f37', // black
+    backgroundDuplicate: '#0f0f37', // black
     transBackground: 'rgba(15, 15, 45, 0.8)',
     text: '#ffffff  ', // Black text
-    text2: '#00000',
+    text2: '#000000',
     surface: '#ffffff', // White surface
     error: '#B00020', // Error red
     lightGrey: '#EBEDEF',

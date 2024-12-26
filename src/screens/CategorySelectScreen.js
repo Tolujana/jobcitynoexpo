@@ -1,15 +1,18 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useContext} from 'react';
 import {View, Text} from 'react-native';
 import messaging from '@react-native-firebase/messaging';
 import {getChannels} from '../constants/Channels';
 import SubscribeButton from '../components/SubscribeButton';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {ThemeContext} from '../theme/themeContext';
 
 const STORAGE_KEY = 'subscribedChannels';
 
 const CategorySelectionScreen2 = () => {
   const [subscribedChannels, setSubscribedChannels] = useState([]);
-
+  const theme = useContext(ThemeContext);
+  const {primary, backgroundCard, text, text2, secondary, background} =
+    theme.colors;
   useEffect(() => {
     messaging()
       .getSubscribedTopics()
@@ -51,7 +54,7 @@ const CategorySelectionScreen2 = () => {
   };
 
   return (
-    <View>
+    <View style={{backgroundColor: background}}>
       <Text>Notification Settings</Text>
       {getChannels().map(channel => (
         <SubscribeButton

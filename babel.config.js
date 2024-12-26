@@ -5,5 +5,6 @@ module.exports = {
     'nativewind/babel',
     ['@babel/plugin-transform-private-methods', {loose: true}],
     'react-native-reanimated/plugin',
+    'react-native-paper/babel',
   ],
 };

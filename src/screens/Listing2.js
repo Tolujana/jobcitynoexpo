@@ -4,7 +4,6 @@ import {
   Text,
   FlatList,
   ActivityIndicator,
-  LogBox,
   StyleSheet,
 } from 'react-native';
 import axios from 'axios';
@@ -138,7 +137,6 @@ const Listing2 = ({route}) => {
 
   return (
     <View>
-      {search && <SearchBox search={search} />}
       <Text className="mb-3 text-xl">{category ? category : search}</Text>
       {!data && <ActivityIndicator size="large" />}
       {status === 'error' && <Text>Error: {error.message}</Text>}

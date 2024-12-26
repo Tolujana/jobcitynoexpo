@@ -4,7 +4,6 @@ import {
   Text,
   FlatList,
   ActivityIndicator,
-  LogBox,
   StyleSheet,
 } from 'react-native';
 
@@ -22,6 +21,8 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {faPooStorm} from '@fortawesome/free-solid-svg-icons';
 import SearchBox from '../components/SearchBox';
+import Animated from 'react-native-reanimated';
+import {ThemeContext} from '../theme/themeContext';
 
 const fetchData = async ({pageParam = 1, queryKey}) => {
   const [queryParam, exclude] = queryKey;
@@ -60,6 +61,9 @@ const NewListing = ({category, search, route}) => {
   const [page, setPage] = useState(1);
   const [hideDuplicate, setHideDuplicate] = useState(true);
   const [savedArticles, setSavedArticles] = useState({});
+  const theme = useContext(ThemeContext);
+  const {primary, tertiary} = theme.colors;
+
   const exclude = hideDuplicate ? 'duplicate' : null;
   const {category: routeCategory, search: routeSearch} = route?.params || {};
   const propsQueryParam = search
@@ -174,8 +178,8 @@ const NewListing = ({category, search, route}) => {
         <View style={styles.switch}>
           <Text>Hide Duplicates</Text>
           <Switch
-            trackColor={{true: '#78e08f', false: '#ccc'}}
-            thumbColor={hideDuplicate ? '#34C759' : '#fff'}
+            trackColor={{true: tertiary, false: '#ccc'}}
+            thumbColor={hideDuplicate ? primary : '#fff'}
             ios_backgroundColor="#ccc"
             onValueChange={toggleDuplicate}
             value={hideDuplicate}
@@ -189,9 +193,11 @@ const NewListing = ({category, search, route}) => {
         <FlatList
           data={data?.pages.flat()}
           keyExtractor={(item, index) => index.toString()}
+          maxToRenderPerBatch={7}
           renderItem={renderfunction}
           onEndReached={handleLoadMore}
           onEndReachedThreshold={0.8}
+          removeClippedSubviews={true}
           //initialNumToRender={7}
           ListFooterComponent={
             isFetchingNextPage ? (

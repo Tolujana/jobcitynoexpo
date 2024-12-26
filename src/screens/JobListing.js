@@ -7,12 +7,6 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import React, {useEffect, useState} from 'react';
-import {heightPercentageToDP as hp} from 'react-native-responsive-screen';
-import Loader from '../components/Loader';
-import NewsSection from '../components/NewsSection';
-import {useQuery, useInfiniteQuery} from '@tanstack/react-query';
-
-import {IOScrollView, InView} from 'react-native-intersection-observer';
 
 import RenderItem from '../components/RenderItem';
 import useCustomFetch from '../util/CustomFetch';
@@ -76,25 +70,6 @@ export default function JobListing({category, search}) {
           }
         />
       )}
-
-      {/* {loading && page === 1 ? (
-        <ActivityIndicator size="large" />}
-
-      <IOScrollView
-        contentContainerStyle={{
-          paddingBottom: hp(70),
-        }}
-      >
-        <NewsSection label="News" newsProps={jobs} />
-
-        <InView
-          onChange={(inview) => {
-            setIsLoadMore(inview);
-          }}
-        >
-          <Text>Visible</Text>
-        </InView>
-      </IOScrollView> */}
     </SafeAreaView>
   );
 }

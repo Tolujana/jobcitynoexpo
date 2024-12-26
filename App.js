@@ -6,7 +6,7 @@
  */
 import {createNavigationContainerRef} from '@react-navigation/native';
 import notifee, {EventType} from '@notifee/react-native';
-
+import {MD3LightTheme as DefaultTheme, PaperProvider} from 'react-native-paper';
 import React, {useEffect, useState, useContext} from 'react';
 import messaging from '@react-native-firebase/messaging';
 import Event from './src/Event';
@@ -24,6 +24,7 @@ import {
   Button,
   Alert,
   Linking,
+  View,
 } from 'react-native';
 
 import {
@@ -39,6 +40,7 @@ import BackgroundFetchTask, {
   fetchArticles,
 } from './src/components/BackgroundFetchTask';
 import BackgroundFetch from 'react-native-background-fetch';
+import {ThemeProvider} from './src/theme/themeContext';
 
 const requestNotificationPermission = async () => {
   if (Platform.OS === 'android' && Platform.Version >= 33) {
@@ -61,14 +63,13 @@ const requestNotificationPermission = async () => {
 const queryClient = new QueryClient();
 
 function App() {
-  const isDarkMode = useColorScheme() === 'dark';
+  //const isDarkMode = useColorScheme() === 'dark';
   const [enabled, setEnabled] = useState(false);
   const [status, setStatus] = useState(-1);
   const [events, setEvents] = useState([]);
 
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-  };
+  const colorScheme = useColorScheme();
+  // const [theme, setTheme] = useState(getTheme(colorScheme));
 
   //use effect for fcm push notification
   useEffect(() => {
@@ -183,36 +184,36 @@ function App() {
 
   useEffect(() => {}, []);
 
-  // useEffect(() => {
-  //   // Request permissions for push notifications via fcm
-  //   const requestUserPermission = async () => {
-  //     const authStatus = await messaging().requestPermission();
-  //     const enabled =
-  //       authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
-  //       authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+  useEffect(() => {
+    // Request permissions for push notifications via fcm
+    const requestUserPermission = async () => {
+      const authStatus = await messaging().requestPermission();
+      const enabled =
+        authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+        authStatus === messaging.AuthorizationStatus.PROVISIONAL;
 
-  //     if (enabled) {
-  //       console.log('Authorization status:', authStatus);
-  //     }
-  //   };
+      if (enabled) {
+        console.log('Authorization status:', authStatus);
+      }
+    };
 
-  //   requestUserPermission();
+    requestUserPermission();
 
-  //   messaging()
-  //     .getToken()
-  //     .then(token => {
-  //       console.log('FCM Token:', token);
-  //       // You can store this token to send targeted notifications later
-  //     });
+    messaging()
+      .getToken()
+      .then(token => {
+        console.log('FCM Token:', token);
+        // You can store this token to send targeted notifications later
+      });
 
-  //   // Handle foreground messages
-  //   // const unsubscribe = messaging().onMessage(async remoteMessage => {
-  //   //   Alert.alert('A new FCM message arrived!', JSON.stringify(remoteMessage));
-  //   // });
+    // Handle foreground messages
+    // const unsubscribe = messaging().onMessage(async remoteMessage => {
+    //   Alert.alert('A new FCM message arrived!', JSON.stringify(remoteMessage));
+    // });
 
-  //   // Cleanup on unmount
-  //   // return unsubscribe;
-  // }, []);
+    // Cleanup on unmount
+    // return unsubscribe;
+  }, []);
 
   const initBackgroundFetch = async () => {
     const status = await BackgroundFetch.configure(
@@ -255,7 +256,9 @@ function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <AppNavigation navigationRef={navigationRef} />
+      <ThemeProvider>
+        <AppNavigation navigationRef={navigationRef} />
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }

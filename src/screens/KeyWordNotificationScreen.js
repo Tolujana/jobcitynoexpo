@@ -8,12 +8,10 @@ import {
   Button,
   Platform,
   Linking,
+  TouchableOpacity,
+  StyleSheet,
 } from 'react-native';
-import React, {useEffect, useState} from 'react';
-import {heightPercentageToDP as hp} from 'react-native-responsive-screen';
-import Loader from '../components/Loader';
-import NewsSection from '../components/NewsSection';
-import {useQuery, useInfiniteQuery} from '@tanstack/react-query';
+import React, {useContext, useEffect, useState} from 'react';
 
 import {IOScrollView, InView} from 'react-native-intersection-observer';
 import useCustomFetch from '../util/CustomFetch';
@@ -21,21 +19,18 @@ import RenderItem from '../components/RenderItem';
 // import ApiUrlManager from '../components/ApiUrlManager';
 import {sendNotification} from '../components/BackgroundFetchTask';
 import ApiUrlManager from '../components/ApiUrlManager';
-
 import {NativeModules} from 'react-native';
-
-import OnesignalSelection from '../components/OnesignalSelection';
-import FormScreen from '../components/FormScreen';
-import ApiUrlManager2 from '../components/ApiUrlManager2';
+import {ThemeContext} from '../theme/themeContext';
 
 const {BatteryOptimization} = NativeModules;
 
-export default function UrlNotificationScreen() {
+export default function KeywordNotificationScreen() {
   const [jobs, setJobs] = useState([]);
   const [isLoadMore, setIsLoadMore] = useState(false);
   const [page, setPage] = useState(1);
   const [isBatteryOptimized, setIsBatteryOptimized] = useState(true);
-
+  const theme = useContext(ThemeContext);
+  const {primary, background, text, text2, secondary, tertiary} = theme.colors;
   const url =
     'https://public-api.wordpress.com/rest/v1.2/sites/screammie.info/posts/ ';
   const params = {search: 'word', page: page, number: 6};
@@ -103,15 +98,94 @@ export default function UrlNotificationScreen() {
   };
 
   return (
-    <SafeAreaView>
+    <SafeAreaView style={{backgroundColor: background, flex: 1}}>
       <ApiUrlManager />
       {!isBatteryOptimized && (
-        <Button
-          style={{width: 70}}
-          title="Disable Battery Optimization to improve notifications"
-          onPress={openBatteryOptimizationSettings}
-        />
+        <View
+          style={{
+            flex: 1,
+            alignItems: 'center',
+          }}>
+          <View
+            style={{
+              backgroundColor: primary,
+            }}>
+            <TouchableOpacity
+              style={[
+                styles.addButton,
+                {backgroundColor: primary, color: text2},
+              ]}
+              onPress={openBatteryOptimizationSettings}>
+              <Text style={[styles.addButtonText, {color: text2}]}>
+                Disable Battery Optimization to improve notifications
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
       )}
     </SafeAreaView>
   );
 }
+const styles = StyleSheet.create({
+  container: {
+    padding: 20,
+    backgroundColor: '#f5f5f5',
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  input: {
+    borderColor: '#ccc',
+    borderWidth: 2,
+    padding: 10,
+    marginBottom: 10,
+    borderRadius: 5,
+    backgroundColor: '#fff',
+    height: 50,
+  },
+  addButton: {
+    padding: 15,
+    borderRadius: 10,
+    border: 1,
+  },
+  addButtonText: {
+    textAlign: 'center',
+    alignItems: 'center',
+    fontSize: 16,
+  },
+  list: {
+    marginTop: 20,
+  },
+  listContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
+  },
+  urlContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 10,
+    backgroundColor: '#fff',
+    borderRadius: 5,
+    marginBottom: 10,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 3,
+  },
+  urlText: {
+    flex: 1,
+    marginRight: 10,
+  },
+  removeButton: {
+    backgroundColor: '#ff5252',
+    padding: 10,
+    borderRadius: 5,
+  },
+  removeButtonText: {
+    color: '#fff',
+  },
+});

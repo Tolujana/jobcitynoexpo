@@ -12,7 +12,7 @@ export default function SearchBox({search}) {
     setSearchText(text);
   };
   return (
-    <View className="flex-row  justify-start items-center border border-gray-300 bg-neutral-100 dark:bg-neutral-800 rounded-full">
+    <View className=" flex-row  justify-start items-center border border-gray-300 bg-neutral-100 dark:bg-neutral-800 rounded-full my-2">
       <TouchableOpacity className="pl-2">
         <Icon name="search" size={25} color="gray" />
       </TouchableOpacity>

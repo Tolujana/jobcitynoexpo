@@ -30,11 +30,14 @@ import {loadSelectedspecialization, loadSelectedTopics} from '../util/funtions';
 import SearchBox from '../components/SearchBox';
 import HomeSearchButton from '../components/HomeSearchButton';
 import {ThemeContext} from '../theme/themeContext';
+import Loader from '../components/Loader';
+import CustomModal from '../components/Modal';
 
 export default function Home() {
   const navigation = useNavigation();
   const theme = useContext(ThemeContext);
   const {primary, background, text, text2, secondry, tertiary} = theme.colors;
+  const [modalVisible, setModalVisible] = useState(false);
   const [activeCategory, setActiveCategory] = useState(null);
   const [jobEntries, setJobEntries] = useState([]);
   const {colorScheme, toggleColorScheme} = useColorScheme();
@@ -85,11 +88,11 @@ export default function Home() {
         style: 'cancel',
       },
       {
-        text: 'Add Specialization',
+        text: 'Add Job Specialization',
         onPress: () => navigation.navigate('Categories'),
       },
       {
-        text: 'Add Custom Menu(keyword)',
+        text: 'Add Custom keywords',
         onPress: () => navigation.navigate('Form'),
       },
     ]);
@@ -97,7 +100,9 @@ export default function Home() {
 
   const fullMenu = [...sortedSpec, ...sortedkeywords];
   return isLoading ? (
-    <Text>isLoading</Text>
+    <View>
+      <Loader />
+    </View>
   ) : (
     <TouchableWithoutFeedback onPress={() => dismissKeyboard()}>
       <SafeAreaView
@@ -105,6 +110,10 @@ export default function Home() {
         className="pt-8 flex-1">
         <StatusBar backgroundColor={primary} />
         {/* header */}
+        <CustomModal
+          visible={modalVisible}
+          onClose={() => setModalVisible(false)}
+        />
         <View className="px-4 justify-between">
           <View className="flex-row justify-between">
             <Text style={{color: primary}} className=" text-3xl font-bold">
@@ -153,7 +162,7 @@ export default function Home() {
           ) : (
             <TouchableOpacity
               style={{...styles.buttonlong, backgroundColor: tertiary}}
-              onPress={addMenuItems}>
+              onPress={() => setModalVisible(true)}>
               <View className=" flex-row">
                 <Icon name="plus" size={24} color={text2} />
                 <Text style={{color: text2}}>Click here to add menu items</Text>
@@ -162,6 +171,7 @@ export default function Home() {
           )}
         </View>
         {/* jobLists */}
+
         <View>
           {!activeCategory ? (
             <NewListing category={sortedSpec[0] || {name: 'All ', slug: ''}} />

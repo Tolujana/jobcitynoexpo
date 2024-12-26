@@ -1,7 +1,7 @@
 import React from 'react';
 import {View, Text, ScrollView, StyleSheet} from 'react-native';
 
-export default function xPrivacyPolicyScreen() {
+export default function PrivacyPolicyScreen() {
   return (
     <ScrollView style={styles.container}>
       <Text style={styles.title}>Privacy Policy</Text>

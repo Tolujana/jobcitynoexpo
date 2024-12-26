@@ -1,31 +1,33 @@
 import {View, Text} from 'react-native';
-import React from 'react';
+import React, {useContext} from 'react';
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 //import {useColorScheme} from 'nativewind';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import UrlNotificationScreen from '../screens/UrlNotificationScreen';
+import KeywordNotificationScreen from '../screens/KeyWordNotificationScreen';
 import DiscoverScreen from '../screens/DiscoverScreen';
 import SaveScreen from '../screens/SaveScreen';
 import SearchScreen from '../screens/SearchScreen';
-//import SplashScreen from '../screens/SplashScreen';
 import WelcomScreen from '../screens/WelcomeScreen';
 import JobsDetailsScreen from '../screens/JobsDetailsScreen';
-//import {FontAwesome} from '@expo/vector-icons';
-//import SplashScreens from '../screens/SplashScreen';
 import Home from '../screens/Home';
 import CategorySelectionScreen2 from '../screens/CategorySelectionScreen2';
 import SettingsScreen from '../screens/SettingsScreen';
 import PrivacyPolicyScreen from '../screens/PrivacyPolicyScreen';
 import Listing2 from '../screens/Listing2';
 import NewListing from '../screens/NewListing';
+import {ThemeContext} from '../theme/themeContext';
+import SplashScreen2 from '../screens/SplashScreen2';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
 export default function AppNavigation({navigationRef}) {
   //const {colorScheme, toggleColorScheme} = useColorScheme();
+  const theme = useContext(ThemeContext);
+  const {primary, background, text, transBackground, secondary, tertiary} =
+    theme.colors;
 
   const linking = {
     prefixes: ['https://screammie.info'], // Replace with your actual website URL
@@ -40,12 +42,15 @@ export default function AppNavigation({navigationRef}) {
     return (
       <Tab.Navigator
         screenOptions={({route}) => ({
+          tabBarStyle: {
+            backgroundColor: background,
+          },
           headerShown: false,
           tabBarIcon: ({focused, size}) => {
             let iconName;
-            const initialColour = 'grey';
+            const initialColour = tertiary;
 
-            const focusedColour = 'blue';
+            const focusedColour = primary;
 
             if (route.name === 'Home') {
               iconName = 'home';
@@ -66,8 +71,8 @@ export default function AppNavigation({navigationRef}) {
               />
             );
           },
-          tabBarActiveTintColor: 'blue',
-          tabBarInactiveTintColor: 'grey',
+          tabBarActiveTintColor: primary,
+          tabBarInactiveTintColor: tertiary,
         })}>
         <Tab.Screen name="Home" component={Home} />
         <Tab.Screen name="Search Jobs" component={SearchScreen} />
@@ -83,11 +88,14 @@ export default function AppNavigation({navigationRef}) {
   return (
     <NavigationContainer ref={navigationRef}>
       <Stack.Navigator
-        initialRouteName="HomeTabs"
+        initialRouteName="Splash"
         screenOptions={{
           headerShown: false,
         }}>
-        {/* <Stack.Screen name="Splashs" component={SplashScreens} /> */}
+        {/* <Stack.Screen name="Splash" component={SplashScreen3} /> */}
+        <Stack.Screen name="Splash" component={SplashScreen2} />
+
+        {/* <Stack.Screen name="Splash" component={SplashScreens} /> */}
         <Stack.Screen name="Welcome" component={WelcomScreen} />
         <Stack.Screen name="Search" component={SearchScreen} />
         <Stack.Screen
@@ -97,7 +105,7 @@ export default function AppNavigation({navigationRef}) {
         />
         <Stack.Screen name="HomeTabs" component={TabNavigator} />
         <Stack.Screen name="Categories" component={CategorySelectionScreen2} />
-        <Stack.Screen name="Form" component={UrlNotificationScreen} />
+        <Stack.Screen name="Form" component={KeywordNotificationScreen} />
         <Stack.Screen name="Listing" component={Listing2} />
         <Stack.Screen name="NewListing" component={NewListing} />
         <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} />

@@ -58,7 +58,7 @@ export default function JobDetailsScreen({route}) {
   const {width, height} = useWindowDimensions();
   const {mode, error, setMode} = useRingerMode();
   const {item} = route.params;
-  console.log('detials', item.URL);
+  // console.log('detials', item.URL);
   const [visible, setVisible] = useState(false);
   const navigation = useNavigation();
   const [isBookmarked, toggleBookmark] = useState(false);
@@ -69,11 +69,11 @@ export default function JobDetailsScreen({route}) {
       // Check if News Article is already in Storage
       const savedArticles = await AsyncStorage.getItem('savedArticles');
       let existingArticle = savedArticles ? JSON.parse(savedArticles) : {};
-      // console.log("Check if the article is already bookmarked");
+      // // console.log("Check if the article is already bookmarked");
 
       // Check if the article is already in the bookmarked list
       const isArticleBookmarked = existingArticle[item.ID];
-      // console.log("Check if the article is already in the bookmarked list");
+      // // console.log("Check if the article is already in the bookmarked list");
 
       if (!isArticleBookmarked) {
         // If the article is not bookmarked, add it to the bookmarked list
@@ -84,7 +84,7 @@ export default function JobDetailsScreen({route}) {
           JSON.stringify(existingArticle),
         );
         toggleBookmark(true);
-        // console.log("Article is bookmarked");
+        // // console.log("Article is bookmarked");
       } else {
         // If the article is already bookmarked, remove it from the list
 
@@ -94,10 +94,10 @@ export default function JobDetailsScreen({route}) {
           JSON.stringify(existingArticle),
         );
         toggleBookmark(false);
-        // console.log("Article is removed from bookmarks");
+        // // console.log("Article is removed from bookmarks");
       }
     } catch (error) {
-      console.log('Error Saving Article', error);
+      // console.log('Error Saving Article', error);
     }
   };
 
@@ -112,9 +112,9 @@ export default function JobDetailsScreen({route}) {
         const isArticleBookmarked = existingArticle[item.ID];
 
         toggleBookmark(isArticleBookmarked);
-        // console.log("Check if the current article is in bookmarks");
+        // // console.log("Check if the current article is in bookmarks");
       } catch (error) {
-        console.log('Error Loading Saved Articles', error);
+        // console.log('Error Loading Saved Articles', error);
       }
     };
 
@@ -129,7 +129,7 @@ export default function JobDetailsScreen({route}) {
     const adEventListener = interstitialAd.addAdEventListener(
       AdEventType.LOADED,
       () => {
-        console.log('Interstitial Ad loaded');
+        // console.log('Interstitial Ad loaded');
       },
     );
 

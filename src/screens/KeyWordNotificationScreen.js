@@ -6,6 +6,7 @@ import {
   FlatList,
   ActivityIndicator,
   Button,
+  Modal,
   Platform,
   Linking,
   TouchableOpacity,
@@ -21,11 +22,14 @@ import {sendNotification} from '../components/BackgroundFetchTask';
 import ApiUrlManager from '../components/ApiUrlManager';
 import {NativeModules} from 'react-native';
 import {ThemeContext} from '../theme/themeContext';
-
+import {
+  OpenOptimizationSettings,
+  BatteryOptEnabled,
+} from 'react-native-battery-optimization-check';
 const {BatteryOptimization} = NativeModules;
 
 export default function KeywordNotificationScreen() {
-  const [jobs, setJobs] = useState([]);
+  const [isModalVisible, setIsModalVisible] = useState(false);
   const [isLoadMore, setIsLoadMore] = useState(false);
   const [page, setPage] = useState(1);
   const [isBatteryOptimized, setIsBatteryOptimized] = useState(true);
@@ -41,7 +45,7 @@ export default function KeywordNotificationScreen() {
       setPage(1);
     }
     if (Platform.OS === 'android') {
-      checkBatteryOptimization();
+      checkBatteryOptimization2();
     }
   }, []);
   const loadMorePost = () => {
@@ -49,56 +53,65 @@ export default function KeywordNotificationScreen() {
       setPage(page + 1);
     }
   };
-
+  const handleCloseModal = () => {
+    setIsModalVisible(false);
+    OpenOptimizationSettings();
+  };
   const renderfunction = ({item, index}) => (
     <RenderItem item={item} data={data} index={index} />
   );
-  const openBatteryOptimizationSettings = packageName => {
-    if (Platform.OS === 'android') {
-      Linking.openURL(`package:${packageName}`);
+
+  const checkBatteryOptimization2 = async () => {
+    const isOptimized = await BatteryOptEnabled();
+    if (isOptimized) {
+      setIsModalVisible(true);
+      setIsBatteryOptimized(false);
     }
   };
-  const checkBatteryOptimization = async () => {
-    if (Platform.OS !== 'android') return;
 
-    try {
-      const packageName = 'com.jobcity'; // Replace with your app's package name
-      //const intent = await Linking.canOpenURL(`package:${packageName}`);
+  const CustomModal = () => (
+    <Modal
+      visible={isModalVisible}
+      animationType="fade"
+      transparent={true}
+      onRequestClose={handleCloseModal}>
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalContent}>
+          <Text style={styles.modalHeader}>Disable Battery Optimization</Text>
+          <Text style={styles.modalText}>
+            Follow these steps to disable battery optimization for better
+            performance:
+          </Text>
+          <Text style={styles.steps}>
+            1. Click "Got it!" button below to navigate to "Battery Optimization
+            Settings." {'\n'}
+            2. Select "All Apps" from the dropdown at the top ( this is so you
+            can see all apps). {'\n'}
+            3. Locate Jobcity in the list. {'\n'}
+            4. Tap the app and choose "Don't optimize." or disable optimization
+          </Text>
 
-      const isIgnoringBatteryOptimizations =
-        await BatteryOptimization.isBatteryOptimizationDisabled();
-      console.log(
-        'Battery optimization disabled:',
-        isIgnoringBatteryOptimizations,
-      );
-
-      if (!isIgnoringBatteryOptimizations) {
-        setIsBatteryOptimized(false);
-        // Alert.alert(
-        //   'Battery Optimization',
-        //   'Please disable battery optimization for better app NOtifications.',
-        //   [
-        //     {
-        //       text: 'Cancel',
-        //       style: 'cancel',
-        //     },
-        //     {
-        //       text: 'Open Settings',
-        //       onPress: () => openBatteryOptimizationSettings(packageName),
-        //     },
-        //   ],
-        //   {cancelable: false},
-        // );
-      } else {
-        setIsBatteryOptimized(true);
-      }
-    } catch (error) {
-      console.error('Battery optimization check failed', error);
-    }
-  };
+          {/* Buttons Section */}
+          <View style={styles.buttonRow}>
+            <TouchableOpacity
+              style={[styles.modalButton, styles.cancelButton]}
+              onPress={() => setIsModalVisible(false)}>
+              <Text style={styles.buttonText}>later</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.modalButton, styles.confirmButton]}
+              onPress={handleCloseModal}>
+              <Text style={styles.buttonText}>Got it!</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
 
   return (
     <SafeAreaView style={{backgroundColor: background, flex: 1}}>
+      <CustomModal />
       <ApiUrlManager />
       {!isBatteryOptimized && (
         <View
@@ -115,7 +128,7 @@ export default function KeywordNotificationScreen() {
                 styles.addButton,
                 {backgroundColor: primary, color: text2},
               ]}
-              onPress={openBatteryOptimizationSettings}>
+              onPress={() => setIsModalVisible(true)}>
               <Text style={[styles.addButtonText, {color: text2}]}>
                 Disable Battery Optimization to improve notifications
               </Text>
@@ -187,5 +200,73 @@ const styles = StyleSheet.create({
   },
   removeButtonText: {
     color: '#fff',
+  },
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f4f4f4',
+  },
+  openButton: {
+    backgroundColor: '#007bff',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 16,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    width: '85%',
+    padding: 20,
+    backgroundColor: 'white',
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  modalHeader: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  modalText: {
+    fontSize: 16,
+    textAlign: 'center',
+    marginBottom: 15,
+  },
+  steps: {
+    fontSize: 14,
+    textAlign: 'left',
+    marginBottom: 15,
+    color: '#333',
+  },
+  note: {
+    fontSize: 14,
+    textAlign: 'center',
+    color: '#888',
+    marginBottom: 20,
+  },
+  buttonRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+  },
+  modalButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 25,
+    borderRadius: 5,
+    marginHorizontal: 10,
+  },
+  cancelButton: {
+    backgroundColor: '#dc3545',
+  },
+  confirmButton: {
+    backgroundColor: '#28a745',
   },
 });

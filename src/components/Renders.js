@@ -1,6 +1,6 @@
-import { View, Text } from "react-native";
-import React from "react";
-import { BannerAd, BannerAdSize, TestIds } from "react-native-google-mobile-ads";
+import {View, Text} from 'react-native';
+import React from 'react';
+import {BannerAd, BannerAdSize, TestIds} from 'react-native-google-mobile-ads';
 // const renderNativeAd = (nativeAd) => {
 //   const { headline, body, callToAction, advertiser, icon } = nativeAd.nativeElements;
 
@@ -17,17 +17,16 @@ import { BannerAd, BannerAdSize, TestIds } from "react-native-google-mobile-ads"
 
 export default function Renders() {
   const navigation = useNavigation();
-  const openItem = (item) => navigation.navigate("JobsDetails", item);
+  const openItem = item => navigation.navigate('JobsDetails', item);
 
   return (index + 1) % 4 !== 0 ? (
     <SingleJobEntry item={item} index={index} />
   ) : (
     <View
-      onChange={(inView) => {
-        console.log("invew", inView);
+      onChange={inView => {
+        // console.log('invew', inView);
         setIsLoadMore(inView);
-      }}
-    >
+      }}>
       <SingleJobEntry item={item} index={index} />
       <BannerAd
         unitId={TestIds.BANNER}

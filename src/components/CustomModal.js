@@ -15,7 +15,7 @@ const CustomModal = ({visible, onClose}) => {
   const theme = useContext(ThemeContext);
   const {primary, background, text, text2, secondry, tertiary} = theme.colors;
   return (
-    <Modal visible={visible} transparent animationType="fade">
+    <Modal visible={visible} transparent animationType="slide">
       <View style={styles.overlay}>
         <View style={[styles.modalBox, {backgroundColor: primary}]}>
           <Text style={[styles.title, {color: text2}]}>Choose a menu Type</Text>
@@ -25,7 +25,7 @@ const CustomModal = ({visible, onClose}) => {
               onClose();
               navigation.navigate('Categories');
             }}>
-            <Text>Add Job Specializations</Text>
+            <Text>Add your Specialization(s)</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.button, {backgroundColor: background}]}
@@ -33,7 +33,7 @@ const CustomModal = ({visible, onClose}) => {
               onClose();
               navigation.navigate('Form');
             }}>
-            <Text>"Add Custom Keywords</Text>
+            <Text>Add Custom Keywords/certification(s)</Text>
           </TouchableOpacity>
           <Button title="Cancel" onPress={onClose} />
         </View>

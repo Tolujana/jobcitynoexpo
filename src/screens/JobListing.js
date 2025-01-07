@@ -36,7 +36,7 @@ export default function JobListing({category, search}) {
   useEffect(() => {
     if (data) {
       setPage(1);
-      console.log(data.posts.length);
+      // console.log(data.posts.length);
     }
   }, []);
 

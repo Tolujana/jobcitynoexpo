@@ -1,5 +1,5 @@
 import {useNavigation} from '@react-navigation/native';
-import React, {useEffect, useRef} from 'react';
+import React, {useContext, useEffect, useRef} from 'react';
 import {
   Animated,
   StyleSheet,
@@ -8,7 +8,7 @@ import {
   Image,
   ImageBackground,
 } from 'react-native';
-import {BlurView} from '@react-native-community/blur'; // Install the library
+import {SplashContext, useSplashContext} from '../context/SplashContext';
 
 const {width, height} = Dimensions.get('window'); // Get screen dimensions
 
@@ -16,7 +16,8 @@ const SplashScreen2 = () => {
   const navigation = useNavigation();
   const translateX = useRef(new Animated.Value(-width / 2)).current; // Start off-screen (left)
   const translateY = useRef(new Animated.Value(-height / 2)).current; // Start off-screen (top)
-
+  //const {setIsSplashLoaded, isSplashLoaded} = useContext(SplashContext);
+  const {setIsSplashFinished} = useContext(SplashContext);
   useEffect(() => {
     // Start the animation sequence
     Animated.sequence([
@@ -47,7 +48,9 @@ const SplashScreen2 = () => {
       }),
     ]).start(() => {
       // Navigate to Home after animation
+      setIsSplashFinished(true);
       navigation.replace('HomeTabs');
+      //console.log('splash', isSplashFinished);
     });
   }, [translateX, translateY]);
 

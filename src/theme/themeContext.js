@@ -12,7 +12,7 @@ const ThemeProvider = ({children}) => {
 
   useEffect(() => {
     setTheme(colorScheme === 'dark' ? darkTheme : lightTheme);
-    console.log(colorScheme);
+    // console.log(colorScheme);
   }, [colorScheme]);
 
   return (

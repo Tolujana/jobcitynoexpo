@@ -37,7 +37,7 @@ const fetchData = async ({pageParam = 1, queryKey}) => {
       ...queryParam, // Include additional query parameters here
     },
   });
-  console.log(`Request URL: ${fullUrl}`);
+  // console.log(`Request URL: ${fullUrl}`);
   return response.data.posts;
 };
 
@@ -50,7 +50,7 @@ const Listing2 = ({route}) => {
   const [page, setPage] = useState(1);
   const [currentCategory, setCurrentCategory] = useState(category);
   const [currentSearch, setCurrentSearch] = useState(search);
-  console.log('this is listing category', category);
+  // console.log('this is listing category', category);
   const queryParam = search
     ? {search: currentSearch, page: page, number: 7}
     : category
@@ -71,7 +71,7 @@ const Listing2 = ({route}) => {
     initialPageParam: 1,
     getNextPageParam: (lastPage, pages) => {
       // Assuming the API returns `hasMore` to indicate more pages
-      // console.log(lastPage, "lastpage", pages, "pages");
+      // // console.log(lastPage, "lastpage", pages, "pages");
       return lastPage.length ? pages.length + 1 : undefined;
     },
   });
@@ -116,12 +116,14 @@ const Listing2 = ({route}) => {
         return JSON.parse(savedArticleJSON);
       }
     } catch (error) {
-      console.log('Error retrieving saved article:', error);
+      // console.log('Error retrieving saved article:', error);
     }
   };
 
   const renderFooter = () => {
-    if (!loading) return null;
+    if (!loading) {
+      return null;
+    }
     return <ActivityIndicator size="large" color="#0000ff" />;
   };
   const footerComponent = () => (

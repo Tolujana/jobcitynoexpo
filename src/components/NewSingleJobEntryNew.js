@@ -44,7 +44,7 @@ function NewSingleJobEntry({item = {}, index = 1, savedArticles = []}) {
       const clearAsyncStorage = async () => {
         try {
           await AsyncStorage.clear();
-          console.log('AsyncStorage successfully cleared');
+          // console.log('AsyncStorage successfully cleared');
         } catch (error) {
           console.error('Error clearing AsyncStorage:', error);
         }
@@ -82,18 +82,18 @@ function NewSingleJobEntry({item = {}, index = 1, savedArticles = []}) {
       if (!article) {
         // If not present, add the article  to the array
         existingArticleIds[item.ID] = item;
-        console.log('Article ID added to list:', item.ID);
+        // console.log('Article ID added to list:', item.ID);
         const updatedStatus = [...savedArticleStatus];
         updatedStatus[item.ID] = true;
         setSavedArticleStatus(updatedStatus);
       } else {
         // If present, remove the article ID from the array
         delete existingArticleIds[item.ID];
-        console.log('Article ID removed from list:');
+        // console.log('Article ID removed from list:');
         const updatedStatus = [...savedArticleStatus];
         updatedStatus[item.ID] = false;
         setSavedArticleStatus(updatedStatus);
-        console.log(existingArticleIds, 'existingArticleIds');
+        // console.log(existingArticleIds, 'existingArticleIds');
       }
 
       // Save the updated array back to AsyncStorage

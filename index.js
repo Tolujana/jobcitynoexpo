@@ -10,17 +10,18 @@ import BackgroundFetch from 'react-native-background-fetch';
 import notifee, {EventType} from '@notifee/react-native';
 import {navigationRef} from './src/navigation/NotificationNavigate';
 import backgroundFetchTask from './src/components/BackgroundFetchTask';
+import {SplashProvider} from './src/context/SplashContext';
 
 PushNotification.configure({
   onNotification: function (notification) {
-    console.log('NOTIFICATION:', notification);
+    // console.log('NOTIFICATION:', notification);
   },
   popInitialNotification: true,
   requestPermissions: true,
 });
 
 const headlessTask = async event => {
-  console.log('[BackgroundFetch HeadlessTask] event: ', event.taskId);
+  // console.log('[BackgroundFetch HeadlessTask] event: ', event.taskId);
   await backgroundFetchTask();
   BackgroundFetch.finish(event.taskId);
 };
@@ -39,6 +40,12 @@ const handleNotificationPress = data => {
     });
   }
 };
-
+const Root = () => {
+  return (
+    <SplashProvider>
+      <App />
+    </SplashProvider>
+  );
+};
 BackgroundFetch.registerHeadlessTask(headlessTask);
-AppRegistry.registerComponent(appName, () => App);
+AppRegistry.registerComponent(appName, () => Root);

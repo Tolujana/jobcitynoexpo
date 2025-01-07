@@ -1,4 +1,4 @@
-import React, {useState, useRef, forwardRef} from 'react';
+import React, {useState, forwardRef} from 'react';
 import {
   View,
   TextInput,
@@ -6,7 +6,6 @@ import {
   Animated,
   Easing,
   StyleSheet,
-  TouchableWithoutFeedback,
   Keyboard,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';

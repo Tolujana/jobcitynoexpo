@@ -1,4 +1,4 @@
-package com.jobcity
+package com.hotnigerianjobs
 import android.os.Bundle;
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate

@@ -1,4 +1,4 @@
-package com.jobcity
+package com.hotnigerianjobs
 
 import com.facebook.react.ReactPackage
 import com.facebook.react.bridge.ReactApplicationContext

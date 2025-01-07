@@ -105,7 +105,7 @@ const ParallaxView = ({content, mainContent, image, tags, id}) => {
       const foundTag = findItemWithNumbers(fulltag, id);
       const loadDuplicatePost = async () => {
         const duplicateId = foundTag.replace('duplicate-', '');
-        // console.log('dup', duplicateId);
+        // // console.log('dup', duplicateId);
 
         const url = `https://public-api.wordpress.com/rest/v1.2/sites/screammie.info/posts/?include=${duplicateId}`;
         const response = await fetchNewDataFromAPI(url);
@@ -115,7 +115,7 @@ const ParallaxView = ({content, mainContent, image, tags, id}) => {
       loadDuplicatePost();
     }
   }, []);
-  //console.log('fpoid', duplicate.author);
+  //// console.log('fpoid', duplicate.author);
   const renderersProps = {
     p: {
       // You can add any additional props for <p> tags here

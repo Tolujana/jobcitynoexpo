@@ -1,4 +1,4 @@
-package com.jobcity
+package com.hotnigerianjobs
 
 import android.app.Application
 import com.facebook.react.PackageList
@@ -10,8 +10,8 @@ import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.load
 import com.facebook.react.defaults.DefaultReactHost.getDefaultReactHost
 import com.facebook.react.defaults.DefaultReactNativeHost
 import com.facebook.soloader.SoLoader
-import com.jobcity.ArticleSchedulerModule;
-import com.jobcity.BatteryOptimizationPackage;
+import com.hotnigerianjobs.ArticleSchedulerModule;
+import com.hotnigerianjobs.BatteryOptimizationPackage;
 class MainApplication : Application(), ReactApplication {
 
   override val reactNativeHost: ReactNativeHost =

@@ -82,7 +82,7 @@ const requestNotificationPermission = async () => {
       },
     );
     if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
-      console.log('Notification permission denied');
+      // console.log('Notification permission denied');
     }
   }
 };
@@ -121,27 +121,27 @@ function App(): React.JSX.Element {
     //   },
     //   BackgroundFetchTask,
     //   error => {
-    //     console.log('[BackgroundFetch] failed to start', error);
+    //     // console.log('[BackgroundFetch] failed to start', error);
     //   },
     // );
 
     //BackgroundFetch.registerHeadlessTask(BackgroundFetchTask);
     // Manually trigger background fetch for testing
     // BackgroundFetch.scheduleTask({
-    //     taskId: 'com.jobcity.backgroundFetch',
+    //     taskId: 'com.hotnigerianjobs.backgroundFetch',
     //     delay: 5000,  // milliseconds
     //     periodic: false
     // });
     // BackgroundFetch.status(status => {
     //   switch (status) {
     //     case BackgroundFetch.STATUS_RESTRICTED:
-    //       console.log('BackgroundFetch restricted');
+    //       // console.log('BackgroundFetch restricted');
     //       break;
     //     case BackgroundFetch.STATUS_DENIED:
-    //       console.log('BackgroundFetch denied');
+    //       // console.log('BackgroundFetch denied');
     //       break;
     //     case BackgroundFetch.STATUS_AVAILABLE:
-    //       console.log('BackgroundFetch is enabled');
+    //       // console.log('BackgroundFetch is enabled');
     //       break;
     //   }
     // });
@@ -190,7 +190,7 @@ function App(): React.JSX.Element {
         requiresStorageNotLow: false, // Default
       },
       async (taskId: string) => {
-        console.log('[BackgroundFetch] started taskId', taskId);
+        // console.log('[BackgroundFetch] started taskId', taskId);
         // Create an Event record.
         const event = await Event.create(taskId, false);
         // Update state.
@@ -202,7 +202,7 @@ function App(): React.JSX.Element {
       (taskId: string) => {
         // Oh No!  Our task took too long to complete and the OS has signalled
         // that this task must be finished immediately.
-        console.log('[Fetch] TIMEOUT taskId:', taskId);
+        // console.log('[Fetch] TIMEOUT taskId:', taskId);
         BackgroundFetch.finish(taskId);
       },
     );

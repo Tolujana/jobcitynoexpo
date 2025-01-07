@@ -1,4 +1,4 @@
-package com.jobcity
+package com.hotnigerianjobs
 
 import android.content.BroadcastReceiver
 import android.content.Context

@@ -32,12 +32,12 @@ const fetchData = async ({pageParam = 1, queryKey}) => {
     ...queryParam,
     // Include additional query parameters here
   };
-  console.log('params', queryKey);
+  // console.log('params', queryKey);
   const url =
     'https://public-api.wordpress.com/rest/v1.2/sites/screammie.info/posts/?';
   const queryString = new URLSearchParams(params).toString();
   const fullUrl = `${url}${queryString}`;
-  console.log('this is url', fullUrl);
+  // console.log('this is url', fullUrl);
   const response = await axios.get(url, {
     params: {
       page: pageParam,
@@ -49,7 +49,7 @@ const fetchData = async ({pageParam = 1, queryKey}) => {
     const filteredPosts = response.data.posts.filter(
       post => !Object.keys(post.tags).includes('duplicate'),
     );
-    //console.log('thi is filtered', filteredPosts);
+    //// console.log('thi is filtered', filteredPosts);
 
     return filteredPosts;
   }
@@ -62,7 +62,7 @@ const NewListing = ({category, search, route}) => {
   const [hideDuplicate, setHideDuplicate] = useState(true);
   const [savedArticles, setSavedArticles] = useState({});
   const theme = useContext(ThemeContext);
-  const {primary, tertiary} = theme.colors;
+  const {primary, tertiary, background} = theme.colors;
 
   const exclude = hideDuplicate ? 'duplicate' : null;
   const {category: routeCategory, search: routeSearch} = route?.params || {};
@@ -98,7 +98,7 @@ const NewListing = ({category, search, route}) => {
     initialPageParam: 1,
     getNextPageParam: (lastPage, pages) => {
       // Assuming the API returns `hasMore` to indicate more pages
-      // console.log(lastPage, "lastpage", pages, "pages");
+      // // console.log(lastPage, "lastpage", pages, "pages");
       return lastPage.length ? pages.length + 1 : undefined;
     },
     // onFocus: () => {
@@ -108,8 +108,8 @@ const NewListing = ({category, search, route}) => {
     // },
   });
 
-  //console.log(hasNextPage, "hasnextpage");
-  // console.log(
+  //// console.log(hasNextPage, "hasnextpage");
+  // // console.log(
   //   data?.pages.flatMap((page) => page),
   //   "flated dates"
   // );
@@ -147,12 +147,14 @@ const NewListing = ({category, search, route}) => {
         return JSON.parse(savedArticleJSON);
       }
     } catch (error) {
-      console.log('Error retrieving saved article:', error);
+      // console.log('Error retrieving saved article:', error);
     }
   };
 
   const renderFooter = () => {
-    if (!loading) return null;
+    if (!loading) {
+      return null;
+    }
     return <ActivityIndicator size="large" color="#0000ff" />;
   };
   const footerComponent = () => (
@@ -167,7 +169,7 @@ const NewListing = ({category, search, route}) => {
   );
 
   return (
-    <View>
+    <View style={{backgroundColor: background}}>
       {routeSearch && <SearchBox search={routeSearch} />}
       <View className="flex-row justify-between mr-1">
         <Text className="mb-3 text-lg">

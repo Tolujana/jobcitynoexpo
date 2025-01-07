@@ -1,6 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import BackgroundFetch from 'react-native-background-fetch';
-import {NativeModules} from 'react-native';
 import notifee, {
   AndroidImportance,
   AuthorizationStatus,
@@ -25,13 +24,13 @@ export const fetchArticles = async task => {
         sendNotification(keyWord.search, latestDate);
       }
 
-      // console.log('im wroking ', apiName);
+      // // console.log('im wroking ', apiName);
       //  await CheckPermissionAndSend(apiName, apiUrl);
       // sendNotification(apiName, apiUrl);
     }
   } catch (error) {
     if (task.cancelled) {
-      console.log('it is cancelled o');
+      // console.log('it is cancelled o');
     }
     console.error(error);
   }
@@ -40,7 +39,6 @@ export const fetchArticles = async task => {
 const parseDate = data => {
   // Implement your date parsing logic
   return data.posts[0].title;
-  console.log('thisis the bakcgound tast', data.posts[0].title);
 };
 
 const getLastDate = async apiUrl => {
@@ -62,7 +60,7 @@ const saveLastDate = async (apiUrl, date) => {
 };
 
 export const backgroundFetchTask = async () => {
-  console.log('[BackgroundFetch] Task started');
+  // console.log('[BackgroundFetch] Task started');
   await fetchArticles();
 
   BackgroundFetch.finish(BackgroundFetch.FETCH_RESULT_NEW_DATA);
@@ -74,7 +72,7 @@ export const sendNotification = async (name, url) => {
   //     provisional: true, // Optional for Android 13
   //   });
 
-  console.log('Notification permission granted');
+  // console.log('Notification permission granted');
   const channel = await notifee.createChannel({
     id: 'default',
     name: 'Default Channel',
@@ -96,11 +94,11 @@ export const sendNotification = async (name, url) => {
 };
 
 const CheckPermissionAndSend = async (name, url) => {
-  console.log('insidenow');
+  // console.log('insidenow');
   const settings = await notifee.getNotificationSettings();
 
   if (settings.authorizationStatus === AuthorizationStatus.DENIED) {
-    console.log('Notification permissions have been denied');
+    // console.log('Notification permissions have been denied');
   } else if (settings.authorizationStatus === AuthorizationStatus.AUTHORIZED) {
     await notifee.createChannel({
       id: 'default',
@@ -117,11 +115,11 @@ const CheckPermissionAndSend = async (name, url) => {
         // smallIcon:'ic_launcher'
       },
     });
-    console.log('sent message o');
+    // console.log('sent message o');
   } else if (
     settings.authorizationStatus === AuthorizationStatus.NOT_DETERMINED
   ) {
-    console.log('Notification permissions have not been determined');
+    // console.log('Notification permissions have not been determined');
   }
 };
 
@@ -131,9 +129,9 @@ const requestNotificationPermission = async () => {
   const settings = await notifee.requestPermission();
 
   if (settings.authorizationStatus >= AuthorizationStatus.AUTHORIZED) {
-    console.log('Notification permissions have been granted');
+    // console.log('Notification permissions have been granted');
   } else {
-    console.log('Notification permissions have been denied');
+    // console.log('Notification permissions have been denied');
   }
 };
 

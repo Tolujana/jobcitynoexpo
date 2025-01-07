@@ -1,12 +1,12 @@
 // AppContext.js
-import React, { createContext, useState } from "react";
-import axios from "axios";
+import React, {createContext, useState} from 'react';
+import axios from 'axios';
 
 // Create the context
 const AppContext = createContext();
 
 // Create a provider component
-const AppProvider = ({ children }) => {
+const AppProvider = ({children}) => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -15,10 +15,10 @@ const AppProvider = ({ children }) => {
   const fetchData = async (url, params) => {
     setLoading(true);
     setError(null);
-    const { page } = params;
+    const {page} = params;
     try {
-      const response = await axios.get(url, { params: params });
-      setData((prevData) => [...prevData, ...response.data.posts]);
+      const response = await axios.get(url, {params: params});
+      setData(prevData => [...prevData, ...response.data.posts]);
       setPage(page + 1);
     } catch (err) {
       setError(err.message);
@@ -28,10 +28,10 @@ const AppProvider = ({ children }) => {
   };
 
   return (
-    <AppContext.Provider value={{ data, loading, error, fetchData }}>
+    <AppContext.Provider value={{data, loading, error, fetchData}}>
       {children}
     </AppContext.Provider>
   );
 };
 
-export { AppContext, AppProvider };
+export {AppContext, AppProvider};

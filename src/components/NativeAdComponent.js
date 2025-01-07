@@ -23,7 +23,7 @@ const NativeAdComponent = () => {
         );
         setNativeAd(ad);
       } catch (error) {
-        console.error('Failed to load native ad:', error);
+        //console.error('Failed to load native ad:', error);
       }
     };
 

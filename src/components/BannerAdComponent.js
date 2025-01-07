@@ -18,7 +18,7 @@ const BannerAdComponent = () => {
           requestNonPersonalizedAdsOnly: false,
         }}
         onAdLoaded={() => {
-          console.log('Ad loaded successfully');
+          // console.log('Ad loaded successfully');
         }}
         onAdFailedToLoad={error => {
           console.error('Ad failed to load:', error);

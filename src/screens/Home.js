@@ -31,7 +31,7 @@ import SearchBox from '../components/SearchBox';
 import HomeSearchButton from '../components/HomeSearchButton';
 import {ThemeContext} from '../theme/themeContext';
 import Loader from '../components/Loader';
-import CustomModal from '../components/Modal';
+import CustomModal from '../components/CustomModal';
 
 export default function Home() {
   const navigation = useNavigation();
@@ -134,7 +134,7 @@ export default function Home() {
           {fullMenu.length > 0 && (
             <TouchableOpacity
               style={{...styles.button, backgroundColor: tertiary}}
-              onPress={addMenuItems}>
+              onPress={() => setModalVisible(true)}>
               <Icon name="plus" size={24} color={text2} />
             </TouchableOpacity>
           )}
@@ -175,7 +175,7 @@ export default function Home() {
         <View>
           {!activeCategory ? (
             <NewListing category={sortedSpec[0] || {name: 'All ', slug: ''}} />
-          ) : Boolean(activeCategory.name) ? (
+          ) : activeCategory.name ? (
             <NewListing category={activeCategory} />
           ) : (
             <NewListing search={activeCategory} />

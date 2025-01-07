@@ -19,7 +19,7 @@ const ApiUrlManager = () => {
   const [apiUrl, setApiUrl] = useState('');
   const [apiUrls, setApiUrls] = useState([]);
   const theme = useContext(ThemeContext);
-  const {primary, background, text, text2, secondary, tertiary} = theme.colors;
+  const {primary, background, text, text2} = theme.colors;
   useEffect(() => {
     const loadApiUrls = async () => {
       try {
@@ -41,11 +41,11 @@ const ApiUrlManager = () => {
         const search = apiUrl;
         const slug = search;
         const newUrl = {slug, search};
-        //console.log('new', newUrl);
+        //// console.log('new', newUrl);
 
         if (!apiUrls.some(url => url.slug === newUrl.slug)) {
           const newUrls = [...apiUrls, newUrl];
-          console.log('newurl', newUrls);
+          // console.log('newurl', newUrls);
           setApiUrls(newUrls);
           await AsyncStorage.setItem(API_URLS_KEY, JSON.stringify(newUrls));
           setApiUrl('');
@@ -66,6 +66,10 @@ const ApiUrlManager = () => {
   return (
     <View style={[styles.container, {backgroundColor: background}]}>
       <Text style={styles.title}>KeyWord Notification</Text>
+      <Text style={[styles.desc, {color: primary}]}>
+        Each keyword you enter will create a menu Item and activate notification
+        when there is a new update
+      </Text>
       <TextInput
         style={[styles.input, {backgroundColor: background}]}
         placeholder="Enter KeyWord"
@@ -102,6 +106,10 @@ const styles = StyleSheet.create({
   container: {
     padding: 20,
     backgroundColor: '#f5f5f5',
+  },
+  desc: {
+    fontSize: 15,
+    marginBottom: 20,
   },
   title: {
     fontSize: 24,

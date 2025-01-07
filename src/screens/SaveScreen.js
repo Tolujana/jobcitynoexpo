@@ -1,18 +1,20 @@
 import {View, Text, TouchableOpacity, FlatList, StatusBar} from 'react-native';
-import React, {useEffect, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {SafeAreaView} from 'react-native-safe-area-context';
 //import { StatusBar } from "expo-status-bar";
 import {useColorScheme} from 'nativewind';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import RenderItem from '../components/RenderItem';
 import {useFocusEffect} from '@react-navigation/native';
+import {ThemeContext} from '../theme/themeContext';
 
 export default function SaveScreen() {
   const {colorScheme} = useColorScheme;
   const [savedArticles, setSavedArticles] = useState({});
   const [articles, setArticles] = useState([]);
   const [bookmarkNumber, setBookmarkNumber] = useState(0);
-
+  const theme = useContext(ThemeContext);
+  const {text, tertiary} = theme.colors;
   const getSavedArticle = async () => {
     try {
       const savedArticleJSON = await AsyncStorage.getItem('savedArticles');
@@ -20,7 +22,7 @@ export default function SaveScreen() {
         return JSON.parse(savedArticleJSON);
       }
     } catch (error) {
-      console.log('Error retrieving saved article:', error);
+      // console.log('Error retrieving saved article:', error);
     }
   };
 
@@ -53,7 +55,7 @@ export default function SaveScreen() {
       await AsyncStorage.removeItem(key);
       setSavedArticles({});
       setArticles([]);
-      console.log(`Item with key ${key} removed`);
+      // console.log(`Item with key ${key} removed`);
     } catch (e) {
       console.error('Failed to remove item from AsyncStorage', e);
     }
@@ -67,13 +69,13 @@ export default function SaveScreen() {
       updateBookmarkNumber={updateBookmark}
     />
   );
-  console.log(savedArticles, 'articles');
+  // console.log(savedArticles, 'articles');
   return (
     <SafeAreaView className="p-4 bg-white flex-1 dark:bg-neutral-900">
       <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
       {/* header */}
       <View className="flex-row justify-between items-center">
-        <Text className="text-3xl font-bold text-blue-600 dark:text-white">
+        <Text style={{color: text}} className="text-3xl font-bold">
           Saved Jobs
         </Text>
         <TouchableOpacity className="bg-blue-600 py-1 px-4 rounded-full text-white">

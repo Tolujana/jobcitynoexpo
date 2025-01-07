@@ -92,7 +92,11 @@ const CategorySelectionScreen2 = () => {
           {backgroundColor: background},
         ]}>
         <Text style={[styles.title, {color: primary}]}>
-          Select Topics to Subscribe
+          Choose your specialization
+        </Text>
+        <Text style={[styles.desc, {color: primary}]}>
+          Each option you select will create a menu Item and activate
+          notification for new updates
         </Text>
         {data
           .filter(topic => !excludedNames.includes(topic.name))
@@ -135,6 +139,10 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  desc: {
+    fontSize: 15,
     marginBottom: 20,
   },
   topicContainer: {

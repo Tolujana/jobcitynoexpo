@@ -106,7 +106,7 @@ export default function AppNavigation({navigationRef}) {
         <Stack.Screen name="HomeTabs" component={TabNavigator} />
         <Stack.Screen name="Categories" component={CategorySelectionScreen2} />
         <Stack.Screen name="Form" component={KeywordNotificationScreen} />
-        <Stack.Screen name="Listing" component={Listing2} />
+        {/* <Stack.Screen name="Listing" component={Listing2} /> */}
         <Stack.Screen name="NewListing" component={NewListing} />
         <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} />
       </Stack.Navigator>

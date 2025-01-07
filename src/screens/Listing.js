@@ -16,7 +16,7 @@ const Listing = ({category, search}) => {
   const url = category
     ? `http://public-api.wordpress.com/rest/v1.2/sites/en.blog.wordpress.com/posts/?category=${category.title}`
     : `http://public-api.wordpress.com/rest/v1.2/sites/en.blog.wordpress.com/posts/?search=${search}`;
-  console.log(url);
+  // console.log(url);
   const params = search
     ? {search: search, page: page, number: 7}
     : category
@@ -25,7 +25,7 @@ const Listing = ({category, search}) => {
 
   // useEffect(() => {
   //   setKey((prevKey) => prevKey + 1);
-  //   console.log("key", key);
+  //   // console.log("key", key);
   //   return setData([]);
   // }, [category, search]);
 
@@ -48,7 +48,7 @@ const Listing = ({category, search}) => {
   //     const response = await axios.get(url, {
   //       params: params,
   //     });
-  //     console.log(response.data.posts.length, "thisis length");
+  //     // console.log(response.data.posts.length, "thisis length");
   //     if (response.data.posts.length > 0) {
   //       setData((prevData) => [...prevData, ...response.data.posts]);
   //     } else {
@@ -73,7 +73,9 @@ const Listing = ({category, search}) => {
     }
   };
   const renderFooter = () => {
-    if (!loading) return null;
+    if (!loading) {
+      return null;
+    }
     return <ActivityIndicator size="large" color="#0000ff" />;
   };
 

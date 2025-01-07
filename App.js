@@ -13,6 +13,9 @@ import Event from './src/Event';
 import {firebase} from '@react-native-firebase/app';
 import {firebaseConfig} from './src/constants/Channels';
 import {navigationRef} from './src/navigation/NotificationNavigate';
+import ExitApp from 'react-native-exit-app';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import Rate, {AndroidMarket} from 'react-native-rate';
 // import type {PropsWithChildren} from 'react';
 
 import {
@@ -20,20 +23,14 @@ import {
   Platform,
   StyleSheet,
   Text,
-  useColorScheme,
   Button,
   Alert,
   Linking,
   View,
+  Modal,
+  TouchableOpacity,
 } from 'react-native';
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import AppNavigation from './src/navigation';
 import BackgroundFetchTask, {
@@ -41,7 +38,18 @@ import BackgroundFetchTask, {
 } from './src/components/BackgroundFetchTask';
 import BackgroundFetch from 'react-native-background-fetch';
 import {ThemeProvider} from './src/theme/themeContext';
+import {fetchNewDataFromAPI} from './src/util/funtions';
+import {
+  SplashContext,
+  SplashProvider,
+  useSplashContext,
+} from './src/context/SplashContext';
+//import {SplashContext, SplashProvider} from './src/context/SplashContext';
 
+const RATE_PROMPT_KEY = 'lastRatePrompt';
+const USER_RATED_KEY = 'userRated';
+const FIVE_DAYS_MS = 20 * 60 * 1000;
+// * 24 * 60
 const requestNotificationPermission = async () => {
   if (Platform.OS === 'android' && Platform.Version >= 33) {
     const granted = await PermissionsAndroid.request(
@@ -55,7 +63,7 @@ const requestNotificationPermission = async () => {
       },
     );
     if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
-      console.log('Notification permission denied');
+      // console.log('Notification permission denied');
     }
   }
 };
@@ -63,15 +71,59 @@ const requestNotificationPermission = async () => {
 const queryClient = new QueryClient();
 
 function App() {
-  //const isDarkMode = useColorScheme() === 'dark';
+  const [showModal, setShowModal] = useState(false);
   const [enabled, setEnabled] = useState(false);
   const [status, setStatus] = useState(-1);
   const [events, setEvents] = useState([]);
+  const [isUpdateRequired, setIsUpdateRequired] = useState(false);
+  const [isWarning, setIsWarning] = useState(false);
+  const [date, setDate] = useState('');
+  //const {isSplashLoaded} = useContext(SplashContext);
+  const {isSplashFinished, setIsSplashFinished} = useContext(SplashContext);
+  useEffect(() => {
+    initBackgroundFetch();
+  }, []);
 
-  const colorScheme = useColorScheme();
-  // const [theme, setTheme] = useState(getTheme(colorScheme));
+  const checkAndPromptForRating = async () => {
+    try {
+      const lastPrompt = await AsyncStorage.getItem(RATE_PROMPT_KEY);
+      const userRated = await AsyncStorage.getItem(USER_RATED_KEY);
 
-  //use effect for fcm push notification
+      if (userRated === 'true') return; // User already rated the app.
+
+      const now = Date.now();
+      if (!lastPrompt && now - parseInt(lastPrompt, 10) > FIVE_DAYS_MS) {
+        setShowModal(true);
+
+        await AsyncStorage.setItem(RATE_PROMPT_KEY, now.toString());
+      }
+    } catch (error) {
+      console.error('Error checking rate prompt:', error);
+    }
+  };
+
+  const handleRateNow = async () => {
+    const options = {
+      AppleAppID: 'YOUR_APPLE_APP_ID',
+      GooglePackageName: 'com.hotnigerianjobs',
+      preferredAndroidMarket: AndroidMarket.Google,
+      preferInApp: true,
+      openAppStoreIfInAppFails: true,
+    };
+
+    Rate.rate(options, async success => {
+      if (success) {
+        await AsyncStorage.setItem(USER_RATED_KEY, 'true');
+      }
+    });
+
+    setShowModal(false);
+  };
+
+  const handleLater = () => {
+    setShowModal(false);
+  };
+
   useEffect(() => {
     // Handle background and quit state notifications
     messaging().onNotificationOpenedApp(remoteMessage => {
@@ -88,7 +140,7 @@ function App() {
         if (remoteMessage) {
           const category = remoteMessage.data?.post_category;
           if (category) {
-            console.log('this is category', category);
+            // console.log('this is category', category);
             navigationRef.current?.navigate('NewListing', {category});
           }
         }
@@ -96,12 +148,6 @@ function App() {
     //handle background and quit state
     const unsubscribeNotificationOpenedApp =
       messaging().onNotificationOpenedApp(remoteMessage => {
-        // console.log(
-        //   'Notification caused app to open from background state:',
-        //   remoteMessage,
-        // );
-
-        // Navigate based on notification data
         const category = remoteMessage.data?.post_category;
         if (category) {
           navigationRef.current?.navigate('NewListing', {category});
@@ -174,15 +220,42 @@ function App() {
 
   // useEFfect for requestnotification
   React.useEffect(() => {
-    requestNotificationPermission();
-    initBackgroundFetch();
-    // if (Platform.OS === 'android') {
-    //   checkBatteryOptimization();
-    // }
-    //fetch menu data
-  }, []);
+    if (isSplashFinished) {
+      requestNotificationPermission();
+      checkAndPromptForRating();
+    }
+  }, [isSplashFinished]);
 
-  useEffect(() => {}, []);
+  useEffect(() => {
+    // useEffect to check for updates
+    const checkUpdateStatus = async () => {
+      try {
+        // Fetch update config
+        const response = await fetchNewDataFromAPI(
+          'https://screammie.info/upgrade.json',
+        );
+        // console.log('appresponse', response);
+        const {updateDeadline, warningPeriod} = response;
+
+        const deadline = new Date(updateDeadline); // Deadline date
+        const today = new Date(); // Current date
+        setDate(deadline.toLocaleDateString());
+        // Calculate warning start date
+        const warningStart = new Date(deadline);
+        warningStart.setDate(deadline.getDate() - warningPeriod);
+
+        if (today > deadline) {
+          setIsUpdateRequired(true);
+        } else if (today > warningStart) {
+          setIsWarning(true);
+        }
+      } catch (error) {
+        console.error('Error fetching update config:', error);
+      }
+    };
+
+    checkUpdateStatus();
+  }, []);
 
   useEffect(() => {
     // Request permissions for push notifications via fcm
@@ -193,26 +266,19 @@ function App() {
         authStatus === messaging.AuthorizationStatus.PROVISIONAL;
 
       if (enabled) {
-        console.log('Authorization status:', authStatus);
+        // console.log('Authorization status:', authStatus);
       }
     };
 
     requestUserPermission();
 
+    console.log('App splash', isSplashFinished);
     messaging()
       .getToken()
       .then(token => {
-        console.log('FCM Token:', token);
+        // console.log('FCM Token:', token);
         // You can store this token to send targeted notifications later
       });
-
-    // Handle foreground messages
-    // const unsubscribe = messaging().onMessage(async remoteMessage => {
-    //   Alert.alert('A new FCM message arrived!', JSON.stringify(remoteMessage));
-    // });
-
-    // Cleanup on unmount
-    // return unsubscribe;
   }, []);
 
   const initBackgroundFetch = async () => {
@@ -223,7 +289,7 @@ function App() {
         enableHeadless: true,
         startOnBoot: true,
         // Android options
-        forceAlarmManager: true, // <-- Set true to bypass JobScheduler.
+        //forceAlarmManager: true, // <-- Set true to bypass JobScheduler.
         requiredNetworkType: BackgroundFetch.NETWORK_TYPE_ANY, // Default
         requiresCharging: false, // Default
         requiresDeviceIdle: false, // Default
@@ -231,7 +297,7 @@ function App() {
         requiresStorageNotLow: false, // Default
       },
       async taskId => {
-        console.log('[BackgroundFetch] started taskId', taskId);
+        // console.log('[BackgroundFetch] started taskId', taskId);
         // Create an Event record.
         const event = await Event.create(taskId, false);
         // Update state.
@@ -243,7 +309,7 @@ function App() {
       taskId => {
         // Oh No!  Our task took too long to complete and the OS has signalled
         // that this task must be finished immediately.
-        console.log('[Fetch] TIMEOUT taskId:', taskId);
+        // console.log('[Fetch] TIMEOUT taskId:', taskId);
         BackgroundFetch.finish(taskId);
       },
     );
@@ -251,12 +317,90 @@ function App() {
     setEnabled(true);
   };
 
-  /// Clear the Events list.
-  ///
+  if (isUpdateRequired) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.errorText}>
+          This version is now obsolate. Please update to the latest version.
+        </Text>
+        <Button
+          title="Update Now"
+          onPress={() => {
+            Alert.alert(
+              'Update Required',
+              'You will be redirected to the app store to update the app.',
+              [
+                {
+                  text: 'OK',
+                  onPress: () => {
+                    Linking.openURL(
+                      'https://play.google.com/store/apps/details?id=com.hotnigerianjobs',
+                    )
+                      .then(() => {
+                        // Close the app after opening the update link
+                        ExitApp.exitApp();
+                      })
+                      .catch(error =>
+                        console.error('Error opening app store:', error),
+                      );
+                  },
+                },
+              ],
+            );
+          }}
+        />
+      </View>
+    );
+  }
 
+  if (isWarning) {
+    Alert.alert(
+      'Update Available',
+      `A new version of this app will be required soon. Please update before ${date}`,
+      [
+        {
+          text: 'Not Now',
+          style: 'cancel', // Allows dismissal of the alert
+        },
+        {
+          text: 'Update Now',
+          onPress: () =>
+            Linking.openURL(
+              'https://play.google.com/store/apps/details?id=com.hotnigerianjobs',
+            ),
+        },
+      ],
+    );
+  }
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
+        <Modal
+          transparent
+          visible={showModal}
+          animationType="slide"
+          onRequestClose={() => setShowModal(false)}>
+          <View style={styles.modalContainer}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>Enjoying the App?</Text>
+              <Text style={styles.modalText}>
+                We’d love to hear your feedback! Would you like to rate us?
+              </Text>
+              <View style={styles.buttonRow}>
+                <TouchableOpacity
+                  style={[styles.button, styles.rateNowButton]}
+                  onPress={handleRateNow}>
+                  <Text style={styles.buttonText}>Rate Now</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.button, styles.laterButton]}
+                  onPress={handleLater}>
+                  <Text style={styles.buttonText}>Later</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
         <AppNavigation navigationRef={navigationRef} />
       </ThemeProvider>
     </QueryClientProvider>
@@ -279,6 +423,62 @@ const styles = StyleSheet.create({
   },
   highlight: {
     fontWeight: '700',
+  },
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContent: {
+    width: '80%',
+    backgroundColor: 'white',
+    borderRadius: 10,
+    padding: 20,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    color: 'black',
+  },
+  modalText: {
+    fontSize: 16,
+    textAlign: 'center',
+    marginBottom: 20,
+    color: 'black',
+  },
+  buttonRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+  },
+  button: {
+    padding: 10,
+    borderRadius: 5,
+    width: '45%',
+    alignItems: 'center',
+  },
+  rateNowButton: {
+    backgroundColor: '#4CAF50',
+  },
+  laterButton: {
+    backgroundColor: '#f44336',
+  },
+  buttonText: {
+    color: 'white',
+    fontWeight: 'bold',
   },
 });
 

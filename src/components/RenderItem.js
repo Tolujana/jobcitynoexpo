@@ -27,7 +27,7 @@ const RenderItem = ({item, index, savedArticles}) => {
   ) : (
     <View
       onChange={inView => {
-        console.log('invew', inView);
+        // console.log('invew', inView);
         setIsLoadMore(inView);
       }}>
       <NewSingleJobEntryNew

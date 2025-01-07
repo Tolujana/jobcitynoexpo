@@ -1,4 +1,4 @@
-import {View, Text, ScrollView, TouchableOpacity} from 'react-native';
+import {Text, TouchableOpacity} from 'react-native';
 import React, {useContext} from 'react';
 import {ThemeContext} from '../theme/themeContext';
 
@@ -12,16 +12,7 @@ export default function CategoriesCard({
     ? activeCategory.name === category.name
     : activeCategory?.search === category?.search;
   const theme = useContext(ThemeContext);
-  const {
-    primary,
-    lightGrey,
-    darkGrey,
-    background,
-    text,
-    text2,
-    secondary,
-    tertiary,
-  } = theme.colors;
+  const {primary, lightGrey, darkGrey} = theme.colors;
 
   return (
     <TouchableOpacity

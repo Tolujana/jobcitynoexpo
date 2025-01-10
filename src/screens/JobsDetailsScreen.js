@@ -8,17 +8,20 @@ import {
   StyleSheet,
   Alert,
   BackHandler,
+  Button,
 } from 'react-native';
 
 import MobileAds, {
   InterstitialAd,
   AdEventType,
   TestIds,
+  RewardedAd,
+  RewardedAdEventType,
+  RewardedInterstitialAd,
 } from 'react-native-google-mobile-ads';
 
 import React, {useContext, useEffect, useState} from 'react';
 import {useNavigation, useRoute} from '@react-navigation/native';
-import {WebView} from 'react-native-webview';
 import {ChevronLeftIcon, ShareIcon} from 'react-native-heroicons/outline';
 import {BookmarkSquareIcon} from 'react-native-heroicons/solid';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -26,7 +29,6 @@ import {useRingerMode, RINGER_MODE} from 'react-native-ringer-mode';
 
 import {useWindowDimensions} from 'react-native';
 import ParallaxView from '../components/ParallaxView';
-import {MobileAd} from 'react-native-google-mobile-ads/lib/typescript/ads/MobileAd';
 import {ThemeContext} from '../theme/themeContext';
 
 // const {height, width} = Dimensions.get('window');
@@ -41,6 +43,23 @@ const interstitialAd = InterstitialAd.createForAdRequest(adUnitId, {
     startMuted: true, // This mutes the video ads
   },
 });
+
+const rewardedAdUnitId = __DEV__
+  ? TestIds.REWARDED
+  : 'ca-app-pub-7993847549836206/6722594982';
+
+const rewarded = RewardedAd.createForAdRequest(rewardedAdUnitId, {
+  requestNonPersonalizedAdsOnly: false,
+});
+
+const rewardedIntId = __DEV__
+  ? TestIds.REWARDED_INTERSTITIAL
+  : 'ca-app-pub-7993847549836206/8455249718';
+
+const rewardedInterstitial = RewardedInterstitialAd.createForAdRequest(
+  rewardedIntId,
+  {requestNonPersonalizedAdsOnly: false},
+);
 
 const AppContent = () => (
   <View>
@@ -57,12 +76,139 @@ export default function JobDetailsScreen({route}) {
   const {primary, background, text, text2, secondry, tertiary} = theme.colors;
   const {width, height} = useWindowDimensions();
   const {mode, error, setMode} = useRingerMode();
-  const {item} = route.params;
+  const {item, adCount} = route.params;
   // console.log('detials', item.URL);
   const [visible, setVisible] = useState(false);
   const navigation = useNavigation();
   const [isBookmarked, toggleBookmark] = useState(false);
   const [backButtonClickCount, setBackButtonClickCount] = useState(0);
+  const [rewardedAd, setRewardedAd] = useState(0);
+  const [reward, setReward] = useState(0);
+  const [rewardINTLoaded, setRewardINTLoaded] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+  const randomNumber = Math.floor(Math.random() * 2) + 1;
+  // useEffect(() => {
+  //   //rewarded ads
+
+  //   const unsubscribeLoaded = rewarded.addAdEventListener(
+  //     RewardedAdEventType.LOADED,
+  //     () => {
+  //       setLoaded(true);
+  //     },
+  //   );
+  //   const adEventListener = rewarded.addAdEventListener(
+  //     AdEventType.CLOSED,
+  //     () => {
+  //       navigation.goBack();
+  //     },
+  //   );
+  //   const unsubscribeEarned = rewarded.addAdEventListener(
+  //     RewardedAdEventType.EARNED_REWARD,
+  //     reward => {
+  //       console.log('User earned reward of ', reward);
+  //       const random = randomNumber();
+  //       setReward(reward.amount + random);
+  //       saveRewardToAsyncStorage(reward.amount + random);
+  //     },
+  //   );
+
+  //   // Start loading the rewarded ad straight away
+  //   rewarded.load();
+
+  //   // Unsubscribe from events on unmount
+  //   return () => {
+  //     unsubscribeEarned();
+  //     adEventListener();
+  //   };
+  // }, []);
+
+  useEffect(() => {
+    //rewarded interstitial
+
+    const unsubscribeLoaded = rewardedInterstitial.addAdEventListener(
+      RewardedAdEventType.LOADED,
+      () => {
+        setRewardINTLoaded(true);
+      },
+    );
+    const adEventListener = rewardedInterstitial.addAdEventListener(
+      AdEventType.CLOSED,
+      () => {
+        navigation.goBack();
+      },
+    );
+    const unsubscribeEarned = rewardedInterstitial.addAdEventListener(
+      RewardedAdEventType.EARNED_REWARD,
+      reward => {
+        console.log('User earned reward of ', reward);
+        setReward(reward.amount);
+        saveRewardToAsyncStorage(reward.amount);
+      },
+    );
+
+    // Start loading the rewarded ad straight away
+    rewardedInterstitial.load();
+
+    // Unsubscribe from events on unmount
+    return () => {
+      unsubscribeEarned();
+      adEventListener();
+    };
+  }, []);
+
+  const saveRewardToAsyncStorage = async amount => {
+    try {
+      const existingReward = await AsyncStorage.getItem('rewardAmount');
+      const totalReward = (parseInt(existingReward) || 0) + amount;
+      await AsyncStorage.setItem('rewardAmount', totalReward.toString());
+    } catch (error) {
+      console.error('Error saving reward:', error);
+    }
+  };
+  const handleBackPress = () => {
+    Alert.alert(
+      'Watch Rewarded Ad get double reward?',
+      'Would you like to watch an ad to earn rewards?',
+      [
+        {
+          text: 'No',
+          onPress: interstitialAd.show(),
+          style: 'cancel',
+        },
+        {
+          text: 'Yes',
+          onPress: () => rewarded.show(),
+        },
+      ],
+    );
+    return true; // Prevent default back action
+  };
+  useEffect(() => {}, [rewardedAd, rewarded]);
+
+  const showRewardedAd = () => {
+    if (loaded) {
+      rewarded.show();
+      rewarded.load();
+    } else {
+      Alert.alert('Ad not ready', 'Please try again later.');
+    }
+  };
+
+  console.log(reward, 'amount');
+  console.log(rewardINTLoaded, 'intreward');
+  console.log(loaded, 'rewareded');
+  const handleReward = async amount => {
+    try {
+      const existingRewards = await AsyncStorage.getItem('rewards');
+      const totalRewards = existingRewards
+        ? parseInt(existingRewards) + amount
+        : amount;
+      await AsyncStorage.setItem('rewards', totalRewards.toString());
+      Alert.alert('Congratulations!', `You earned ${amount} reward points.`);
+    } catch (error) {
+      console.error('Failed to save rewards:', error);
+    }
+  };
 
   const toggleBookmarkAndSave = async () => {
     try {
@@ -153,17 +299,19 @@ export default function JobDetailsScreen({route}) {
   }, []);
 
   // Show the interstitial ad if loaded
-  const showInterstitialAd = async () => {
-    setBackButtonClickCount(backButtonClickCount + 1);
-
+  const showInterstitialAd = () => {
     // Show ad on alternate back button clicks (e.g., 2nd, 4th, 6th, etc.)
-    if (backButtonClickCount % 3 === 0 && interstitialAd.loaded) {
-      // Store current volume
-      // const currentVolume = await VolumeManager.getVolume();
+    // if (loaded) {
+    //   rewarded.show();
+    // } else {
+    //   navigation.goBack();
+    // }
 
-      // Set volume to 0 (mute)
-      // VolumeManager.setVolume(0);
-
+    if (adCount % 5 === 0 && loaded) {
+      handleBackPress;
+    } else if (adCount % 2 === 0 && rewardINTLoaded) {
+      rewardedInterstitial.show();
+    } else if (interstitialAd.loaded) {
       interstitialAd.show();
     } else {
       navigation.goBack();

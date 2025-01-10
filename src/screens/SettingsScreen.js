@@ -1,4 +1,4 @@
-import React, {useContext} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {
   View,
   Text,
@@ -11,11 +11,25 @@ import {
 import {useNavigation} from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {ThemeContext} from '../theme/themeContext';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function SettingsScreen() {
   const navigation = useNavigation();
   const theme = useContext(ThemeContext);
   const {primary, background, text, text2, secondary, tertiary} = theme.colors;
+  const [rewardAmount, setRewardAmount] = useState(5);
+  useEffect(() => {
+    const fetchReward = async () => {
+      try {
+        const storedReward = await AsyncStorage.getItem('rewardAmount');
+        setRewardAmount(storedReward !== null ? parseInt(storedReward) : 5); // Set to stored value or default to 5
+      } catch (error) {
+        console.error('Error fetching reward amount:', error);
+      }
+    };
+
+    fetchReward();
+  }, []); // Run once on component mount
 
   const openPolicy = async () => {
     const url = 'https://screammie.info/privacy-policy/';
@@ -47,7 +61,6 @@ export default function SettingsScreen() {
           <Text style={styles.text}>Keyword Notification</Text>
         </TouchableOpacity>
       </View>
-
       {/* General Settings Section */}
       <View style={styles.section}>
         <Text style={[styles.sectionHeader, {color: primary}]}>General</Text>
@@ -91,6 +104,15 @@ export default function SettingsScreen() {
           />
           <Text style={styles.text}>About</Text>
         </TouchableOpacity>
+      </View>
+      {/* reward session */}
+      <View style={styles.section}>
+        <Text style={[styles.sectionHeader, {color: primary}]}>Points</Text>
+        <Text style={{fontSize: 18, fontWeight: 'bold'}}>
+          Current Reward: you have {rewardAmount} reward points {'\n'}
+          the points ensures the notification and other functions work.{'\n'}
+          Cilck the button below to get more points for free.
+        </Text>
       </View>
     </ScrollView>
   );

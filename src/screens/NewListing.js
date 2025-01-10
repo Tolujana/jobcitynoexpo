@@ -63,7 +63,7 @@ const NewListing = ({category, search, route}) => {
   const [savedArticles, setSavedArticles] = useState({});
   const theme = useContext(ThemeContext);
   const {primary, tertiary, background} = theme.colors;
-
+  const [adCount, setAdCount] = useState(1);
   const exclude = hideDuplicate ? 'duplicate' : null;
   const {category: routeCategory, search: routeSearch} = route?.params || {};
   const propsQueryParam = search
@@ -113,7 +113,7 @@ const NewListing = ({category, search, route}) => {
   //   data?.pages.flatMap((page) => page),
   //   "flated dates"
   // );
-
+  console.log('this is count', adCount);
   const handleLoadMore = () => {
     fetchNextPage();
   };
@@ -163,9 +163,18 @@ const NewListing = ({category, search, route}) => {
       <Text>Footer Content</Text>
     </View>
   );
+  const incrementCount = () => {
+    setAdCount(prevCount => prevCount + 1);
+  };
 
   const renderfunction = ({item, index}) => (
-    <RenderItem item={item} index={index} savedArticles={savedArticles} />
+    <RenderItem
+      item={item}
+      index={index}
+      savedArticles={savedArticles}
+      adCount={adCount}
+      incrementCount={incrementCount}
+    />
   );
 
   return (

@@ -14,7 +14,7 @@ const bannerAdUnitId = __DEV__
   ? TestIds.BANNER
   : 'ca-app-pub-7993847549836206/9500075214';
 
-const RenderItem = ({item, index, savedArticles}) => {
+const RenderItem = ({item, index, savedArticles, adCount, incrementCount}) => {
   //const openItem = (item) => navigation.navigate("JobsDetails", item);
   const [loaded, setLoaded] = useState(false);
 
@@ -23,6 +23,8 @@ const RenderItem = ({item, index, savedArticles}) => {
       item={item}
       index={index}
       savedArticles={savedArticles}
+      incrementCount={incrementCount}
+      adCount={adCount}
     />
   ) : (
     <View
@@ -34,6 +36,8 @@ const RenderItem = ({item, index, savedArticles}) => {
         item={item}
         index={index}
         savedArticles={savedArticles}
+        incrementCount={incrementCount}
+        adCount={adCount}
       />
       <Text> advert</Text>
       <View>

@@ -86,41 +86,46 @@ export default function JobDetailsScreen({route}) {
   const [reward, setReward] = useState(0);
   const [rewardINTLoaded, setRewardINTLoaded] = useState(false);
   const [loaded, setLoaded] = useState(false);
-  const randomNumber = Math.floor(Math.random() * 2) + 1;
-  // useEffect(() => {
-  //   //rewarded ads
+  const [random, setRandom] = useState(0);
 
-  //   const unsubscribeLoaded = rewarded.addAdEventListener(
-  //     RewardedAdEventType.LOADED,
-  //     () => {
-  //       setLoaded(true);
-  //     },
-  //   );
-  //   const adEventListener = rewarded.addAdEventListener(
-  //     AdEventType.CLOSED,
-  //     () => {
-  //       navigation.goBack();
-  //     },
-  //   );
-  //   const unsubscribeEarned = rewarded.addAdEventListener(
-  //     RewardedAdEventType.EARNED_REWARD,
-  //     reward => {
-  //       console.log('User earned reward of ', reward);
-  //       const random = randomNumber();
-  //       setReward(reward.amount + random);
-  //       saveRewardToAsyncStorage(reward.amount + random);
-  //     },
-  //   );
+  useEffect(() => {
+    //rewarded ads
 
-  //   // Start loading the rewarded ad straight away
-  //   rewarded.load();
+    const unsubscribeLoaded = rewarded.addAdEventListener(
+      RewardedAdEventType.LOADED,
+      () => {
+        setLoaded(true);
+      },
+    );
+    const adEventListener = rewarded.addAdEventListener(
+      AdEventType.CLOSED,
+      () => {
+        setLoaded(false);
+        rewarded.load();
 
-  //   // Unsubscribe from events on unmount
-  //   return () => {
-  //     unsubscribeEarned();
-  //     adEventListener();
-  //   };
-  // }, []);
+        navigation.goBack();
+      },
+    );
+    const unsubscribeEarned = rewarded.addAdEventListener(
+      RewardedAdEventType.EARNED_REWARD,
+      reward => {
+        console.log('User earned reward of ', reward);
+        setReward(reward.amount + random);
+        saveRewardToAsyncStorage(reward.amount + random);
+      },
+    );
+
+    // Start loading the rewarded ad straight away
+
+    rewarded.load();
+
+    // Unsubscribe from events on unmount
+    return () => {
+      unsubscribeLoaded();
+      unsubscribeEarned();
+      adEventListener();
+    };
+  }, []);
 
   useEffect(() => {
     //rewarded interstitial
@@ -134,6 +139,7 @@ export default function JobDetailsScreen({route}) {
     const adEventListener = rewardedInterstitial.addAdEventListener(
       AdEventType.CLOSED,
       () => {
+        setRewardINTLoaded(false);
         navigation.goBack();
       },
     );
@@ -151,6 +157,7 @@ export default function JobDetailsScreen({route}) {
 
     // Unsubscribe from events on unmount
     return () => {
+      unsubscribeLoaded();
       unsubscribeEarned();
       adEventListener();
     };
@@ -161,54 +168,35 @@ export default function JobDetailsScreen({route}) {
       const existingReward = await AsyncStorage.getItem('rewardAmount');
       const totalReward = (parseInt(existingReward) || 0) + amount;
       await AsyncStorage.setItem('rewardAmount', totalReward.toString());
+      Alert.alert('Congratulations!', `You earned ${amount} reward points.`);
     } catch (error) {
       console.error('Error saving reward:', error);
     }
   };
   const handleBackPress = () => {
     Alert.alert(
-      'Watch Rewarded Ad get double reward?',
-      'Would you like to watch an ad to earn rewards?',
+      'Double your rewards?',
+      'Would you like to watch an ad to earn rewards used within the app?',
       [
         {
           text: 'No',
-          onPress: interstitialAd.show(),
+          onPress: () => navigation.goBack(),
           style: 'cancel',
         },
         {
           text: 'Yes',
-          onPress: () => rewarded.show(),
+          onPress: () => {
+            rewarded.show();
+          },
         },
       ],
     );
     return true; // Prevent default back action
   };
-  useEffect(() => {}, [rewardedAd, rewarded]);
-
-  const showRewardedAd = () => {
-    if (loaded) {
-      rewarded.show();
-      rewarded.load();
-    } else {
-      Alert.alert('Ad not ready', 'Please try again later.');
-    }
-  };
 
   console.log(reward, 'amount');
-  console.log(rewardINTLoaded, 'intreward');
-  console.log(loaded, 'rewareded');
-  const handleReward = async amount => {
-    try {
-      const existingRewards = await AsyncStorage.getItem('rewards');
-      const totalRewards = existingRewards
-        ? parseInt(existingRewards) + amount
-        : amount;
-      await AsyncStorage.setItem('rewards', totalRewards.toString());
-      Alert.alert('Congratulations!', `You earned ${amount} reward points.`);
-    } catch (error) {
-      console.error('Failed to save rewards:', error);
-    }
-  };
+  console.log(adCount, 'adcouamount');
+  console.log(loaded, 'intreward');
 
   const toggleBookmarkAndSave = async () => {
     try {
@@ -307,10 +295,14 @@ export default function JobDetailsScreen({route}) {
     //   navigation.goBack();
     // }
 
-    if (adCount % 5 === 0 && loaded) {
-      handleBackPress;
-    } else if (adCount % 2 === 0 && rewardINTLoaded) {
-      rewardedInterstitial.show();
+    if (adCount % 2 === 0) {
+      if (adCount % 4 === 0 && rewardINTLoaded) {
+        rewardedInterstitial.show();
+      } else {
+        const randomNumber = Math.floor(Math.random() * 3) + 1;
+        setRandom(randomNumber);
+        handleBackPress();
+      }
     } else if (interstitialAd.loaded) {
       interstitialAd.show();
     } else {

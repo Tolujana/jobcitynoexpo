@@ -19,6 +19,7 @@ import Listing2 from '../screens/Listing2';
 import NewListing from '../screens/NewListing';
 import {ThemeContext} from '../theme/themeContext';
 import SplashScreen2 from '../screens/SplashScreen2';
+import RewardPointsScreen from '../screens/RewardPointsScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -106,7 +107,7 @@ export default function AppNavigation({navigationRef}) {
         <Stack.Screen name="HomeTabs" component={TabNavigator} />
         <Stack.Screen name="Categories" component={CategorySelectionScreen2} />
         <Stack.Screen name="Form" component={KeywordNotificationScreen} />
-        {/* <Stack.Screen name="Listing" component={Listing2} /> */}
+        <Stack.Screen name="RewardPoints" component={RewardPointsScreen} />
         <Stack.Screen name="NewListing" component={NewListing} />
         <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} />
       </Stack.Navigator>

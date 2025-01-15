@@ -8,12 +8,14 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {ThemeContext} from '../theme/themeContext';
 
-function NewSingleJobEntry({item = {}, index = 1, savedArticles = []}) {
+function NewSingleJobEntry({
+  item = {},
+  index = 1,
+  savedArticles = [],
+  adCount,
+  incrementCount,
+}) {
   const navigation = useNavigation();
-  const openItem = () =>
-    navigation.navigate('JobsDetails', {
-      item: item,
-    });
   const theme = useContext(ThemeContext);
   const {primary, backgroundCard, text, text2, secondary, tertiary} =
     theme.colors;
@@ -24,6 +26,15 @@ function NewSingleJobEntry({item = {}, index = 1, savedArticles = []}) {
   const [savedArticleStatus, setSavedArticleStatus] = useState([]);
   const [idList, setIDlist] = useState([]);
   const [isduplicate, setIsDuplicate] = useState(false);
+
+  const openItem = () => {
+    incrementCount();
+    navigation.navigate('JobsDetails', {
+      adCount: adCount,
+      item: item,
+    });
+  };
+
   function formatDate(isoDate) {
     const date = new Date(isoDate);
 

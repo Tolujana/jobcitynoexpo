@@ -12,12 +12,30 @@ import {useNavigation} from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {ThemeContext} from '../theme/themeContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {
+  AdEventType,
+  TestIds,
+  RewardedAd,
+  RewardedAdEventType,
+} from 'react-native-google-mobile-ads';
+
+const rewardedAdUnitId = __DEV__
+  ? TestIds.REWARDED
+  : 'ca-app-pub-7993847549836206/6722594982';
+
+const rewarded = RewardedAd.createForAdRequest(rewardedAdUnitId, {
+  requestNonPersonalizedAdsOnly: false,
+});
 
 export default function SettingsScreen() {
   const navigation = useNavigation();
   const theme = useContext(ThemeContext);
   const {primary, background, text, text2, secondary, tertiary} = theme.colors;
   const [rewardAmount, setRewardAmount] = useState(5);
+  const [reward, setReward] = useState(0);
+  const [isButtonDisabled, setIsButtonDisabled] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+
   useEffect(() => {
     const fetchReward = async () => {
       try {
@@ -38,6 +56,69 @@ export default function SettingsScreen() {
       await Linking.openURL(url);
     }
   };
+
+  useEffect(() => {
+    //rewarded ads
+
+    const unsubscribeLoaded = rewarded.addAdEventListener(
+      RewardedAdEventType.LOADED,
+      () => {
+        setLoaded(true);
+      },
+    );
+    const adEventListener = rewarded.addAdEventListener(
+      AdEventType.CLOSED,
+      () => {
+        setLoaded(false);
+        setIsButtonDisabled(true);
+        setTimeout(() => {
+          setIsButtonDisabled(false);
+        }, 6000);
+
+        rewarded.load();
+      },
+    );
+    const unsubscribeEarned = rewarded.addAdEventListener(
+      RewardedAdEventType.EARNED_REWARD,
+      reward => {
+        console.log('User earned reward of ', reward);
+        setReward(reward.amount);
+        saveRewardToAsyncStorage(reward.amount);
+      },
+    );
+
+    // Start loading the rewarded ad straight away
+
+    rewarded.load();
+
+    // Unsubscribe from events on unmount
+    return () => {
+      unsubscribeLoaded();
+      unsubscribeEarned();
+      adEventListener();
+    };
+  }, []);
+
+  const saveRewardToAsyncStorage = async amount => {
+    try {
+      const existingReward = await AsyncStorage.getItem('rewardAmount');
+      const totalReward = (parseInt(existingReward) || 0) + amount;
+      await AsyncStorage.setItem('rewardAmount', totalReward.toString());
+      Alert.alert('Congratulations!', `You earned ${amount} reward points.`);
+    } catch (error) {
+      console.error('Error saving reward:', error);
+    }
+  };
+
+  const showAd = () => {
+    if (loaded) {
+      rewarded.show();
+    } else {
+      Alert.alert('Ad not ready', 'Please try again later.');
+      rewarded.load();
+    }
+  };
+
   return (
     <ScrollView
       style={[styles.container, {backgroundColor: background, color: text}]}>
@@ -108,11 +189,36 @@ export default function SettingsScreen() {
       {/* reward session */}
       <View style={styles.section}>
         <Text style={[styles.sectionHeader, {color: primary}]}>Points</Text>
-        <Text style={{fontSize: 18, fontWeight: 'bold'}}>
-          Current Reward: you have {rewardAmount} reward points {'\n'}
-          the points ensures the notification and other functions work.{'\n'}
-          Cilck the button below to get more points for free.
+        <Text>
+          <Text style={{fontSize: 16, fontWeight: 'bold', color: tertiary}}>
+            Current Reward:
+          </Text>{' '}
+          You have <Text style={styles.bold}>{rewardAmount}</Text> reward points{' '}
+          {'\n'}
+          The points are used for the functionality of the App like
+          notifications, Jobs saving etc.{'\n'}
         </Text>
+        <TouchableOpacity
+          style={[styles.addButton, {backgroundColor: primary, color: text2}]}
+          onPress={() => navigation.navigate('RewardPoints')}>
+          <Text style={[styles.addButtonText, {color: text2}]}>
+            Cilck to learn more.
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[
+            styles.addButton2,
+            {
+              backgroundColor: isButtonDisabled ? tertiary : primary,
+              color: text2,
+            },
+          ]}
+          disabled={isButtonDisabled}
+          onPress={showAd}>
+          <Text style={[styles.addButtonText, {color: text2}]}>
+            {isButtonDisabled ? 'Please wait' : 'Earn Points'}
+          </Text>
+        </TouchableOpacity>
       </View>
     </ScrollView>
   );
@@ -147,5 +253,23 @@ const styles = StyleSheet.create({
   text: {
     fontSize: 16,
     //color: '#333',
+  },
+  bold: {
+    fontWeight: 'bold',
+  },
+  addButton: {
+    padding: 15,
+    borderRadius: 10,
+    border: 1,
+  },
+  addButton2: {
+    padding: 10,
+    borderRadius: 10,
+    marginTop: 20,
+  },
+  addButtonText: {
+    textAlign: 'center',
+    alignItems: 'center',
+    fontSize: 16,
   },
 });

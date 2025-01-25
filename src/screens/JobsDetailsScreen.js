@@ -30,6 +30,7 @@ import {useRingerMode, RINGER_MODE} from 'react-native-ringer-mode';
 import {useWindowDimensions} from 'react-native';
 import ParallaxView from '../components/ParallaxView';
 import {ThemeContext} from '../theme/themeContext';
+import {hasRewardPoints} from '../util/funtions';
 
 // const {height, width} = Dimensions.get('window');
 
@@ -44,22 +45,20 @@ const interstitialAd = InterstitialAd.createForAdRequest(adUnitId, {
   },
 });
 
-const rewardedAdUnitId = __DEV__
+const rewardedAdUnitId = !__DEV__
   ? TestIds.REWARDED
   : 'ca-app-pub-7993847549836206/6722594982';
 
 const rewarded = RewardedAd.createForAdRequest(rewardedAdUnitId, {
-  requestNonPersonalizedAdsOnly: false,
+  requestNonPersonalizedAdsOnly: false, // Set to true for non-personalized ads
 });
 
-const rewardedIntId = __DEV__
+const rewardedIntId = !__DEV__
   ? TestIds.REWARDED_INTERSTITIAL
   : 'ca-app-pub-7993847549836206/8455249718';
 
-const rewardedInterstitial = RewardedInterstitialAd.createForAdRequest(
-  rewardedIntId,
-  {requestNonPersonalizedAdsOnly: false},
-);
+const rewardedInterstitial =
+  RewardedInterstitialAd.createForAdRequest(rewardedIntId);
 
 const AppContent = () => (
   <View>
@@ -194,10 +193,6 @@ export default function JobDetailsScreen({route}) {
     return true; // Prevent default back action
   };
 
-  console.log(reward, 'amount');
-  console.log(adCount, 'adcouamount');
-  console.log(loaded, 'intreward');
-
   const toggleBookmarkAndSave = async () => {
     try {
       // Check if News Article is already in Storage
@@ -208,17 +203,21 @@ export default function JobDetailsScreen({route}) {
       // Check if the article is already in the bookmarked list
       const isArticleBookmarked = existingArticle[item.ID];
       // // console.log("Check if the article is already in the bookmarked list");
-
+      // check if user hasrewardpoints
+      const hasRewardPoint = await hasRewardPoints(3);
       if (!isArticleBookmarked) {
-        // If the article is not bookmarked, add it to the bookmarked list
-        existingArticle[item.ID] = item;
+        if (hasRewardPoint) {
+          // If the article is not bookmarked, add it to the bookmarked list
+          existingArticle[item.ID] = item;
 
-        await AsyncStorage.setItem(
-          'savedArticles',
-          JSON.stringify(existingArticle),
-        );
-        toggleBookmark(true);
-        // // console.log("Article is bookmarked");
+          await AsyncStorage.setItem(
+            'savedArticles',
+            JSON.stringify(existingArticle),
+          );
+          toggleBookmark(true);
+        } else {
+          navigation.navigate('ShowError', 'to save Job article');
+        } // // console.log("Article is bookmarked");
       } else {
         // If the article is already bookmarked, remove it from the list
 
@@ -298,10 +297,14 @@ export default function JobDetailsScreen({route}) {
     if (adCount % 2 === 0) {
       if (adCount % 4 === 0 && rewardINTLoaded) {
         rewardedInterstitial.show();
-      } else {
+      } else if (loaded) {
         const randomNumber = Math.floor(Math.random() * 3) + 1;
         setRandom(randomNumber);
         handleBackPress();
+      } else if (interstitialAd.loaded) {
+        interstitialAd.show();
+      } else {
+        navigation.goBack();
       }
     } else if (interstitialAd.loaded) {
       interstitialAd.show();

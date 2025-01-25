@@ -79,3 +79,29 @@ export const loadSelectedspecialization = async (
     console.error('Failed to load topics:', error);
   }
 };
+
+export const hasRewardPoints = async value => {
+  try {
+    // Retrieve the stored reward amount from AsyncStorage
+    const storedValue = await AsyncStorage.getItem('rewardAmount');
+
+    // Ensure a valid numeric value
+    const currentReward = parseInt(storedValue || '5', 10);
+
+    // Calculate the remaining reward amount
+    const numericValue = currentReward - value;
+
+    if (numericValue >= 0) {
+      // Update AsyncStorage with the new reward amount
+      await AsyncStorage.setItem('rewardAmount', numericValue.toString());
+      return true;
+    } else {
+      // Reset the reward amount to 0 if the value is not sufficient
+
+      return false;
+    }
+  } catch (error) {
+    console.error('Error handling notification:', error);
+    return false; // Return false in case of an error
+  }
+};

@@ -1,5 +1,12 @@
-import {View, Text, TouchableOpacity, Image} from 'react-native';
-import React, {memo, useContext, useState} from 'react';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Image,
+  Animated,
+  StyleSheet,
+} from 'react-native';
+import React, {memo, useContext, useEffect, useRef, useState} from 'react';
 import {styles} from '../../assets/Styles';
 import {heightPercentageToDP} from 'react-native-responsive-screen';
 import {useFocusEffect, useNavigation} from '@react-navigation/native';
@@ -7,9 +14,11 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 //import FontAwesome from '@expo/vector-icons/FontAwesome';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {ThemeContext} from '../theme/themeContext';
+import {hasRewardPoints} from '../util/funtions';
 
 function NewSingleJobEntry({
   item = {},
+  notificationTitle,
   index = 1,
   savedArticles = [],
   adCount,
@@ -26,6 +35,33 @@ function NewSingleJobEntry({
   const [savedArticleStatus, setSavedArticleStatus] = useState([]);
   const [idList, setIDlist] = useState([]);
   const [isduplicate, setIsDuplicate] = useState(false);
+  const animationValue = useRef(new Animated.Value(0)).current;
+  const isFlickering = item.title === notificationTitle;
+  //console.log('isflicker', isFlickering, 'noti:', notificationTitle);
+  const startFlickerAnimation = () => {
+    animationValue.setValue(0); // Reset the value to its initial state
+
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(animationValue, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: false, // Set to true if not animating styles that require layout updates
+        }),
+        Animated.timing(animationValue, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: false,
+        }),
+      ]),
+      {iterations: 12}, // Number of times to repeat the animation
+    ).start();
+  };
+
+  useEffect(() => {
+    // Start flicker animation for the specific article
+    startFlickerAnimation();
+  }, [notificationTitle]);
 
   const openItem = () => {
     incrementCount();
@@ -90,13 +126,18 @@ function NewSingleJobEntry({
 
       // Check if the article ID already exists in the array
       const article = existingArticleIds[item.ID];
+      const hasRewardPoint = await hasRewardPoints(3);
       if (!article) {
-        // If not present, add the article  to the array
-        existingArticleIds[item.ID] = item;
-        // console.log('Article ID added to list:', item.ID);
-        const updatedStatus = [...savedArticleStatus];
-        updatedStatus[item.ID] = true;
-        setSavedArticleStatus(updatedStatus);
+        if (hasRewardPoint) {
+          // If not present, add the article  to the array
+          existingArticleIds[item.ID] = item;
+          // console.log('Article ID added to list:', item.ID);
+          const updatedStatus = [...savedArticleStatus];
+          updatedStatus[item.ID] = true;
+          setSavedArticleStatus(updatedStatus);
+        } else {
+          navigation.navigate('ShowError', 'to Save Job article');
+        }
       } else {
         // If present, remove the article ID from the array
         delete existingArticleIds[item.ID];
@@ -116,6 +157,11 @@ function NewSingleJobEntry({
       console.error('Error toggling article ID:', error);
     }
   };
+
+  const borderColor = animationValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: [backgroundCard, secondary], // Black to red flicker
+  });
   return (
     <TouchableOpacity
       key={index}
@@ -133,63 +179,72 @@ function NewSingleJobEntry({
       }
       className="mx-2 mb-2 pb-2 space-y-1"
       onPress={() => openItem()}>
-      <View className="flex-row items-center  shadow-sm justify-center">
-        <Image
-          // source={{ uri: item.featured_image }}
-          source={
-            !item.featured_image
-              ? require('../../assets/d.png')
-              : {uri: item.featured_image}
-          }
-          style={{
-            width: heightPercentageToDP(7),
-            height: heightPercentageToDP(8),
-            borderRadius: 7,
-          }}
-        />
-        <View className="w-[70%] pl-3  ">
-          <View className="flex-row ">
-            {/*time & duplicate indicator*/}
-            <Text className="text-xs italic text-gray-900 dark:text-white">
-              {formatDate(item.date)}
+      <Animated.View style={isFlickering && {backgroundColor: borderColor}}>
+        <View className="flex-row items-center  shadow-sm justify-center">
+          <Image
+            // source={{ uri: item.featured_image }}
+            source={
+              !item.featured_image
+                ? require('../../assets/d.png')
+                : {uri: item.featured_image}
+            }
+            style={{
+              width: heightPercentageToDP(7),
+              height: heightPercentageToDP(8),
+              borderRadius: 7,
+            }}
+          />
+          <View className="w-[70%] pl-3  ">
+            <View className="flex-row ">
+              {/*time & duplicate indicator*/}
+              <Text className="text-xs italic text-gray-900 dark:text-white">
+                {formatDate(item.date)}
+              </Text>
+              <Text className="text-xs italic text-orange-600 dark:text-orange-300">
+                {isduplicate ? '  duplicate/similar Post' : null}
+              </Text>
+            </View>
+            {/*title*/}
+
+            <Text
+              className="text-neautral-800 capitalize max-w-[90%] dark:text-white"
+              style={{
+                fontFamily: 'RobotoBold',
+                fontSize: heightPercentageToDP(1.7),
+              }}>
+              {item?.title?.lenght > 51
+                ? item?.title?.substring(0, 51) + '...'
+                : item?.title}
             </Text>
-            <Text className="text-xs italic text-orange-600 dark:text-orange-300">
-              {isduplicate ? '  duplicate/similar Post' : null}
+            {/* categories */}
+            <Text className="text-xs font-bold text-gray-900 dark:text-white">
+              {/* {specs.map((item = <Text> {item} </Text>))} */}
+              {specs?.length > 35 ? specs.substring(0, 35) + '..' : specs}
             </Text>
           </View>
-          {/*title*/}
-
-          <Text
-            className="text-neautral-800 capitalize max-w-[90%] dark:text-white"
-            style={{
-              fontFamily: 'RobotoBold',
-              fontSize: heightPercentageToDP(1.7),
-            }}>
-            {item?.title?.lenght > 51
-              ? item?.title?.substring(0, 51) + '...'
-              : item?.title}
-          </Text>
-          {/* categories */}
-          <Text className="text-xs font-bold text-gray-900 dark:text-white">
-            {/* {specs.map((item = <Text> {item} </Text>))} */}
-            {specs?.length > 35 ? specs.substring(0, 35) + '..' : specs}
-          </Text>
+          {/* bookMar */}
+          <View
+            className="pr-6 "
+            style={{opacity: savedArticleStatus[item.ID] ? 1 : 0.4}}>
+            <TouchableOpacity onPress={() => toggleArticleId(item, index)}>
+              <Icon
+                name="suitcase"
+                size={20}
+                color={savedArticleStatus[item.ID] ? primary : tertiary}
+              />
+            </TouchableOpacity>
+          </View>
         </View>
-        {/* bookMar */}
-        <View
-          className="pr-6 "
-          style={{opacity: savedArticleStatus[item.ID] ? 1 : 0.4}}>
-          <TouchableOpacity onPress={() => toggleArticleId(item, index)}>
-            <Icon
-              name="suitcase"
-              size={20}
-              color={savedArticleStatus[item.ID] ? primary : tertiary}
-            />
-          </TouchableOpacity>
-        </View>
-      </View>
+      </Animated.View>
     </TouchableOpacity>
   );
 }
+
+const styles2 = StyleSheet.create({
+  item: {
+    borderWidth: 2,
+    // Default border color
+  },
+});
 
 export const NewSingleJobEntryNew = memo(NewSingleJobEntry);

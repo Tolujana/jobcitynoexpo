@@ -17,6 +17,7 @@ import ExitApp from 'react-native-exit-app';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Rate, {AndroidMarket} from 'react-native-rate';
 // import type {PropsWithChildren} from 'react';
+import showErrorAlert from './src/components/ShowErrorAlert';
 
 import {
   PermissionsAndroid,
@@ -38,7 +39,7 @@ import BackgroundFetchTask, {
 } from './src/components/BackgroundFetchTask';
 import BackgroundFetch from 'react-native-background-fetch';
 import {ThemeProvider} from './src/theme/themeContext';
-import {fetchNewDataFromAPI} from './src/util/funtions';
+import {fetchNewDataFromAPI, hasRewardPoints} from './src/util/funtions';
 import {
   SplashContext,
   SplashProvider,
@@ -48,7 +49,7 @@ import {
 
 const RATE_PROMPT_KEY = 'lastRatePrompt';
 const USER_RATED_KEY = 'userRated';
-const FIVE_DAYS_MS = 20 * 60 * 1000;
+const FIVE_DAYS_MS = 24 * 60 * 60 * 1000;
 // * 24 * 60
 const requestNotificationPermission = async () => {
   if (Platform.OS === 'android' && Platform.Version >= 33) {
@@ -78,7 +79,8 @@ function App() {
   const [isUpdateRequired, setIsUpdateRequired] = useState(false);
   const [isWarning, setIsWarning] = useState(false);
   const [date, setDate] = useState('');
-  //const {isSplashLoaded} = useContext(SplashContext);
+  const [shouldShow, setShouldShow] = useState(true);
+  const [initialRoute, setInitialRoute] = React.useState('SplashScreen');
   const {isSplashFinished, setIsSplashFinished} = useContext(SplashContext);
   useEffect(() => {
     initBackgroundFetch();
@@ -92,9 +94,11 @@ function App() {
       if (userRated === 'true') return; // User already rated the app.
 
       const now = Date.now();
-      if (!lastPrompt && now - parseInt(lastPrompt, 10) > FIVE_DAYS_MS) {
+      if (lastPrompt && now - parseInt(lastPrompt, 10) > FIVE_DAYS_MS) {
         setShowModal(true);
 
+        await AsyncStorage.setItem(RATE_PROMPT_KEY, now.toString());
+      } else if (!lastPrompt) {
         await AsyncStorage.setItem(RATE_PROMPT_KEY, now.toString());
       }
     } catch (error) {
@@ -126,10 +130,27 @@ function App() {
 
   useEffect(() => {
     // Handle background and quit state notifications
+    const checkNotification = async () => {
+      const result = await hasRewardPoints(1); // Pass your value here
+
+      setShouldShow(result); // Update state based on the result
+    };
+
+    checkNotification();
     messaging().onNotificationOpenedApp(remoteMessage => {
-      const category = remoteMessage.data?.post_category;
-      if (category) {
-        navigationRef.current?.navigate('NewListing', {category});
+      if (shouldShow) {
+        const category = remoteMessage.data?.post_category;
+        const post_title = remoteMessage.data?.post_title;
+        if (category) {
+          navigationRef.current?.navigate('NewListing', {
+            category,
+            post_title,
+            refresh: true,
+          });
+        }
+      } else {
+        navigationRef.current?.navigate('ShowError');
+        // showErrorAlert();
       }
     });
 
@@ -137,51 +158,82 @@ function App() {
     messaging()
       .getInitialNotification()
       .then(remoteMessage => {
-        if (remoteMessage) {
-          const category = remoteMessage.data?.post_category;
-          if (category) {
-            // console.log('this is category', category);
-            navigationRef.current?.navigate('NewListing', {category});
+        if (shouldShow) {
+          if (remoteMessage) {
+            const category = remoteMessage.data?.post_category;
+            const post_title = remoteMessage.data?.post_title;
+            setInitialRoute(remoteMessage.data.screen);
+            if (category) {
+              // console.log('this is category', category);
+              navigationRef.current?.navigate('NewListing', {
+                category,
+                post_title,
+                refresh: true,
+              });
+            }
           }
+        } else {
+          navigationRef.current?.navigate('ShowError');
+          // showErrorAlert();
         }
       });
     //handle background and quit state
     const unsubscribeNotificationOpenedApp =
       messaging().onNotificationOpenedApp(remoteMessage => {
         const category = remoteMessage.data?.post_category;
-        if (category) {
-          navigationRef.current?.navigate('NewListing', {category});
+        const post_title = remoteMessage.data?.post_title;
+        setInitialRoute(remoteMessage.data.screen);
+        //const result = await checkNotification(1);
+        if (shouldShow) {
+          if (category) {
+            navigationRef.current?.navigate('NewListing', {
+              category,
+              post_title,
+            });
+          }
+        } else {
+          navigationRef.current?.navigate('ShowError');
+          //showErrorAlert();
         }
       });
 
     // Handle notifications in foreground
-    const unsubscribe = messaging().onMessage(async remoteMessage => {
+    const unsubscribe = messaging().onMessage(remoteMessage => {
       const {post_category, post_title} = remoteMessage.data;
-      if (post_title) {
-        Alert.alert(
-          `New vacancy in ${post_category}.`,
-          `${post_title}.`,
-          [
-            {
-              text: 'Cancel',
-              onPress: () => {
-                // Do nothing, leaves user on the current page
-              },
-              style: 'cancel',
+
+      Alert.alert(
+        `New vacancy in ${post_category}.`,
+        `${post_title}.`,
+        [
+          {
+            text: 'Cancel',
+            onPress: () => {
+              // Do nothing, leaves user on the current page
             },
-            {
-              text: 'See Article',
-              onPress: () => {
-                // Navigate to the target screen, based on the notification data
+            style: 'cancel',
+          },
+          {
+            text: 'See Article',
+            onPress: async () => {
+              // Navigate to the target screen, based on the notification data
+
+              if (shouldShow) {
                 navigationRef.current?.navigate('NewListing', {
                   category: post_category,
+                  post_title,
+                  refresh: true,
                 });
-              },
+              } else {
+                navigationRef.current?.navigate(
+                  'ShowError',
+                  'to show job article',
+                );
+              }
             },
-          ],
-          {cancelable: true},
-        );
-      }
+          },
+        ],
+        {cancelable: true},
+      );
     });
 
     return () => {
@@ -192,19 +244,48 @@ function App() {
 
   //useEFFect for notifee search notification
   useEffect(() => {
-    // Handle foreground notification clicks
-    const unsubscribe = notifee.onForegroundEvent(({type, detail}) => {
+    const checkNotification = async () => {
+      const result = await hasRewardPoints(2); // Pass your value here
+      setShouldShow(result); // Update state based on the result
+    };
+    checkNotification();
+    messaging().setBackgroundMessageHandler(async remoteMessage => {
+      if (shouldShow)
+        await notifee.displayNotification({
+          title: remoteMessage.notification.title,
+          body: remoteMessage.notification.body,
+          android: {channelId: 'default'},
+        });
+    });
+
+    // Handle hasRewardPointsound notification clicks
+    const unsubscribe = notifee.onForegroundEvent(async ({type, detail}) => {
+      const result = await hasRewardPoints(2);
+
       if (type === EventType.PRESS) {
-        handleNotificationPress(detail.notification.data);
+        if (shouldShow) {
+          handleNotificationPress(detail.notification.data);
+        } else {
+          showErrorAlert();
+        }
       }
     });
 
     // Handle background notification clicks
     notifee.onBackgroundEvent(async ({type, detail}) => {
       if (type === EventType.PRESS) {
-        handleNotificationPress(detail.notification.data);
+        if (shouldShow) {
+          handleNotificationPress(detail.notification.data);
+        } else {
+          showErrorAlert();
+        }
       }
     });
+    // Handle cold start if notification was tapped
+    if (global.pendingScreen) {
+      navigationRef.current?.navigate(global.pendingScreen);
+      global.pendingScreen = null; // Clear after navigation
+    }
 
     return () => unsubscribe();
   }, []);
@@ -214,6 +295,8 @@ function App() {
     if (data && data.keyWord) {
       navigationRef.current?.navigate('NewListing', {
         search: data.keyWord,
+        post_title: data.post_title,
+        refresh: true,
       });
     }
   };
@@ -272,7 +355,6 @@ function App() {
 
     requestUserPermission();
 
-    console.log('App splash', isSplashFinished);
     messaging()
       .getToken()
       .then(token => {
@@ -401,7 +483,10 @@ function App() {
             </View>
           </View>
         </Modal>
-        <AppNavigation navigationRef={navigationRef} />
+        <AppNavigation
+          navigationRef={navigationRef}
+          initialRoute={initialRoute}
+        />
       </ThemeProvider>
     </QueryClientProvider>
   );

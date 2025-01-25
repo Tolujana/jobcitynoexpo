@@ -20,11 +20,12 @@ import NewListing from '../screens/NewListing';
 import {ThemeContext} from '../theme/themeContext';
 import SplashScreen2 from '../screens/SplashScreen2';
 import RewardPointsScreen from '../screens/RewardPointsScreen';
+import ErrorScreen from '../screens/ErrorScreen';
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
-export default function AppNavigation({navigationRef}) {
+export default function AppNavigation({navigationRef, initialRoute}) {
   //const {colorScheme, toggleColorScheme} = useColorScheme();
   const theme = useContext(ThemeContext);
   const {primary, background, text, transBackground, secondary, tertiary} =
@@ -39,7 +40,7 @@ export default function AppNavigation({navigationRef}) {
       },
     },
   };
-  const TabNavigator = () => {
+  const TabNavigator = ({route}) => {
     return (
       <Tab.Navigator
         screenOptions={({route}) => ({
@@ -75,7 +76,11 @@ export default function AppNavigation({navigationRef}) {
           tabBarActiveTintColor: primary,
           tabBarInactiveTintColor: tertiary,
         })}>
-        <Tab.Screen name="Home" component={Home} />
+        <Tab.Screen
+          name="Home"
+          component={Home}
+          initialParams={{category: route.params}}
+        />
         <Tab.Screen name="Search Jobs" component={SearchScreen} />
         <Tab.Screen
           name="SavedJobs"
@@ -89,7 +94,7 @@ export default function AppNavigation({navigationRef}) {
   return (
     <NavigationContainer ref={navigationRef}>
       <Stack.Navigator
-        initialRouteName="Splash"
+        initialRouteName={initialRoute}
         screenOptions={{
           headerShown: false,
         }}>
@@ -109,6 +114,7 @@ export default function AppNavigation({navigationRef}) {
         <Stack.Screen name="Form" component={KeywordNotificationScreen} />
         <Stack.Screen name="RewardPoints" component={RewardPointsScreen} />
         <Stack.Screen name="NewListing" component={NewListing} />
+        <Stack.Screen name="ShowError" component={ErrorScreen} />
         <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} />
       </Stack.Navigator>
     </NavigationContainer>

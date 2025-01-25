@@ -14,7 +14,7 @@ export default function SaveScreen() {
   const [articles, setArticles] = useState([]);
   const [bookmarkNumber, setBookmarkNumber] = useState(0);
   const theme = useContext(ThemeContext);
-  const {text, tertiary} = theme.colors;
+  const {text, tertiary, background} = theme.colors;
   const getSavedArticle = async () => {
     try {
       const savedArticleJSON = await AsyncStorage.getItem('savedArticles');
@@ -22,15 +22,17 @@ export default function SaveScreen() {
         return JSON.parse(savedArticleJSON);
       }
     } catch (error) {
-      // console.log('Error retrieving saved article:', error);
+      console.log('Error retrieving saved article:', error);
     }
   };
 
   const fetchSavedArticle = async () => {
-    const articles = await getSavedArticle();
-    setSavedArticles(articles);
-    setArticles(Object.values(articles));
-    setBookmarkNumber(Object.keys(articles).length);
+    try {
+      const articles = await getSavedArticle();
+      setSavedArticles(articles);
+      setArticles(Object.values(articles));
+      setBookmarkNumber(Object.keys(articles).length);
+    } catch (error) {}
   };
 
   // useEffect(() => {
@@ -71,7 +73,7 @@ export default function SaveScreen() {
   );
   // console.log(savedArticles, 'articles');
   return (
-    <SafeAreaView className="p-4 bg-white flex-1 dark:bg-neutral-900">
+    <SafeAreaView className="p-2 flex-1 " style={{backgroundColor: background}}>
       <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
       {/* header */}
       <View className="flex-row justify-between items-center">

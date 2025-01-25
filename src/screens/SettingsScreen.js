@@ -8,7 +8,7 @@ import {
   Alert,
   Linking,
 } from 'react-native';
-import {useNavigation} from '@react-navigation/native';
+import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import {ThemeContext} from '../theme/themeContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -24,7 +24,7 @@ const rewardedAdUnitId = __DEV__
   : 'ca-app-pub-7993847549836206/6722594982';
 
 const rewarded = RewardedAd.createForAdRequest(rewardedAdUnitId, {
-  requestNonPersonalizedAdsOnly: false,
+  requestNonPersonalizedAdsOnly: false, // Set to true for non-personalized ads
 });
 
 export default function SettingsScreen() {
@@ -36,19 +36,6 @@ export default function SettingsScreen() {
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
   const [loaded, setLoaded] = useState(false);
 
-  useEffect(() => {
-    const fetchReward = async () => {
-      try {
-        const storedReward = await AsyncStorage.getItem('rewardAmount');
-        setRewardAmount(storedReward !== null ? parseInt(storedReward) : 5); // Set to stored value or default to 5
-      } catch (error) {
-        console.error('Error fetching reward amount:', error);
-      }
-    };
-
-    fetchReward();
-  }, []); // Run once on component mount
-
   const openPolicy = async () => {
     const url = 'https://screammie.info/privacy-policy/';
     const canOpen = await Linking.canOpenURL(url);
@@ -56,6 +43,19 @@ export default function SettingsScreen() {
       await Linking.openURL(url);
     }
   };
+  const fetchReward = async () => {
+    try {
+      const storedReward = await AsyncStorage.getItem('rewardAmount');
+      setRewardAmount(storedReward !== null ? parseInt(storedReward) : 5); // Set to stored value or default to 5
+    } catch (error) {
+      console.error('Error fetching reward amount:', error);
+    }
+  };
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchReward();
+    }, []),
+  );
 
   useEffect(() => {
     //rewarded ads
@@ -68,7 +68,7 @@ export default function SettingsScreen() {
     );
     const adEventListener = rewarded.addAdEventListener(
       AdEventType.CLOSED,
-      () => {
+      async () => {
         setLoaded(false);
         setIsButtonDisabled(true);
         setTimeout(() => {
@@ -76,12 +76,12 @@ export default function SettingsScreen() {
         }, 6000);
 
         rewarded.load();
+        await fetchReward();
       },
     );
     const unsubscribeEarned = rewarded.addAdEventListener(
       RewardedAdEventType.EARNED_REWARD,
-      reward => {
-        console.log('User earned reward of ', reward);
+      async reward => {
         setReward(reward.amount);
         saveRewardToAsyncStorage(reward.amount);
       },
@@ -114,8 +114,8 @@ export default function SettingsScreen() {
     if (loaded) {
       rewarded.show();
     } else {
-      Alert.alert('Ad not ready', 'Please try again later.');
       rewarded.load();
+      Alert.alert('Ad not ready', 'Please try again later.');
     }
   };
 

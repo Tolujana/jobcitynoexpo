@@ -16,12 +16,12 @@ export const fetchArticles = async task => {
 
       const response = await fetch(concatenateUrl);
       const data = await response.json();
-      const latestDate = parseDate(data);
-      const lastDate = await getLastDate(encodeKeyword);
+      const latestData = parseDate(data);
+      const lastData = await getLastDate(encodeKeyword);
 
-      if (latestDate !== lastDate) {
-        await saveLastDate(keyWord.search, latestDate);
-        sendNotification(keyWord.search, latestDate);
+      if (latestData !== lastData) {
+        await saveLastDate(keyWord.search, latestData);
+        sendNotification(keyWord.search, latestData);
       }
 
       // // console.log('im wroking ', apiName);
@@ -43,8 +43,8 @@ const parseDate = data => {
 
 const getLastDate = async apiUrl => {
   try {
-    const lastDate = await AsyncStorage.getItem(`lastDate-${apiUrl}`);
-    return lastDate || '';
+    const lastData = await AsyncStorage.getItem(`lastData-${apiUrl}`);
+    return lastData || '';
   } catch (error) {
     console.error(error);
     return '';
@@ -66,7 +66,7 @@ export const backgroundFetchTask = async () => {
   BackgroundFetch.finish(BackgroundFetch.FETCH_RESULT_NEW_DATA);
 };
 
-export const sendNotification = async (name, url) => {
+export const sendNotification = async (name, data) => {
   // Create a channel (required for Android)
   //   const authorizationStatus = await notifee.requestPermission({
   //     provisional: true, // Optional for Android 13
@@ -81,14 +81,19 @@ export const sendNotification = async (name, url) => {
 
   // Display a notification
   await notifee.displayNotification({
-    title: `New Vacancy on ${name}`,
-    body: ` ${url}`,
+    title: ` ${name} - Keyword Notification`,
+    body: ` ${data}`,
     android: {
       channelId: channel,
       // smallIcon:'ic_launcher'
     },
+    pressAction: {
+      id: 'default',
+    },
     data: {
+      screen: 'NewListing',
       keyWord: name, // Custom data
+      post_title: data,
     },
   });
 };

@@ -5,12 +5,13 @@ import {
   FlatList,
   ActivityIndicator,
   StyleSheet,
+  BackHandler,
 } from 'react-native';
 
 import axios from 'axios';
 import RenderItem from '../components/RenderItem';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import {useFocusEffect} from '@react-navigation/native';
+import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import {AppContext} from '../context/AppContext';
 import {Switch} from 'react-native';
 import {
@@ -32,7 +33,7 @@ const fetchData = async ({pageParam = 1, queryKey}) => {
     ...queryParam,
     // Include additional query parameters here
   };
-  // console.log('params', queryKey);
+  // console.log('i ran again', queryKey);
   const url =
     'https://public-api.wordpress.com/rest/v1.2/sites/screammie.info/posts/?';
   const queryString = new URLSearchParams(params).toString();
@@ -58,6 +59,7 @@ const fetchData = async ({pageParam = 1, queryKey}) => {
 };
 
 const NewListing = ({category, search, route}) => {
+  const navigation = useNavigation();
   const [page, setPage] = useState(1);
   const [hideDuplicate, setHideDuplicate] = useState(true);
   const [savedArticles, setSavedArticles] = useState({});
@@ -66,6 +68,7 @@ const NewListing = ({category, search, route}) => {
   const [adCount, setAdCount] = useState(1);
   const exclude = hideDuplicate ? 'duplicate' : null;
   const {category: routeCategory, search: routeSearch} = route?.params || {};
+
   const propsQueryParam = search
     ? {search: search.slug, number: 7}
     : category && {category: category?.slug, number: 10};
@@ -93,7 +96,7 @@ const NewListing = ({category, search, route}) => {
     isFetchingNextPage,
     status,
   } = useInfiniteQuery({
-    queryKey: [queryParam, exclude],
+    queryKey: [queryParam, [queryParam, exclude]],
     queryFn: fetchData,
     initialPageParam: 1,
     getNextPageParam: (lastPage, pages) => {
@@ -113,7 +116,7 @@ const NewListing = ({category, search, route}) => {
   //   data?.pages.flatMap((page) => page),
   //   "flated dates"
   // );
-  console.log('this is count', adCount);
+
   const handleLoadMore = () => {
     fetchNextPage();
   };
@@ -139,6 +142,38 @@ const NewListing = ({category, search, route}) => {
       fetchSavedArticle();
     }, []),
   );
+
+  useFocusEffect(
+    useCallback(() => {
+      // Called when the screen is focused
+      fetchData({pageParam: 1, queryKey: [queryParam, exclude]});
+    }, []),
+  );
+  useEffect(() => {
+    if (route?.params.refresh) {
+      ///console.log('tested params refresh and it was true');
+      fetchData({pageParam: 1, queryKey: [queryParam, exclude]}); // Refresh data when 'refresh' param changes
+      // Reset param to avoid repeated calls
+    }
+  }, [route?.params]);
+
+  useEffect(() => {
+    const handleBackPress = () => {
+      if (route) {
+        navigation.navigate('HomeTabs'); // Navigate to HomeScreen
+        return true; // Prevent the default back behavior
+      }
+    };
+
+    // Add the event listener
+    const backHandler = BackHandler.addEventListener(
+      'hardwareBackPress',
+      handleBackPress,
+    );
+
+    // Cleanup the listener on unmount
+    return () => backHandler.remove();
+  }, [route]);
 
   const getSavedArticle = async () => {
     try {
@@ -174,6 +209,7 @@ const NewListing = ({category, search, route}) => {
       savedArticles={savedArticles}
       adCount={adCount}
       incrementCount={incrementCount}
+      notificationTitle={route?.params?.post_title}
     />
   );
 

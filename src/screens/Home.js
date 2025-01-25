@@ -33,7 +33,7 @@ import {ThemeContext} from '../theme/themeContext';
 import Loader from '../components/Loader';
 import CustomModal from '../components/CustomModal';
 
-export default function Home() {
+export default function Home({route}) {
   const navigation = useNavigation();
   const theme = useContext(ThemeContext);
   const {primary, background, text, text2, secondry, tertiary} = theme.colors;
@@ -52,10 +52,14 @@ export default function Home() {
     setActiveCategory(category);
   };
 
-  // useEffect(() => {
-  //   loadSelectedspecialization(setspecilization);
-  //   loadSelectedspecialization(setKeywords, 'apiList');
-  // }, []);
+  useEffect(() => {
+    if (route.params.category) {
+      console.log('param in home ', route.params.category);
+      const {category} = route.params.category;
+      navigation.replace('NewListing', route.params.category); // Navigate to HomeScreen
+      // Prevent the default back behavior
+    }
+  }, []);
 
   useFocusEffect(
     React.useCallback(() => {

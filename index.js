@@ -31,6 +31,15 @@ notifee.onBackgroundEvent(async ({type, detail}) => {
     handleNotificationPress(detail.notification.data);
   }
 });
+notifee.onBackgroundEvent(async ({type, detail}) => {
+  if (type === notifee.EventType.PRESS) {
+    const screen = detail.notification?.data?.screen;
+    if (screen) {
+      // Store the screen in AsyncStorage or a global variable to use after the app initializes
+      global.pendingScreen = screen;
+    }
+  }
+});
 
 const handleNotificationPress = data => {
   // Ensure data contains the screen and other params

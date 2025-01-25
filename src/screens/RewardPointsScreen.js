@@ -65,7 +65,7 @@ const RewardPointsScreen = () => {
         </View>
         <View style={styles.row}>
           <Text style={styles.cell}>Save jobs to apply later</Text>
-          <Text style={styles.cell}>2 points</Text>
+          <Text style={styles.cell}>3 points</Text>
         </View>
       </View>
     </View>

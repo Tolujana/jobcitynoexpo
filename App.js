@@ -129,6 +129,42 @@ function App() {
   };
 
   useEffect(() => {
+    const updateRewardPoints = async () => {
+      // Retrieve stored data from AsyncStorage
+      const storedPoints = await AsyncStorage.getItem('rewardAmount');
+      const storedLastOpened = await AsyncStorage.getItem('lastOpened');
+
+      const currentTime = new Date();
+      const currentDay = currentTime.toDateString();
+
+      // If stored last opened exists and is not today's date, increase points
+      if (storedLastOpened) {
+        const lastOpenedDate = new Date(parseInt(storedLastOpened, 10));
+        const lastOpenedDay = lastOpenedDate.toDateString();
+
+        // If last opened was a different day (i.e., a new day)
+        if (lastOpenedDay !== currentDay) {
+          const newPoints = storedPoints ? parseInt(storedPoints, 10) + 5 : 5;
+
+          // Store updated reward points in AsyncStorage
+          await AsyncStorage.setItem('rewardAmount', newPoints.toString());
+        }
+      } else {
+        // If it's the first time opening the app, set the points
+        await AsyncStorage.setItem('rewardAmount', '5');
+      }
+
+      // Update the 'lastOpened' timestamp to the current time
+      await AsyncStorage.setItem(
+        'lastOpened',
+        currentTime.getTime().toString(),
+      );
+    };
+
+    updateRewardPoints();
+  }, []);
+
+  useEffect(() => {
     // Handle background and quit state notifications
     const checkNotification = async () => {
       const result = await hasRewardPoints(1); // Pass your value here

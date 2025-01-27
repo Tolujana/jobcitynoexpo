@@ -51,9 +51,9 @@ const getLastDate = async apiUrl => {
   }
 };
 
-const saveLastDate = async (apiUrl, date) => {
+const saveLastDate = async (apiUrl, data) => {
   try {
-    await AsyncStorage.setItem(`lastDate-${apiUrl}`, date);
+    await AsyncStorage.setItem(`lastData-${apiUrl}`, data);
   } catch (error) {
     console.error(error);
   }

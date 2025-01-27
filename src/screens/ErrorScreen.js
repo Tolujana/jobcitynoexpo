@@ -93,7 +93,16 @@ const ErrorScreen = ({navigation, route}) => {
       console.error('Error saving reward:', error);
     }
   };
-
+  const saveRewardToAsyncStorage2 = async amount => {
+    try {
+      const existingReward = await AsyncStorage.getItem('rewardAmount');
+      const totalReward = (parseInt(existingReward) || 0) + amount;
+      await AsyncStorage.setItem('rewardAmount', totalReward.toString());
+      Alert.alert('Congratulations!', `You earned ${amount} reward points.`);
+    } catch (error) {
+      console.error('Error saving reward:', error);
+    }
+  };
   const showAd = () => {
     if (loaded) {
       rewarded.show();
@@ -113,11 +122,19 @@ const ErrorScreen = ({navigation, route}) => {
       <TouchableOpacity style={styles.button} onPress={navigateToSettings}>
         <Text style={styles.buttonText}>Go to Settings</Text>
       </TouchableOpacity>
-      <CustomButton
-        disable={isButtonDisabled}
-        buttonText={`Earn Points`}
-        onpress={showAd}
-      />
+      {!__DEV__ ? (
+        <CustomButton
+          disable={isButtonDisabled}
+          buttonText={isButtonDisabled ? 'wait....' : `Earn Points`}
+          onpress={showAd}
+        />
+      ) : (
+        <CustomButton
+          disable={isButtonDisabled}
+          buttonText={isButtonDisabled ? 'wait,,,' : `testing Points`}
+          onpress={() => saveRewardToAsyncStorage2(10)}
+        />
+      )}
     </View>
   );
 };

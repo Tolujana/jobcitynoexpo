@@ -86,7 +86,7 @@ export const hasRewardPoints = async value => {
     const storedValue = await AsyncStorage.getItem('rewardAmount');
 
     // Ensure a valid numeric value
-    const currentReward = parseInt(storedValue || '5', 10);
+    const currentReward = parseInt(storedValue || '15', 10);
 
     // Calculate the remaining reward amount
     const numericValue = currentReward - value;

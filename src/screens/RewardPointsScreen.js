@@ -33,7 +33,7 @@ const RewardPointsScreen = () => {
         </View>
         <View style={styles.row}>
           <Text style={styles.cell}>watch Ads</Text>
-          <Text style={styles.cell}>3-6 points per ad</Text>
+          <Text style={styles.cell}>5-10 points per ad</Text>
         </View>
         <View style={styles.row}>
           <Text style={styles.cell}>Visit App once a day </Text>

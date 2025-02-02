@@ -31,34 +31,16 @@ import {useWindowDimensions} from 'react-native';
 import ParallaxView from '../components/ParallaxView';
 import {ThemeContext} from '../theme/themeContext';
 import {hasRewardPoints} from '../util/funtions';
+import {
+  interstitialAd,
+  loadRewardedAd,
+  loadRewardedIntAd,
+  rewarded,
+  rewardedInterstitial,
+} from '../util/RewardedAdInstance';
+import {RewardContext} from '../context/RewardContext';
 
 // const {height, width} = Dimensions.get('window');
-
-const adUnitId = __DEV__
-  ? TestIds.INTERSTITIAL
-  : 'ca-app-pub-7993847549836206/6994945775';
-
-const interstitialAd = InterstitialAd.createForAdRequest(adUnitId, {
-  requestNonPersonalizedAdsOnly: false,
-  videoOptions: {
-    startMuted: true, // This mutes the video ads
-  },
-});
-
-const rewardedAdUnitId = !__DEV__
-  ? TestIds.REWARDED
-  : 'ca-app-pub-7993847549836206/6722594982';
-
-const rewarded = RewardedAd.createForAdRequest(rewardedAdUnitId, {
-  requestNonPersonalizedAdsOnly: false, // Set to true for non-personalized ads
-});
-
-const rewardedIntId = !__DEV__
-  ? TestIds.REWARDED_INTERSTITIAL
-  : 'ca-app-pub-7993847549836206/8455249718';
-
-const rewardedInterstitial =
-  RewardedInterstitialAd.createForAdRequest(rewardedIntId);
 
 const AppContent = () => (
   <View>
@@ -74,9 +56,9 @@ export default function JobDetailsScreen({route}) {
   const theme = useContext(ThemeContext);
   const {primary, background, text, text2, secondry, tertiary} = theme.colors;
   const {width, height} = useWindowDimensions();
-  const {mode, error, setMode} = useRingerMode();
-  const {item, adCount} = route.params;
-  // console.log('detials', item.URL);
+
+  const {item, isRewardLoaded, isIntRewardLoaded, adCount} = route.params;
+  const {rewardPoints, setRewardPoints} = useContext(RewardContext);
   const [visible, setVisible] = useState(false);
   const navigation = useNavigation();
   const [isBookmarked, toggleBookmark] = useState(false);
@@ -89,18 +71,12 @@ export default function JobDetailsScreen({route}) {
 
   useEffect(() => {
     //rewarded ads
+    loadRewardedAd();
 
-    const unsubscribeLoaded = rewarded.addAdEventListener(
-      RewardedAdEventType.LOADED,
-      () => {
-        setLoaded(true);
-      },
-    );
-    const adEventListener = rewarded.addAdEventListener(
+    const unusbscrbeClosed = rewarded.addAdEventListener(
       AdEventType.CLOSED,
       () => {
         setLoaded(false);
-        rewarded.load();
 
         navigation.goBack();
       },
@@ -109,36 +85,27 @@ export default function JobDetailsScreen({route}) {
       RewardedAdEventType.EARNED_REWARD,
       reward => {
         console.log('User earned reward of ', reward);
-        setReward(reward.amount + random);
-        saveRewardToAsyncStorage(reward.amount + random);
+        const randomNumber = Math.floor(Math.random() * 3) + 1;
+        setReward(reward.amount + randomNumber);
+        saveRewardToAsyncStorage(reward.amount + randomNumber);
       },
     );
 
     // Start loading the rewarded ad straight away
 
-    rewarded.load();
-
     // Unsubscribe from events on unmount
     return () => {
-      unsubscribeLoaded();
       unsubscribeEarned();
-      adEventListener();
+      unusbscrbeClosed();
     };
   }, []);
 
   useEffect(() => {
     //rewarded interstitial
-
-    const unsubscribeLoaded = rewardedInterstitial.addAdEventListener(
-      RewardedAdEventType.LOADED,
-      () => {
-        setRewardINTLoaded(true);
-      },
-    );
-    const adEventListener = rewardedInterstitial.addAdEventListener(
+    loadRewardedIntAd();
+    const unusbscrbeClosed = rewardedInterstitial.addAdEventListener(
       AdEventType.CLOSED,
       () => {
-        setRewardINTLoaded(false);
         navigation.goBack();
       },
     );
@@ -152,22 +119,21 @@ export default function JobDetailsScreen({route}) {
     );
 
     // Start loading the rewarded ad straight away
-    rewardedInterstitial.load();
 
     // Unsubscribe from events on unmount
     return () => {
-      unsubscribeLoaded();
       unsubscribeEarned();
-      adEventListener();
+      unusbscrbeClosed();
     };
   }, []);
-
+  console.log('rewarded', isRewardLoaded, 'rewared2', loaded);
   const saveRewardToAsyncStorage = async amount => {
     try {
       const existingReward = await AsyncStorage.getItem('rewardAmount');
       const totalReward = (parseInt(existingReward) || 0) + amount;
       await AsyncStorage.setItem('rewardAmount', totalReward.toString());
-      Alert.alert('Congratulations!', `You earned ${amount} reward points.`);
+      navigation.setParams({reward: {totalReward, amount}});
+      setRewardPoints(amount);
     } catch (error) {
       console.error('Error saving reward:', error);
     }
@@ -179,7 +145,10 @@ export default function JobDetailsScreen({route}) {
       [
         {
           text: 'No',
-          onPress: () => navigation.goBack(),
+          onPress: () => {
+            //navigation.goBack();
+            if (interstitialAd.loaded) interstitialAd.show();
+          },
           style: 'cancel',
         },
         {
@@ -255,62 +224,58 @@ export default function JobDetailsScreen({route}) {
   }, [item]);
 
   useEffect(() => {
-    const loadAd = () => {
-      interstitialAd.load();
-    };
-
-    const adEventListener = interstitialAd.addAdEventListener(
-      AdEventType.LOADED,
-      () => {
-        // console.log('Interstitial Ad loaded');
-      },
-    );
-
     const adCloseListener = interstitialAd.addAdEventListener(
       AdEventType.CLOSED,
       () => {
         // VolumeManager.setVolume(currentVolume);
         navigation.goBack();
-        loadAd(); // Reload the ad after it's closed
+        // Reload the ad after it's closed
       },
     );
 
     // Load the ad initially
-    loadAd();
-
     // Clean up listeners on unmount
     return () => {
-      adEventListener(); // Remove the event listener
       adCloseListener();
     };
   }, []);
 
   // Show the interstitial ad if loaded
   const showInterstitialAd = () => {
-    // Show ad on alternate back button clicks (e.g., 2nd, 4th, 6th, etc.)
-    // if (loaded) {
-    //   rewarded.show();
-    // } else {
-    //   navigation.goBack();
-    // }
-
-    if (adCount % 2 === 0) {
-      if (adCount % 4 === 0 && rewardINTLoaded) {
-        rewardedInterstitial.show();
-      } else if (loaded) {
-        const randomNumber = Math.floor(Math.random() * 3) + 1;
-        setRandom(randomNumber);
+    if (adCount % 3 !== 0) {
+      if (rewarded.loaded) {
         handleBackPress();
       } else if (interstitialAd.loaded) {
         interstitialAd.show();
       } else {
         navigation.goBack();
       }
-    } else if (interstitialAd.loaded) {
-      interstitialAd.show();
     } else {
-      navigation.goBack();
+      if (rewardedInterstitial.loaded) {
+        rewardedInterstitial.show();
+      } else if (interstitialAd.loaded) {
+        interstitialAd.show();
+      } else {
+        navigation.goBack();
+      }
     }
+    // if (adCount % 2 === 0) {
+    //   if (adCount % 4 === 0 && rewardINTLoaded) {
+    //     rewardedInterstitial.show();
+    //   } else if (loaded) {
+    //     const randomNumber = Math.floor(Math.random() * 3) + 1;
+    //     setRandom(randomNumber);
+    //     handleBackPress();
+    //   } else if (interstitialAd.loaded) {
+    //     interstitialAd.show();
+    //   } else {
+    //     navigation.goBack();
+    //   }
+    // } else if (interstitialAd.loaded) {
+    //   interstitialAd.show();
+    // } else {
+    //   navigation.goBack();
+    // }
   };
 
   // Handle back press to show the interstitial ad

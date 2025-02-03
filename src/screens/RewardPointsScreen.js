@@ -37,7 +37,7 @@ const RewardPointsScreen = () => {
         </View>
         <View style={styles.row}>
           <Text style={styles.cell}>Visit App once a day </Text>
-          <Text style={styles.cell}>2 points</Text>
+          <Text style={styles.cell}>5 points</Text>
         </View>
       </View>
       {/* table 2  */}
@@ -57,15 +57,15 @@ const RewardPointsScreen = () => {
           <Text style={styles.cell}>
             Receive Notifications for in built specialization
           </Text>
-          <Text style={styles.cell}>1 Point per notification</Text>
+          <Text style={styles.cell}>2 Point per notification</Text>
         </View>
         <View style={styles.row}>
           <Text style={styles.cell}>Receive Keyword Notifications</Text>
-          <Text style={styles.cell}>2 point per notification</Text>
+          <Text style={styles.cell}>3 point per notification</Text>
         </View>
         <View style={styles.row}>
           <Text style={styles.cell}>Save jobs to apply later</Text>
-          <Text style={styles.cell}>3 points</Text>
+          <Text style={styles.cell}>5 points</Text>
         </View>
       </View>
     </View>

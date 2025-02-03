@@ -23,6 +23,8 @@ function NewSingleJobEntry({
   savedArticles = [],
   adCount,
   incrementCount,
+  isRewardLoaded,
+  isIntRewardLoaded,
 }) {
   const navigation = useNavigation();
   const theme = useContext(ThemeContext);
@@ -68,6 +70,8 @@ function NewSingleJobEntry({
     navigation.navigate('JobsDetails', {
       adCount: adCount,
       item: item,
+      isRewardLoaded: isRewardLoaded,
+      isIntRewardLoaded: isIntRewardLoaded,
     });
   };
 

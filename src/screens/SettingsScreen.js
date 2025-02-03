@@ -1,4 +1,4 @@
-import React, {useContext, useEffect, useState} from 'react';
+import React, {useCallback, useContext, useEffect, useState} from 'react';
 import {
   View,
   Text,
@@ -18,20 +18,20 @@ import {
   RewardedAd,
   RewardedAdEventType,
 } from 'react-native-google-mobile-ads';
-
-const rewardedAdUnitId = __DEV__
-  ? TestIds.REWARDED
-  : 'ca-app-pub-7993847549836206/6722594982';
-
-const rewarded = RewardedAd.createForAdRequest(rewardedAdUnitId, {
-  requestNonPersonalizedAdsOnly: false, // Set to true for non-personalized ads
-});
+import {
+  loadRewardedAd,
+  loadRewardedIntAd,
+  rewarded,
+} from '../util/RewardedAdInstance';
+import {RewardContext} from '../context/RewardContext';
 
 export default function SettingsScreen() {
+  const {rewardPoints, setRewardPoints} = useContext(RewardContext);
+  const [adClosed, setAdClosed] = useState(false);
   const navigation = useNavigation();
   const theme = useContext(ThemeContext);
   const {primary, background, text, text2, secondary, tertiary} = theme.colors;
-  const [rewardAmount, setRewardAmount] = useState(5);
+  const [rewardAmount, setRewardAmount] = useState(15);
   const [reward, setReward] = useState(0);
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
   const [loaded, setLoaded] = useState(false);
@@ -46,9 +46,9 @@ export default function SettingsScreen() {
   const fetchReward = async () => {
     try {
       const storedReward = await AsyncStorage.getItem('rewardAmount');
-      setRewardAmount(storedReward !== null ? parseInt(storedReward) : 5); // Set to stored value or default to 5
+      setRewardAmount(storedReward !== null ? parseInt(storedReward) : 15); // Set to stored value or default to 5
     } catch (error) {
-      console.error('Error fetching reward amount:', error);
+      //console.error('Error fetching reward amount:', error);
     }
   };
   useFocusEffect(
@@ -60,21 +60,14 @@ export default function SettingsScreen() {
   useEffect(() => {
     //rewarded ads
 
-    const unsubscribeLoaded = rewarded.addAdEventListener(
-      RewardedAdEventType.LOADED,
-      () => {
-        setLoaded(true);
-      },
-    );
     const adEventListener = rewarded.addAdEventListener(
       AdEventType.CLOSED,
       async () => {
-        setLoaded(false);
+        setAdClosed(true);
         setIsButtonDisabled(true);
         setTimeout(() => {
           setIsButtonDisabled(false);
-        }, 6000);
-
+        }, 5000);
         rewarded.load();
         await fetchReward();
       },
@@ -83,6 +76,7 @@ export default function SettingsScreen() {
       RewardedAdEventType.EARNED_REWARD,
       async reward => {
         setReward(reward.amount);
+        setRewardPoints(reward.amount);
         saveRewardToAsyncStorage(reward.amount);
       },
     );
@@ -93,7 +87,6 @@ export default function SettingsScreen() {
 
     // Unsubscribe from events on unmount
     return () => {
-      unsubscribeLoaded();
       unsubscribeEarned();
       adEventListener();
     };
@@ -104,14 +97,28 @@ export default function SettingsScreen() {
       const existingReward = await AsyncStorage.getItem('rewardAmount');
       const totalReward = (parseInt(existingReward) || 0) + amount;
       await AsyncStorage.setItem('rewardAmount', totalReward.toString());
-      Alert.alert('Congratulations!', `You earned ${amount} reward points.`);
     } catch (error) {
-      console.error('Error saving reward:', error);
+      //console.error('Error saving reward:', error);
     }
   };
+  useFocusEffect(
+    React.useCallback(() => {
+      // Check if `rewardedLoaded` parameter has changed
+      loadRewardedAd();
+    }, []),
+  );
 
+  useEffect(() => {
+    if (adClosed && reward > 0) {
+      Alert.alert('Congratulations!', `You earned ${reward} reward points.`);
+      setTimeout(() => {
+        setReward(0); // Reset AFTER alert
+        setAdClosed(false);
+      }, 500); // Small delay for UI update stability
+    }
+  }, [reward, adClosed]);
   const showAd = () => {
-    if (loaded) {
+    if (rewarded.loaded) {
       rewarded.show();
     } else {
       rewarded.load();
@@ -173,7 +180,6 @@ export default function SettingsScreen() {
               [
                 {
                   text: 'OK',
-                  onPress: () => console.log('About alert closed'),
                 },
               ],
             );

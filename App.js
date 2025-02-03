@@ -45,6 +45,7 @@ import {
   SplashProvider,
   useSplashContext,
 } from './src/context/SplashContext';
+import {RewardProvider} from './src/context/RewardContext';
 //import {SplashContext, SplashProvider} from './src/context/SplashContext';
 
 const RATE_PROMPT_KEY = 'lastRatePrompt';
@@ -194,6 +195,7 @@ function App() {
     messaging()
       .getInitialNotification()
       .then(remoteMessage => {
+        console.log('i triggered .getInitialNotification');
         if (shouldShow) {
           if (remoteMessage) {
             const category = remoteMessage.data?.post_category;
@@ -216,9 +218,10 @@ function App() {
     //handle background and quit state
     const unsubscribeNotificationOpenedApp =
       messaging().onNotificationOpenedApp(remoteMessage => {
+        console.log('i triggered onNOtificationOpenedApp');
         const category = remoteMessage.data?.post_category;
         const post_title = remoteMessage.data?.post_title;
-        setInitialRoute(remoteMessage.data.screen);
+
         //const result = await checkNotification(1);
         if (shouldShow) {
           if (category) {
@@ -278,7 +281,7 @@ function App() {
     };
   }, []);
 
-  //useEFFect for notifee search notification
+  // useEFFect for notifee search notification
   useEffect(() => {
     const checkNotification = async () => {
       const result = await hasRewardPoints(2); // Pass your value here
@@ -324,6 +327,32 @@ function App() {
     }
 
     return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    const handleNotificationClick = async () => {
+      // Foreground Click Event (Handled by Notifee)
+      const hasPoints = await hasRewardPoints(2);
+
+      // Background Click Event (Handled by Firebase)
+      messaging().onNotificationOpenedApp(remoteMessage => {
+        if (remoteMessage?.data) {
+          if (hasPoints) {
+            console.log('notifee onnotificationOpend');
+            handleNotificationPress(remoteMessage?.data);
+          }
+        }
+      });
+
+      // Quit-State Click Event (App was closed)
+      const initialNotification = await messaging().getInitialNotification();
+      if (initialNotification?.data) {
+        if (hasPoints) {
+          handleNotificationPress(initialNotification?.data);
+        }
+      }
+    };
+    handleNotificationClick();
   }, []);
 
   const handleNotificationPress = data => {
@@ -493,36 +522,38 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
-        <Modal
-          transparent
-          visible={showModal}
-          animationType="slide"
-          onRequestClose={() => setShowModal(false)}>
-          <View style={styles.modalContainer}>
-            <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>Enjoying the App?</Text>
-              <Text style={styles.modalText}>
-                We’d love to hear your feedback! Would you like to rate us?
-              </Text>
-              <View style={styles.buttonRow}>
-                <TouchableOpacity
-                  style={[styles.button, styles.rateNowButton]}
-                  onPress={handleRateNow}>
-                  <Text style={styles.buttonText}>Rate Now</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.button, styles.laterButton]}
-                  onPress={handleLater}>
-                  <Text style={styles.buttonText}>Later</Text>
-                </TouchableOpacity>
+        <RewardProvider>
+          <Modal
+            transparent
+            visible={showModal}
+            animationType="slide"
+            onRequestClose={() => setShowModal(false)}>
+            <View style={styles.modalContainer}>
+              <View style={styles.modalContent}>
+                <Text style={styles.modalTitle}>Enjoying the App?</Text>
+                <Text style={styles.modalText}>
+                  We’d love to hear your feedback! Would you like to rate us?
+                </Text>
+                <View style={styles.buttonRow}>
+                  <TouchableOpacity
+                    style={[styles.button, styles.rateNowButton]}
+                    onPress={handleRateNow}>
+                    <Text style={styles.buttonText}>Rate Now</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.button, styles.laterButton]}
+                    onPress={handleLater}>
+                    <Text style={styles.buttonText}>Later</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
             </View>
-          </View>
-        </Modal>
-        <AppNavigation
-          navigationRef={navigationRef}
-          initialRoute={initialRoute}
-        />
+          </Modal>
+          <AppNavigation
+            navigationRef={navigationRef}
+            initialRoute={initialRoute}
+          />
+        </RewardProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );

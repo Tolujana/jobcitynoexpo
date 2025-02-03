@@ -21,6 +21,8 @@ const RenderItem = ({
   adCount,
   incrementCount,
   notificationTitle,
+  isRewardLoaded,
+  isIntRewardLoaded,
 }) => {
   //const openItem = (item) => navigation.navigate("JobsDetails", item);
   const [loaded, setLoaded] = useState(false);
@@ -33,6 +35,8 @@ const RenderItem = ({
       incrementCount={incrementCount}
       adCount={adCount}
       notificationTitle={notificationTitle}
+      isRewardLoaded={isRewardLoaded}
+      isIntRewardLoaded={isIntRewardLoaded}
     />
   ) : (
     <View
@@ -47,6 +51,8 @@ const RenderItem = ({
         incrementCount={incrementCount}
         adCount={adCount}
         notificationTitle={notificationTitle}
+        isRewardLoaded={isRewardLoaded}
+        isIntRewardLoaded={isIntRewardLoaded}
       />
       <Text> advert</Text>
       <View>

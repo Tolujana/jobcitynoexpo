@@ -84,7 +84,6 @@ export default function JobDetailsScreen({route}) {
     const unsubscribeEarned = rewarded.addAdEventListener(
       RewardedAdEventType.EARNED_REWARD,
       reward => {
-        console.log('User earned reward of ', reward);
         const randomNumber = Math.floor(Math.random() * 3) + 1;
         setReward(reward.amount + randomNumber);
         saveRewardToAsyncStorage(reward.amount + randomNumber);
@@ -112,7 +111,6 @@ export default function JobDetailsScreen({route}) {
     const unsubscribeEarned = rewardedInterstitial.addAdEventListener(
       RewardedAdEventType.EARNED_REWARD,
       reward => {
-        console.log('User earned reward of ', reward);
         setReward(reward.amount);
         saveRewardToAsyncStorage(reward.amount);
       },
@@ -126,7 +124,7 @@ export default function JobDetailsScreen({route}) {
       unusbscrbeClosed();
     };
   }, []);
-  console.log('rewarded', isRewardLoaded, 'rewared2', loaded);
+
   const saveRewardToAsyncStorage = async amount => {
     try {
       const existingReward = await AsyncStorage.getItem('rewardAmount');

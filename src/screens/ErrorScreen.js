@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, useCallback, useContext} from 'react';
 import {View, Text, StyleSheet, TouchableOpacity, Alert} from 'react-native';
 
 import {
@@ -10,27 +10,27 @@ import {
 import {useFocusEffect} from '@react-navigation/native';
 import CustomButton from '../components/CustomButton';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
-const rewardedAdUnitId = __DEV__
-  ? TestIds.REWARDED
-  : 'ca-app-pub-7993847549836206/6722594982';
-const rewarded = RewardedAd.createForAdRequest(rewardedAdUnitId, {
-  requestNonPersonalizedAdsOnly: false, // Set to true for non-personalized ads
-});
+import {
+  loadRewardedAd,
+  loadRewardedIntAd,
+  rewarded,
+} from '../util/RewardedAdInstance';
+import {RewardContext} from '../context/RewardContext';
 
 const ErrorScreen = ({navigation, route}) => {
-  const [rewardAmount, setRewardAmount] = useState(5);
+  const [rewardAmount, setRewardAmount] = useState(15);
   const [reward, setReward] = useState(0);
+  const [adClosed, setAdClosed] = useState(false);
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
   const [loaded, setLoaded] = useState(false);
-
+  const {rewardPoints, setRewardPoints} = useContext(RewardContext);
   const navigateToSettings = () => {
     navigation.navigate('Settings'); // Navigate to the Settings screen
   };
   const fetchReward = async () => {
     try {
       const storedReward = await AsyncStorage.getItem('rewardAmount');
-      setRewardAmount(storedReward !== null ? parseInt(storedReward) : 5); // Set to stored value or default to 5
+      setRewardAmount(storedReward !== null ? parseInt(storedReward) : 15); // Set to stored value or default to 5
     } catch (error) {
       console.error('Error fetching reward amount:', error);
     }
@@ -44,51 +44,57 @@ const ErrorScreen = ({navigation, route}) => {
   useEffect(() => {
     //rewarded ads
 
-    const unsubscribeLoaded = rewarded.addAdEventListener(
-      RewardedAdEventType.LOADED,
-      () => {
-        setLoaded(true);
-      },
-    );
     const adEventListener = rewarded.addAdEventListener(
       AdEventType.CLOSED,
       async () => {
-        setLoaded(false);
+        setAdClosed(true);
         setIsButtonDisabled(true);
         setTimeout(() => {
           setIsButtonDisabled(false);
-        }, 6000);
+        }, 5000);
+        loadRewardedAd();
 
-        rewarded.load();
         await fetchReward();
       },
     );
     const unsubscribeEarned = rewarded.addAdEventListener(
       RewardedAdEventType.EARNED_REWARD,
-      async reward => {
-        setReward(reward.amount);
-        saveRewardToAsyncStorage(reward.amount);
+      rewards => {
+        console.log(rewards.amount, 'it changed na');
+        setReward(rewards.amount);
+        setRewardPoints(rewards.amount);
+
+        saveRewardToAsyncStorage(rewards.amount);
       },
     );
 
     // Start loading the rewarded ad straight away
 
-    rewarded.load();
+    loadRewardedAd();
 
     // Unsubscribe from events on unmount
     return () => {
-      unsubscribeLoaded();
       unsubscribeEarned();
       adEventListener();
     };
   }, []);
+
+  useEffect(() => {
+    console.log('useefect ran');
+    if (adClosed && reward > 0) {
+      Alert.alert('Congratulations!', `You earned ${reward} reward points.`);
+      setTimeout(() => {
+        setReward(0); // Reset AFTER alert
+        setAdClosed(false);
+      }, 500); // Small delay for UI update stability
+    }
+  }, [reward, adClosed]);
 
   const saveRewardToAsyncStorage = async amount => {
     try {
       const existingReward = await AsyncStorage.getItem('rewardAmount');
       const totalReward = (parseInt(existingReward) || 0) + amount;
       await AsyncStorage.setItem('rewardAmount', totalReward.toString());
-      Alert.alert('Congratulations!', `You earned ${amount} reward points.`);
     } catch (error) {
       console.error('Error saving reward:', error);
     }
@@ -98,19 +104,27 @@ const ErrorScreen = ({navigation, route}) => {
       const existingReward = await AsyncStorage.getItem('rewardAmount');
       const totalReward = (parseInt(existingReward) || 0) + amount;
       await AsyncStorage.setItem('rewardAmount', totalReward.toString());
-      Alert.alert('Congratulations!', `You earned ${amount} reward points.`);
     } catch (error) {
       console.error('Error saving reward:', error);
     }
   };
+  useFocusEffect(
+    React.useCallback(() => {
+      // Check if `rewardedLoaded` parameter has changed
+
+      loadRewardedAd();
+    }, []),
+  );
   const showAd = () => {
-    if (loaded) {
+    if (rewarded.loaded) {
       rewarded.show();
+      loadRewardedAd();
     } else {
       rewarded.load();
       Alert.alert('Ad not ready', 'Please try again later.');
     }
   };
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>
@@ -122,7 +136,7 @@ const ErrorScreen = ({navigation, route}) => {
       <TouchableOpacity style={styles.button} onPress={navigateToSettings}>
         <Text style={styles.buttonText}>Go to Settings</Text>
       </TouchableOpacity>
-      {!__DEV__ ? (
+      {__DEV__ ? (
         <CustomButton
           disable={isButtonDisabled}
           buttonText={isButtonDisabled ? 'wait....' : `Earn Points`}
@@ -133,6 +147,16 @@ const ErrorScreen = ({navigation, route}) => {
           disable={isButtonDisabled}
           buttonText={isButtonDisabled ? 'wait,,,' : `testing Points`}
           onpress={() => saveRewardToAsyncStorage2(10)}
+        />
+      )}
+
+      {rewardPoints > 0 && (
+        <CustomButton
+          buttonText={'Close'}
+          onpress={() => {
+            navigation.goBack();
+            setRewardPoints(0);
+          }}
         />
       )}
     </View>

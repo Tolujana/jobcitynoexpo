@@ -21,7 +21,7 @@ const rewardedIntId = __DEV__
 const rewardedInterstitial =
   RewardedInterstitialAd.createForAdRequest(rewardedIntId);
 
-const adUnitId = __DEV__
+const adUnitId =__DEV__
   ? TestIds.INTERSTITIAL
   : 'ca-app-pub-7993847549836206/6994945775';
 

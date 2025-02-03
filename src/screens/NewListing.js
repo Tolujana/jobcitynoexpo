@@ -6,6 +6,7 @@ import {
   ActivityIndicator,
   StyleSheet,
   BackHandler,
+  Alert,
 } from 'react-native';
 
 import axios from 'axios';
@@ -24,7 +25,15 @@ import {faPooStorm} from '@fortawesome/free-solid-svg-icons';
 import SearchBox from '../components/SearchBox';
 import Animated from 'react-native-reanimated';
 import {ThemeContext} from '../theme/themeContext';
-
+import {
+  rewarded,
+  rewardedInterstitial,
+  RewardedAdEventType,
+  loadRewardedIntAd,
+  loadRewardedAd,
+  loadInterstitialAd,
+} from '../util/RewardedAdInstance';
+import {RewardContext} from '../context/RewardContext';
 const fetchData = async ({pageParam = 1, queryKey}) => {
   const [queryParam, exclude] = queryKey;
 
@@ -57,10 +66,12 @@ const fetchData = async ({pageParam = 1, queryKey}) => {
 
   return response.data.posts;
 };
-
 const NewListing = ({category, search, route}) => {
+  const {rewardPoints, setRewardPoints} = useContext(RewardContext);
   const navigation = useNavigation();
   const [page, setPage] = useState(1);
+  const [adLoaded, setAdLoaded] = useState(false);
+  const [InterstitialLoaded, setIntLoaded] = useState(false);
   const [hideDuplicate, setHideDuplicate] = useState(true);
   const [savedArticles, setSavedArticles] = useState({});
   const theme = useContext(ThemeContext);
@@ -84,6 +95,28 @@ const NewListing = ({category, search, route}) => {
   //   handleSearch(search);
   // }
 
+  useFocusEffect(
+    React.useCallback(() => {
+      // Check if `rewardedLoaded` parameter has changed
+      loadRewardedAd();
+      loadRewardedIntAd();
+      loadInterstitialAd();
+    }, []),
+  );
+
+  useFocusEffect(
+    useCallback(() => {
+      if (rewardPoints > 0) {
+        setTimeout(() => {
+          Alert.alert(
+            'Congratulations!',
+            `You earned ${rewardPoints} reward points.`,
+          );
+          setRewardPoints(0);
+        }, 200);
+      }
+    }, [rewardPoints]),
+  );
   const toggleDuplicate = () =>
     setHideDuplicate(previousState => !previousState);
 
@@ -146,16 +179,10 @@ const NewListing = ({category, search, route}) => {
   useFocusEffect(
     useCallback(() => {
       // Called when the screen is focused
+      console.log('we did a refetch');
       fetchData({pageParam: 1, queryKey: [queryParam, exclude]});
-    }, []),
+    }, [route?.params?.post_title]),
   );
-  useEffect(() => {
-    if (route?.params.refresh) {
-      ///console.log('tested params refresh and it was true');
-      fetchData({pageParam: 1, queryKey: [queryParam, exclude]}); // Refresh data when 'refresh' param changes
-      // Reset param to avoid repeated calls
-    }
-  }, [route?.params]);
 
   useEffect(() => {
     const handleBackPress = () => {
@@ -210,6 +237,8 @@ const NewListing = ({category, search, route}) => {
       adCount={adCount}
       incrementCount={incrementCount}
       notificationTitle={route?.params?.post_title}
+      isRewardLoaded={adLoaded}
+      isIntRewardLoaded={InterstitialLoaded}
     />
   );
 

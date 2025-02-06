@@ -26,6 +26,7 @@ import {
   OpenOptimizationSettings,
   BatteryOptEnabled,
 } from 'react-native-battery-optimization-check';
+import {useFocusEffect} from '@react-navigation/native';
 const {BatteryOptimization} = NativeModules;
 
 export default function KeywordNotificationScreen() {
@@ -44,10 +45,16 @@ export default function KeywordNotificationScreen() {
     if (data) {
       setPage(1);
     }
-    if (Platform.OS === 'android') {
-      checkBatteryOptimization2();
-    }
   }, []);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      if (Platform.OS === 'android') {
+        checkBatteryOptimization2();
+      }
+    }, []),
+  );
+
   const loadMorePost = () => {
     if (!loading) {
       setPage(page + 1);

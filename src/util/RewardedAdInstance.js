@@ -21,7 +21,7 @@ const rewardedIntId = __DEV__
 const rewardedInterstitial =
   RewardedInterstitialAd.createForAdRequest(rewardedIntId);
 
-const adUnitId =__DEV__
+const adUnitId = __DEV__
   ? TestIds.INTERSTITIAL
   : 'ca-app-pub-7993847549836206/6994945775';
 
@@ -34,28 +34,28 @@ const interstitialAd = InterstitialAd.createForAdRequest(adUnitId, {
 
 export const loadRewardedAd = () => {
   if (!rewarded.loaded) {
-    console.log('not loaded rewarded');
+    // console.log('not loaded rewarded');
     rewarded.load();
   } else {
-    console.log('loaded interstitial');
+    //console.log('loaded interstitial');
   }
 };
 
 export const loadInterstitialAd = () => {
   if (!interstitialAd.loaded) {
-    console.log('not loaded rewarded');
+    //console.log('not loaded rewarded');
     interstitialAd.load();
   } else {
-    console.log('loaded interstitial');
+    //console.log('loaded interstitial');
   }
 };
 
 export const loadRewardedIntAd = () => {
   if (!rewardedInterstitial.loaded) {
-    console.log('not loaded interstitia');
+    // console.log('not loaded interstitia');
     rewardedInterstitial.load();
   } else {
-    console.log('loaded interstitial');
+    //console.log('loaded interstitial');
   }
 };
 

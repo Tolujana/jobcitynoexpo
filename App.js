@@ -52,23 +52,6 @@ const RATE_PROMPT_KEY = 'lastRatePrompt';
 const USER_RATED_KEY = 'userRated';
 const FIVE_DAYS_MS = 24 * 60 * 60 * 1000;
 // * 24 * 60
-const requestNotificationPermission = async () => {
-  if (Platform.OS === 'android' && Platform.Version >= 33) {
-    const granted = await PermissionsAndroid.request(
-      PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
-      {
-        title: 'Notification Permission',
-        message: 'This app needs access to send you notifications.',
-        buttonNeutral: 'Ask Me Later',
-        buttonNegative: 'Cancel',
-        buttonPositive: 'OK',
-      },
-    );
-    if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
-      // console.log('Notification permission denied');
-    }
-  }
-};
 
 const queryClient = new QueryClient();
 
@@ -80,11 +63,234 @@ function App() {
   const [isUpdateRequired, setIsUpdateRequired] = useState(false);
   const [isWarning, setIsWarning] = useState(false);
   const [date, setDate] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
   const [shouldShow, setShouldShow] = useState(true);
-  const [initialRoute, setInitialRoute] = React.useState('SplashScreen');
-  const {isSplashFinished, setIsSplashFinished} = useContext(SplashContext);
+  const [initialRoute, setInitialRoute] = React.useState(null);
+  const [notificationData, setNotificationData] = useState(null);
+  //const {isSplashFinished, setIsSplashFinished} = useContext(SplashContext);
   useEffect(() => {
     initBackgroundFetch();
+  }, []);
+
+  useEffect(() => {
+    async function checkInitialNotification() {
+      try {
+        let remoteMessage = null;
+        let notifeeNotification = null;
+
+        // 🔹 Check Firebase Cloud Messaging (FCM) notification
+        remoteMessage = await messaging().getInitialNotification();
+        if (remoteMessage) {
+          console.log(
+            'FCM notification triggered app launch:',
+            remoteMessage.data,
+          );
+        }
+
+        // 🔹 Check Notifee notification
+        if (!remoteMessage) {
+          // Only check Notifee if FCM didn't trigger it
+          notifeeNotification = await notifee.getInitialNotification();
+          if (notifeeNotification) {
+            console.log(
+              'Notifee notification triggered app launch:',
+              notifeeNotification.notification.data,
+            );
+          }
+        }
+
+        const hasPoint = await hasRewardPoints(2);
+
+        // Determine where to navigate
+        if (remoteMessage || notifeeNotification) {
+          const data =
+            remoteMessage?.data || notifeeNotification?.notification?.data;
+          console.log('this is data', data);
+          if (hasPoint) {
+            setInitialRoute('NewListing');
+            setNotificationData(data);
+          } else {
+            setInitialRoute('ShowError');
+          }
+        } else {
+          setInitialRoute('SplashScreen'); // Default route
+        }
+      } catch (error) {
+        console.error('Error checking initial notification:', error);
+        setInitialRoute('SplashScreen'); // Fallback in case of an error
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    checkInitialNotification();
+  }, []);
+
+  useEffect(() => {
+    // Handle background and quit state notifications
+
+    const unsubscribeNotificationOpenedApp =
+      messaging().onNotificationOpenedApp(async remoteMessage => {
+        if (!remoteMessage) return;
+
+        const hasPoint = await hasRewardPoints(2);
+        if (hasPoint) {
+          const category = remoteMessage.data?.post_category;
+          const post_title = remoteMessage.data?.post_title;
+          setInitialRoute('NewListing');
+          setNotificationData({category, post_title});
+          // if (category) {
+          //   navigationRef.current?.navigate('NewListing', {
+          //     category,
+          //     post_title,
+          //     refresh: true,
+          //   });
+          // }
+        } else {
+          navigationRef.current?.navigate('ShowError');
+          // showErrorAlert();
+        }
+      });
+
+    // Handle initial notification if app is opened by clicking a notification
+    messaging()
+      .getInitialNotification()
+      .then(async remoteMessage => {
+        if (!remoteMessage) return;
+        console.log('i triggered .getInitialNotification');
+        const hasPoint = await hasRewardPoints(2);
+        if (hasPoint) {
+          const category = remoteMessage.data?.post_category;
+          const post_title = remoteMessage.data?.post_title;
+          setInitialRoute('NewListing');
+          setNotificationData({category, post_title});
+          if (category) {
+            // console.log('this is category', category);
+            navigationRef.current?.navigate('NewListing', {
+              category,
+              post_title,
+              refresh: true,
+            });
+          }
+        } else {
+          navigationRef.current?.navigate('ShowError');
+          // showErrorAlert();
+        }
+      });
+    //handle background and quit state
+
+    // Handle notifications in foreground
+    const unsubscribe = messaging().onMessage(async remoteMessage => {
+      const {post_category, post_title} = remoteMessage.data;
+      const hasPoints = await hasRewardPoints(2);
+      Alert.alert(
+        `New vacancy in ${post_category}.`,
+        `${post_title}.`,
+        [
+          {
+            text: 'Cancel',
+            onPress: () => {
+              // Do nothing, leaves user on the current page
+            },
+            style: 'cancel',
+          },
+          {
+            text: 'See Article',
+            onPress: async () => {
+              // Navigate to the target screen, based on the notification data
+
+              if (hasPoints) {
+                navigationRef.current?.navigate('NewListing', {
+                  category: post_category,
+                  post_title,
+                  refresh: true,
+                });
+              } else {
+                navigationRef.current?.navigate(
+                  'ShowError',
+                  'to show job article',
+                );
+              }
+            },
+          },
+        ],
+        {cancelable: true},
+      );
+    });
+
+    return () => {
+      unsubscribe?.();
+      unsubscribeNotificationOpenedApp?.();
+    };
+  }, []);
+
+  useEffect(() => {
+    async function checkInitialNotification() {
+      // 🔹 Handle app launch from a notification
+      const initialNotification = await notifee.getInitialNotification();
+      if (initialNotification) {
+        console.log(
+          'App launched from notification:',
+          initialNotification.notification.data,
+        );
+
+        setInitialRoute('NewListing');
+        setNotificationData(detail.notification.data);
+      }
+
+      // 🔹 Handle background-clicked notifications stored in AsyncStorage
+      const pendingNotification = await AsyncStorage.getItem(
+        'pendingNotification',
+      );
+      if (pendingNotification) {
+        const {keyword, post_title} = JSON.parse(pendingNotification);
+        console.log(
+          'Handling stored notification navigation:',
+          keyword,
+          post_title,
+        );
+        navigationRef.current?.navigate('NewListing', {
+          search: keyword,
+          post_title,
+          refresh: true,
+        });
+
+        // Clear stored notification after navigating
+        await AsyncStorage.removeItem('pendingNotification');
+      }
+    }
+
+    checkInitialNotification();
+  }, []);
+
+  // useEFFect for notifee search notification
+  useEffect(() => {
+    // Handle hasRewardPointsound notification clicks
+    const unsubscribe = notifee.onForegroundEvent(async ({type, detail}) => {
+      const hasPoints = await hasRewardPoints(3);
+
+      if (type === EventType.PRESS) {
+        console.log('notifee foreground');
+        if (hasPoints) {
+          handleNotificationPress(detail.notification.data);
+        } else {
+          showErrorAlert();
+        }
+      }
+    });
+
+    // Handle background notification clicks
+    notifee.onBackgroundEvent(async ({type, detail}) => {
+      const hasPoints = await hasRewardPoints(3);
+      if (type === EventType.PRESS) {
+        console.log('notifee in app');
+
+        console.log('notifee data', detail.notification.data);
+        handleNotificationPress(detail.notification.data);
+      }
+    });
+
+    return () => unsubscribe();
   }, []);
 
   const checkAndPromptForRating = async () => {
@@ -165,214 +371,49 @@ function App() {
     updateRewardPoints();
   }, []);
 
-  useEffect(() => {
-    // Handle background and quit state notifications
-    const checkNotification = async () => {
-      const result = await hasRewardPoints(1); // Pass your value here
+  // useEffect(() => {
+  //   const handleNotificationClick = async () => {
+  //     // Foreground Click Event (Handled by Notifee)
+  //     const hasPoints = await hasRewardPoints(2);
 
-      setShouldShow(result); // Update state based on the result
-    };
+  //     // Background Click Event (Handled by Firebase)
+  //     messaging().onNotificationOpenedApp(remoteMessage => {
+  //       if (remoteMessage?.data) {
+  //         if (hasPoints) {
+  //           console.log('notifee onnotificationOpend');
+  //           handleNotificationPress(remoteMessage?.data);
+  //         }
+  //       }
+  //     });
 
-    checkNotification();
-    messaging().onNotificationOpenedApp(remoteMessage => {
-      if (shouldShow) {
-        const category = remoteMessage.data?.post_category;
-        const post_title = remoteMessage.data?.post_title;
-        if (category) {
-          navigationRef.current?.navigate('NewListing', {
-            category,
-            post_title,
-            refresh: true,
-          });
-        }
-      } else {
-        navigationRef.current?.navigate('ShowError');
-        // showErrorAlert();
-      }
-    });
-
-    // Handle initial notification if app is opened by clicking a notification
-    messaging()
-      .getInitialNotification()
-      .then(remoteMessage => {
-        console.log('i triggered .getInitialNotification');
-        if (shouldShow) {
-          if (remoteMessage) {
-            const category = remoteMessage.data?.post_category;
-            const post_title = remoteMessage.data?.post_title;
-            setInitialRoute(remoteMessage.data.screen);
-            if (category) {
-              // console.log('this is category', category);
-              navigationRef.current?.navigate('NewListing', {
-                category,
-                post_title,
-                refresh: true,
-              });
-            }
-          }
-        } else {
-          navigationRef.current?.navigate('ShowError');
-          // showErrorAlert();
-        }
-      });
-    //handle background and quit state
-    const unsubscribeNotificationOpenedApp =
-      messaging().onNotificationOpenedApp(remoteMessage => {
-        console.log('i triggered onNOtificationOpenedApp');
-        const category = remoteMessage.data?.post_category;
-        const post_title = remoteMessage.data?.post_title;
-
-        //const result = await checkNotification(1);
-        if (shouldShow) {
-          if (category) {
-            navigationRef.current?.navigate('NewListing', {
-              category,
-              post_title,
-            });
-          }
-        } else {
-          navigationRef.current?.navigate('ShowError');
-          //showErrorAlert();
-        }
-      });
-
-    // Handle notifications in foreground
-    const unsubscribe = messaging().onMessage(remoteMessage => {
-      const {post_category, post_title} = remoteMessage.data;
-
-      Alert.alert(
-        `New vacancy in ${post_category}.`,
-        `${post_title}.`,
-        [
-          {
-            text: 'Cancel',
-            onPress: () => {
-              // Do nothing, leaves user on the current page
-            },
-            style: 'cancel',
-          },
-          {
-            text: 'See Article',
-            onPress: async () => {
-              // Navigate to the target screen, based on the notification data
-
-              if (shouldShow) {
-                navigationRef.current?.navigate('NewListing', {
-                  category: post_category,
-                  post_title,
-                  refresh: true,
-                });
-              } else {
-                navigationRef.current?.navigate(
-                  'ShowError',
-                  'to show job article',
-                );
-              }
-            },
-          },
-        ],
-        {cancelable: true},
-      );
-    });
-
-    return () => {
-      unsubscribe();
-      unsubscribeNotificationOpenedApp();
-    };
-  }, []);
-
-  // useEFFect for notifee search notification
-  useEffect(() => {
-    const checkNotification = async () => {
-      const result = await hasRewardPoints(2); // Pass your value here
-      setShouldShow(result); // Update state based on the result
-    };
-    checkNotification();
-    messaging().setBackgroundMessageHandler(async remoteMessage => {
-      if (shouldShow)
-        await notifee.displayNotification({
-          title: remoteMessage.notification.title,
-          body: remoteMessage.notification.body,
-          android: {channelId: 'default'},
-        });
-    });
-
-    // Handle hasRewardPointsound notification clicks
-    const unsubscribe = notifee.onForegroundEvent(async ({type, detail}) => {
-      const result = await hasRewardPoints(2);
-
-      if (type === EventType.PRESS) {
-        if (shouldShow) {
-          handleNotificationPress(detail.notification.data);
-        } else {
-          showErrorAlert();
-        }
-      }
-    });
-
-    // Handle background notification clicks
-    notifee.onBackgroundEvent(async ({type, detail}) => {
-      if (type === EventType.PRESS) {
-        if (shouldShow) {
-          handleNotificationPress(detail.notification.data);
-        } else {
-          showErrorAlert();
-        }
-      }
-    });
-    // Handle cold start if notification was tapped
-    if (global.pendingScreen) {
-      navigationRef.current?.navigate(global.pendingScreen);
-      global.pendingScreen = null; // Clear after navigation
-    }
-
-    return () => unsubscribe();
-  }, []);
-
-  useEffect(() => {
-    const handleNotificationClick = async () => {
-      // Foreground Click Event (Handled by Notifee)
-      const hasPoints = await hasRewardPoints(2);
-
-      // Background Click Event (Handled by Firebase)
-      messaging().onNotificationOpenedApp(remoteMessage => {
-        if (remoteMessage?.data) {
-          if (hasPoints) {
-            console.log('notifee onnotificationOpend');
-            handleNotificationPress(remoteMessage?.data);
-          }
-        }
-      });
-
-      // Quit-State Click Event (App was closed)
-      const initialNotification = await messaging().getInitialNotification();
-      if (initialNotification?.data) {
-        if (hasPoints) {
-          handleNotificationPress(initialNotification?.data);
-        }
-      }
-    };
-    handleNotificationClick();
-  }, []);
+  //     // Quit-State Click Event (App was closed)
+  //     const initialNotification = await messaging().getInitialNotification();
+  //     if (initialNotification?.data) {
+  //       if (hasPoints) {
+  //         handleNotificationPress(initialNotification?.data);
+  //       }
+  //     }
+  //   };
+  //   handleNotificationClick();
+  // }, []);
 
   const handleNotificationPress = data => {
     // Ensure data contains the screen and other params
-    if (data && data.keyWord) {
-      navigationRef.current?.navigate('NewListing', {
-        search: data.keyWord,
-        post_title: data.post_title,
-        refresh: true,
-      });
-    }
+    console.log('testing it notifee function');
+
+    navigationRef.current?.navigate('NewListing', {
+      search: data.search,
+      post_title: data.post_title,
+      refresh: true,
+    });
   };
 
-  // useEFfect for requestnotification
+  //useEFfect for requestnotification
   React.useEffect(() => {
-    if (isSplashFinished) {
-      requestNotificationPermission();
+    if (!isLoading) {
       checkAndPromptForRating();
     }
-  }, [isSplashFinished]);
+  }, [isLoading]);
 
   useEffect(() => {
     // useEffect to check for updates
@@ -519,44 +560,47 @@ function App() {
       ],
     );
   }
-  return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider>
-        <RewardProvider>
-          <Modal
-            transparent
-            visible={showModal}
-            animationType="slide"
-            onRequestClose={() => setShowModal(false)}>
-            <View style={styles.modalContainer}>
-              <View style={styles.modalContent}>
-                <Text style={styles.modalTitle}>Enjoying the App?</Text>
-                <Text style={styles.modalText}>
-                  We’d love to hear your feedback! Would you like to rate us?
-                </Text>
-                <View style={styles.buttonRow}>
-                  <TouchableOpacity
-                    style={[styles.button, styles.rateNowButton]}
-                    onPress={handleRateNow}>
-                    <Text style={styles.buttonText}>Rate Now</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={[styles.button, styles.laterButton]}
-                    onPress={handleLater}>
-                    <Text style={styles.buttonText}>Later</Text>
-                  </TouchableOpacity>
+
+  if (!isLoading)
+    return (
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider>
+          <RewardProvider>
+            <Modal
+              transparent
+              visible={showModal}
+              animationType="slide"
+              onRequestClose={() => setShowModal(false)}>
+              <View style={styles.modalContainer}>
+                <View style={styles.modalContent}>
+                  <Text style={styles.modalTitle}>Enjoying the App?</Text>
+                  <Text style={styles.modalText}>
+                    We’d love to hear your feedback! Would you like to rate us?
+                  </Text>
+                  <View style={styles.buttonRow}>
+                    <TouchableOpacity
+                      style={[styles.button, styles.rateNowButton]}
+                      onPress={handleRateNow}>
+                      <Text style={styles.buttonText}>Rate Now</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[styles.button, styles.laterButton]}
+                      onPress={handleLater}>
+                      <Text style={styles.buttonText}>Later</Text>
+                    </TouchableOpacity>
+                  </View>
                 </View>
               </View>
-            </View>
-          </Modal>
-          <AppNavigation
-            navigationRef={navigationRef}
-            initialRoute={initialRoute}
-          />
-        </RewardProvider>
-      </ThemeProvider>
-    </QueryClientProvider>
-  );
+            </Modal>
+            <AppNavigation
+              navigationRef={navigationRef}
+              initialRoute={initialRoute}
+              notificationData={notificationData}
+            />
+          </RewardProvider>
+        </ThemeProvider>
+      </QueryClientProvider>
+    );
 }
 
 const styles = StyleSheet.create({

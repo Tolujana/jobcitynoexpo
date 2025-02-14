@@ -30,7 +30,7 @@ import {useRingerMode, RINGER_MODE} from 'react-native-ringer-mode';
 import {useWindowDimensions} from 'react-native';
 import ParallaxView from '../components/ParallaxView';
 import {ThemeContext} from '../theme/themeContext';
-import {hasRewardPoints} from '../util/funtions';
+import {hasRewardPoints, saveRewardToAsyncStorage} from '../util/funtions';
 import {
   interstitialAd,
   loadRewardedAd,
@@ -84,7 +84,7 @@ export default function JobDetailsScreen({route}) {
     const unsubscribeEarned = rewarded.addAdEventListener(
       RewardedAdEventType.EARNED_REWARD,
       reward => {
-        const randomNumber = Math.floor(Math.random() * 3) + 1;
+        const randomNumber = Math.floor(Math.random() * 5) + 1;
         setReward(reward.amount + randomNumber);
         saveRewardToAsyncStorage(reward.amount + randomNumber);
       },
@@ -125,17 +125,6 @@ export default function JobDetailsScreen({route}) {
     };
   }, []);
 
-  const saveRewardToAsyncStorage = async amount => {
-    try {
-      const existingReward = await AsyncStorage.getItem('rewardAmount');
-      const totalReward = (parseInt(existingReward) || 0) + amount;
-      await AsyncStorage.setItem('rewardAmount', totalReward.toString());
-      navigation.setParams({reward: {totalReward, amount}});
-      setRewardPoints(amount);
-    } catch (error) {
-      console.error('Error saving reward:', error);
-    }
-  };
   const handleBackPress = () => {
     Alert.alert(
       'Double your rewards?',
@@ -144,8 +133,8 @@ export default function JobDetailsScreen({route}) {
         {
           text: 'No',
           onPress: () => {
-            //navigation.goBack();
-            if (interstitialAd.loaded) interstitialAd.show();
+            navigation.goBack();
+            // if (interstitialAd.loaded) interstitialAd.show();
           },
           style: 'cancel',
         },

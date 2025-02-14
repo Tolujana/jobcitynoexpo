@@ -178,9 +178,9 @@ const NewListing = ({category, search, route}) => {
 
   useFocusEffect(
     useCallback(() => {
-      // Called when the screen is focused
-      console.log('we did a refetch');
-      fetchData({pageParam: 1, queryKey: [queryParam, exclude]});
+      if (route?.params?.post_title) {
+        fetchData({pageParam: 1, queryKey: [queryParam, exclude]});
+      }
     }, [route?.params?.post_title]),
   );
 
@@ -248,8 +248,8 @@ const NewListing = ({category, search, route}) => {
       <View className="flex-row justify-between mr-1">
         <Text className="mb-3 text-lg">
           {category || routeCategory
-            ? `${category?.name || routeCategory} jobs`
-            : `${search?.search || routeSearch} Job search`}
+            ? `${category?.name || routeCategory} Jobs`
+            : `${search?.search || routeSearch} Jobs `}
         </Text>
         <View style={styles.switch}>
           <Text>Hide Duplicates</Text>

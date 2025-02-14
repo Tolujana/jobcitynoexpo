@@ -86,7 +86,7 @@ export const hasRewardPoints = async value => {
     const storedValue = await AsyncStorage.getItem('rewardAmount');
 
     // Ensure a valid numeric value
-    const currentReward = parseInt(storedValue || '15', 10);
+    const currentReward = parseInt(storedValue || '30', 10);
 
     // Calculate the remaining reward amount
     const numericValue = currentReward - value;
@@ -103,5 +103,18 @@ export const hasRewardPoints = async value => {
   } catch (error) {
     console.error('Error handling notification:', error);
     return false; // Return false in case of an error
+  }
+};
+
+//save reward to storage
+export const saveRewardToAsyncStorage = async amount => {
+  try {
+    const existingReward = await AsyncStorage.getItem('rewardAmount');
+    const totalReward = (parseInt(existingReward) || 30) + amount;
+    await AsyncStorage.setItem('rewardAmount', totalReward.toString());
+    // navigation.setParams({reward: {totalReward, amount}});
+    // setRewardPoints(amount);
+  } catch (error) {
+    console.error('Error saving reward:', error);
   }
 };

@@ -1,4 +1,4 @@
-import {useNavigation} from '@react-navigation/native';
+import {useNavigation, useIsFocused} from '@react-navigation/native';
 import React, {useContext, useEffect, useRef, useState} from 'react';
 import {
   Animated,
@@ -11,50 +11,18 @@ import {
 import {SplashContext, useSplashContext} from '../context/SplashContext';
 import messaging from '@react-native-firebase/messaging';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {hasRewardPoints} from '../util/funtions';
-const {width, height} = Dimensions.get('window'); // Get screen dimensions
 
+const {width, height} = Dimensions.get('window'); // Get screen dimensions
+let data;
 const SplashScreen2 = () => {
+  const isFocused = useIsFocused();
   const navigation = useNavigation();
   const animationPlayed = useRef(false);
   const translateX = useRef(new Animated.Value(-width / 2)).current; // Start off-screen (left)
   const translateY = useRef(new Animated.Value(-height / 2)).current; // Start off-screen (top)
   const [isNotificationChecked, setIsNotificationChecked] = useState(false);
-  const {setIsSplashFinished, isSplashFinished} = useContext(SplashContext);
+  // const {setIsSplashFinished, isSplashFinished} = useContext(SplashContext);
   const [isAnimationDone, setIsAnimationDone] = useState(false);
-  const [data, setData] = useState(null);
-
-  const initializeApp = async () => {
-    try {
-      // Simulate an async task (e.g., API calls, resource loading)
-      const initialNotification = await messaging().getInitialNotification();
-
-      console.log('this is initialnot', initialNotification);
-      if (initialNotification) {
-        const canSendNotification = await hasRewardPoints(1);
-        console.log('this is has point', canSendNotification);
-        if (canSendNotification) {
-          const {screen, post_category, post_title, ...payload} =
-            initialNotification.data; // Extract screen and payload
-          setData({screen, post_category});
-          setIsSplashFinished(true);
-          navigation.replace('HomeTabs', {
-            category: post_category,
-            post_title,
-            refresh: true,
-          });
-
-          // Return relevant data for navigation
-        } else {
-          navigation.replace('ShowError');
-        }
-      }
-    } catch (error) {}
-  };
-
-  useEffect(() => {
-    initializeApp();
-  }, []);
 
   useEffect(() => {
     if (animationPlayed.current) return; // Prevent re-running
@@ -89,8 +57,10 @@ const SplashScreen2 = () => {
         useNativeDriver: true,
       }),
     ]).start(() => {
-      setIsSplashFinished(true);
-      navigation.replace('HomeTabs', data);
+      if (isFocused) {
+        navigation.replace('HomeTabs');
+      }
+
       // Navigate to Home after animatio
     });
   }, [translateY, translateX, navigation]);

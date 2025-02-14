@@ -16,9 +16,10 @@ import {
   rewarded,
 } from '../util/RewardedAdInstance';
 import {RewardContext} from '../context/RewardContext';
+import {saveRewardToAsyncStorage} from '../util/funtions';
 
 const ErrorScreen = ({navigation, route}) => {
-  const [rewardAmount, setRewardAmount] = useState(15);
+  const [rewardAmount, setRewardAmount] = useState(null);
   const [reward, setReward] = useState(0);
   const [adClosed, setAdClosed] = useState(false);
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
@@ -60,7 +61,6 @@ const ErrorScreen = ({navigation, route}) => {
     const unsubscribeEarned = rewarded.addAdEventListener(
       RewardedAdEventType.EARNED_REWARD,
       rewards => {
-        console.log(rewards.amount, 'it changed na');
         setReward(rewards.amount);
         setRewardPoints(rewards.amount);
 
@@ -80,7 +80,6 @@ const ErrorScreen = ({navigation, route}) => {
   }, []);
 
   useEffect(() => {
-    console.log('useefect ran');
     if (adClosed && reward > 0) {
       Alert.alert('Congratulations!', `You earned ${reward} reward points.`);
       setTimeout(() => {
@@ -90,16 +89,7 @@ const ErrorScreen = ({navigation, route}) => {
     }
   }, [reward, adClosed]);
 
-  const saveRewardToAsyncStorage = async amount => {
-    try {
-      const existingReward = await AsyncStorage.getItem('rewardAmount');
-      const totalReward = (parseInt(existingReward) || 0) + amount;
-      await AsyncStorage.setItem('rewardAmount', totalReward.toString());
-    } catch (error) {
-      console.error('Error saving reward:', error);
-    }
-  };
-  const saveRewardToAsyncStorage2 = async amount => {
+  const saveFakeRewardToAsyncStorage = async amount => {
     try {
       const existingReward = await AsyncStorage.getItem('rewardAmount');
       const totalReward = (parseInt(existingReward) || 0) + amount;
@@ -136,7 +126,7 @@ const ErrorScreen = ({navigation, route}) => {
       <TouchableOpacity style={styles.button} onPress={navigateToSettings}>
         <Text style={styles.buttonText}>Go to Settings</Text>
       </TouchableOpacity>
-      {__DEV__ ? (
+      {!__DEV__ ? (
         <CustomButton
           disable={isButtonDisabled}
           buttonText={isButtonDisabled ? 'wait....' : `Earn Points`}
@@ -146,7 +136,7 @@ const ErrorScreen = ({navigation, route}) => {
         <CustomButton
           disable={isButtonDisabled}
           buttonText={isButtonDisabled ? 'wait,,,' : `testing Points`}
-          onpress={() => saveRewardToAsyncStorage2(10)}
+          onpress={() => saveFakeRewardToAsyncStorage(10)}
         />
       )}
 

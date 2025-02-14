@@ -25,7 +25,11 @@ import ErrorScreen from '../screens/ErrorScreen';
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
-export default function AppNavigation({navigationRef, initialRoute}) {
+export default function AppNavigation({
+  navigationRef,
+  initialRoute,
+  notificationData,
+}) {
   //const {colorScheme, toggleColorScheme} = useColorScheme();
   const theme = useContext(ThemeContext);
   const {primary, background, text, transBackground, secondary, tertiary} =
@@ -113,7 +117,11 @@ export default function AppNavigation({navigationRef, initialRoute}) {
         <Stack.Screen name="Categories" component={CategorySelectionScreen2} />
         <Stack.Screen name="Form" component={KeywordNotificationScreen} />
         <Stack.Screen name="RewardPoints" component={RewardPointsScreen} />
-        <Stack.Screen name="NewListing" component={NewListing} />
+        <Stack.Screen
+          name="NewListing"
+          component={NewListing}
+          initialParams={notificationData}
+        />
         <Stack.Screen name="ShowError" component={ErrorScreen} />
         <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} />
       </Stack.Navigator>

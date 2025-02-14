@@ -81,10 +81,10 @@ function App() {
         // 🔹 Check Firebase Cloud Messaging (FCM) notification
         remoteMessage = await messaging().getInitialNotification();
         if (remoteMessage) {
-          console.log(
-            'FCM notification triggered app launch:',
-            remoteMessage.data,
-          );
+          // console.log(
+          //   'FCM notification triggered app launch:',
+          //   remoteMessage.data,
+          // );
         }
 
         // 🔹 Check Notifee notification
@@ -92,20 +92,21 @@ function App() {
           // Only check Notifee if FCM didn't trigger it
           notifeeNotification = await notifee.getInitialNotification();
           if (notifeeNotification) {
-            console.log(
-              'Notifee notification triggered app launch:',
-              notifeeNotification.notification.data,
-            );
+            // console.log(
+            //   'Notifee notification triggered app launch:',
+            //   notifeeNotification.notification.data,
+            // );
           }
         }
 
-        const hasPoint = await hasRewardPoints(2);
-
         // Determine where to navigate
         if (remoteMessage || notifeeNotification) {
+          const hasPoint = remoteMessage
+            ? await hasRewardPoints(2)
+            : await hasRewardPoints(3);
           const data =
             remoteMessage?.data || notifeeNotification?.notification?.data;
-          console.log('this is data', data);
+
           if (hasPoint) {
             setInitialRoute('NewListing');
             setNotificationData(data);
@@ -116,7 +117,7 @@ function App() {
           setInitialRoute('SplashScreen'); // Default route
         }
       } catch (error) {
-        console.error('Error checking initial notification:', error);
+        //console.error('Error checking initial notification:', error);
         setInitialRoute('SplashScreen'); // Fallback in case of an error
       } finally {
         setIsLoading(false);
@@ -137,35 +138,9 @@ function App() {
         if (hasPoint) {
           const category = remoteMessage.data?.post_category;
           const post_title = remoteMessage.data?.post_title;
-          setInitialRoute('NewListing');
-          setNotificationData({category, post_title});
-          // if (category) {
-          //   navigationRef.current?.navigate('NewListing', {
-          //     category,
-          //     post_title,
-          //     refresh: true,
-          //   });
-          // }
-        } else {
-          navigationRef.current?.navigate('ShowError');
-          // showErrorAlert();
-        }
-      });
-
-    // Handle initial notification if app is opened by clicking a notification
-    messaging()
-      .getInitialNotification()
-      .then(async remoteMessage => {
-        if (!remoteMessage) return;
-        console.log('i triggered .getInitialNotification');
-        const hasPoint = await hasRewardPoints(2);
-        if (hasPoint) {
-          const category = remoteMessage.data?.post_category;
-          const post_title = remoteMessage.data?.post_title;
-          setInitialRoute('NewListing');
-          setNotificationData({category, post_title});
+          // setInitialRoute('NewListing');
+          // setNotificationData({category, post_title});
           if (category) {
-            // console.log('this is category', category);
             navigationRef.current?.navigate('NewListing', {
               category,
               post_title,
@@ -177,12 +152,11 @@ function App() {
           // showErrorAlert();
         }
       });
-    //handle background and quit state
 
     // Handle notifications in foreground
     const unsubscribe = messaging().onMessage(async remoteMessage => {
       const {post_category, post_title} = remoteMessage.data;
-      const hasPoints = await hasRewardPoints(2);
+
       Alert.alert(
         `New vacancy in ${post_category}.`,
         `${post_title}.`,
@@ -198,7 +172,7 @@ function App() {
             text: 'See Article',
             onPress: async () => {
               // Navigate to the target screen, based on the notification data
-
+              const hasPoints = await hasRewardPoints(2);
               if (hasPoints) {
                 navigationRef.current?.navigate('NewListing', {
                   category: post_category,
@@ -224,57 +198,17 @@ function App() {
     };
   }, []);
 
-  useEffect(() => {
-    async function checkInitialNotification() {
-      // 🔹 Handle app launch from a notification
-      const initialNotification = await notifee.getInitialNotification();
-      if (initialNotification) {
-        console.log(
-          'App launched from notification:',
-          initialNotification.notification.data,
-        );
-
-        setInitialRoute('NewListing');
-        setNotificationData(detail.notification.data);
-      }
-
-      // 🔹 Handle background-clicked notifications stored in AsyncStorage
-      const pendingNotification = await AsyncStorage.getItem(
-        'pendingNotification',
-      );
-      if (pendingNotification) {
-        const {keyword, post_title} = JSON.parse(pendingNotification);
-        console.log(
-          'Handling stored notification navigation:',
-          keyword,
-          post_title,
-        );
-        navigationRef.current?.navigate('NewListing', {
-          search: keyword,
-          post_title,
-          refresh: true,
-        });
-
-        // Clear stored notification after navigating
-        await AsyncStorage.removeItem('pendingNotification');
-      }
-    }
-
-    checkInitialNotification();
-  }, []);
-
   // useEFFect for notifee search notification
   useEffect(() => {
     // Handle hasRewardPointsound notification clicks
     const unsubscribe = notifee.onForegroundEvent(async ({type, detail}) => {
-      const hasPoints = await hasRewardPoints(3);
-
       if (type === EventType.PRESS) {
         console.log('notifee foreground');
+        const hasPoints = await hasRewardPoints(3);
         if (hasPoints) {
           handleNotificationPress(detail.notification.data);
         } else {
-          showErrorAlert();
+          navigationRef.current?.navigate('ShowError', 'to show Notification');
         }
       }
     });
@@ -302,7 +236,9 @@ function App() {
 
       const now = Date.now();
       if (lastPrompt && now - parseInt(lastPrompt, 10) > FIVE_DAYS_MS) {
-        setShowModal(true);
+        setTimeout(() => {
+          setShowModal(true);
+        }, 5000);
 
         await AsyncStorage.setItem(RATE_PROMPT_KEY, now.toString());
       } else if (!lastPrompt) {
@@ -355,10 +291,17 @@ function App() {
 
           // Store updated reward points in AsyncStorage
           await AsyncStorage.setItem('rewardAmount', newPoints.toString());
+
+          Alert.alert(
+            'Daily Reward',
+            'Congrats! you have an extra 5 points for today!',
+            [
+              {
+                text: 'OK',
+              },
+            ],
+          );
         }
-      } else {
-        // If it's the first time opening the app, set the points
-        await AsyncStorage.setItem('rewardAmount', '5');
       }
 
       // Update the 'lastOpened' timestamp to the current time
@@ -371,35 +314,8 @@ function App() {
     updateRewardPoints();
   }, []);
 
-  // useEffect(() => {
-  //   const handleNotificationClick = async () => {
-  //     // Foreground Click Event (Handled by Notifee)
-  //     const hasPoints = await hasRewardPoints(2);
-
-  //     // Background Click Event (Handled by Firebase)
-  //     messaging().onNotificationOpenedApp(remoteMessage => {
-  //       if (remoteMessage?.data) {
-  //         if (hasPoints) {
-  //           console.log('notifee onnotificationOpend');
-  //           handleNotificationPress(remoteMessage?.data);
-  //         }
-  //       }
-  //     });
-
-  //     // Quit-State Click Event (App was closed)
-  //     const initialNotification = await messaging().getInitialNotification();
-  //     if (initialNotification?.data) {
-  //       if (hasPoints) {
-  //         handleNotificationPress(initialNotification?.data);
-  //       }
-  //     }
-  //   };
-  //   handleNotificationClick();
-  // }, []);
-
   const handleNotificationPress = data => {
     // Ensure data contains the screen and other params
-    console.log('testing it notifee function');
 
     navigationRef.current?.navigate('NewListing', {
       search: data.search,

@@ -24,14 +24,15 @@ import {
   rewarded,
 } from '../util/RewardedAdInstance';
 import {RewardContext} from '../context/RewardContext';
+import SendNotification from './SendNotification';
+import {saveRewardToAsyncStorage} from '../util/funtions';
 
 export default function SettingsScreen() {
-  const {rewardPoints, setRewardPoints} = useContext(RewardContext);
   const [adClosed, setAdClosed] = useState(false);
   const navigation = useNavigation();
   const theme = useContext(ThemeContext);
   const {primary, background, text, text2, secondary, tertiary} = theme.colors;
-  const [rewardAmount, setRewardAmount] = useState(15);
+  const [rewardAmount, setRewardAmount] = useState(null);
   const [reward, setReward] = useState(0);
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
   const [loaded, setLoaded] = useState(false);
@@ -76,7 +77,7 @@ export default function SettingsScreen() {
       RewardedAdEventType.EARNED_REWARD,
       async reward => {
         setReward(reward.amount);
-        setRewardPoints(reward.amount);
+
         saveRewardToAsyncStorage(reward.amount);
       },
     );
@@ -92,15 +93,6 @@ export default function SettingsScreen() {
     };
   }, []);
 
-  const saveRewardToAsyncStorage = async amount => {
-    try {
-      const existingReward = await AsyncStorage.getItem('rewardAmount');
-      const totalReward = (parseInt(existingReward) || 0) + amount;
-      await AsyncStorage.setItem('rewardAmount', totalReward.toString());
-    } catch (error) {
-      //console.error('Error saving reward:', error);
-    }
-  };
   useFocusEffect(
     React.useCallback(() => {
       // Check if `rewardedLoaded` parameter has changed
@@ -114,7 +106,7 @@ export default function SettingsScreen() {
       setTimeout(() => {
         setReward(0); // Reset AFTER alert
         setAdClosed(false);
-      }, 500); // Small delay for UI update stability
+      }, 300); // Small delay for UI update stability
     }
   }, [reward, adClosed]);
   const showAd = () => {
@@ -225,6 +217,7 @@ export default function SettingsScreen() {
             {isButtonDisabled ? 'Please wait' : 'Earn Points'}
           </Text>
         </TouchableOpacity>
+        {/* <SendNotification /> */}
       </View>
     </ScrollView>
   );

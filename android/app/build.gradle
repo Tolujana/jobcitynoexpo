@@ -79,8 +79,8 @@ android {
         applicationId "com.hotnigerianjobs"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 65
-        versionName "2"
+        versionCode 76
+        versionName "3"
          compileSdkVersion 34
     }
     signingConfigs {

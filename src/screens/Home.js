@@ -9,6 +9,8 @@ import {
   Alert,
   TouchableWithoutFeedback,
   Keyboard,
+  Platform,
+  PermissionsAndroid,
 } from 'react-native';
 
 import React, {useContext, useEffect, useRef, useState} from 'react';
@@ -54,11 +56,31 @@ export default function Home({route}) {
 
   useEffect(() => {
     if (route.params.category) {
-      console.log('param in home ', route.params.category);
       const {category} = route.params.category;
       navigation.replace('NewListing', route.params.category); // Navigate to HomeScreen
       // Prevent the default back behavior
     }
+  }, []);
+
+  const requestNotificationPermission = async () => {
+    if (Platform.OS === 'android' && Platform.Version >= 33) {
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
+        {
+          title: 'Notification Permission',
+          message: 'This app needs access to send you notifications.',
+          buttonNeutral: 'Ask Me Later',
+          buttonNegative: 'Cancel',
+          buttonPositive: 'OK',
+        },
+      );
+      if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
+        // console.log('Notification permission denied');
+      }
+    }
+  };
+  React.useEffect(() => {
+    requestNotificationPermission();
   }, []);
 
   useFocusEffect(

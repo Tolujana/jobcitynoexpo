@@ -17,7 +17,7 @@ export const fetchArticles = async task => {
       const response = await fetch(concatenateUrl);
       const data = await response.json();
       const latestData = parseDate(data);
-      const lastData = await getLastDate(encodeKeyword);
+      const lastData = await getLastDate(keyWord.search);
 
       if (latestData !== lastData) {
         await saveLastDate(keyWord.search, latestData);
@@ -41,9 +41,9 @@ const parseDate = data => {
   return data.posts[0].title;
 };
 
-const getLastDate = async apiUrl => {
+const getLastDate = async keyWord => {
   try {
-    const lastData = await AsyncStorage.getItem(`lastData-${apiUrl}`);
+    const lastData = await AsyncStorage.getItem(keyWord);
     return lastData || '';
   } catch (error) {
     console.error(error);
@@ -51,9 +51,9 @@ const getLastDate = async apiUrl => {
   }
 };
 
-const saveLastDate = async (apiUrl, data) => {
+const saveLastDate = async (keyWord, data) => {
   try {
-    await AsyncStorage.setItem(`lastData-${apiUrl}`, data);
+    await AsyncStorage.setItem(keyWord, data);
   } catch (error) {
     console.error(error);
   }
@@ -86,13 +86,14 @@ export const sendNotification = async (name, data) => {
     android: {
       channelId: channel,
       // smallIcon:'ic_launcher'
+      pressAction: {
+        id: 'default',
+      },
     },
-    pressAction: {
-      id: 'default',
-    },
+
     data: {
       screen: 'NewListing',
-      keyWord: name, // Custom data
+      search: name, // Custom data
       post_title: data,
     },
   });
